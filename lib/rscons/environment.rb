@@ -41,6 +41,21 @@ module Rscons
       @builders[builder_class.short_name] = builder_class
     end
 
+    def [](key, type = nil)
+      val = @variables[key]
+      if type == :array and val.is_a?(String)
+        [val]
+      elsif type == :string and val.is_a?(Array)
+        val.first
+      else
+        val
+      end
+    end
+
+    def []=(key, val)
+      @variables[key] = val
+    end
+
     def process
     end
 
