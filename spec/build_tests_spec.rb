@@ -12,10 +12,11 @@ describe Rscons do
   end
 
   def test_dir(build_test_directory)
-    Dir.chdir("build_tests_run/#{build_test_directory}")
+    dir = "build_tests_run/#{build_test_directory}"
     if File.exists?('build.rb')
-      system('ruby build.rb')
+      system("ruby -r rscons -C #{dir} build.rb")
     end
+    Dir.chdir(dir)
   end
 
   ###########################################################################
