@@ -28,17 +28,17 @@ module Rscons
         exclude_builders = Set.new(@variables[:exclude_builders] || [])
         DEFAULT_BUILDERS.each do |builder_class|
           unless exclude_builders.include?(builder_class.short_name)
-            add_builder(builder_class)
+            add_builder(builder_class.new(self))
           end
         end
       end
-      (@variables[:builders] || []).each do |builder_class|
-        add_builder(builder_class)
+      (@variables[:builders] || []).each do |builder|
+        add_builder(builder)
       end
     end
 
-    def add_builder(builder_class)
-      @builders[builder_class.short_name] = builder_class
+    def add_builder(builder)
+      @builders[builder.class.short_name] = builder
     end
 
     def [](key, type = nil)
