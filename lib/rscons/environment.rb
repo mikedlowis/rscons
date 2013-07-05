@@ -57,6 +57,8 @@ module Rscons
     end
 
     def process
+      cache = Cache.new
+      cache.write
     end
 
     alias_method :orig_method_missing, :method_missing

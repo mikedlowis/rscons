@@ -1,4 +1,5 @@
 require "rscons/builder"
+require "rscons/cache"
 require "rscons/environment"
 require "rscons/version"
 
