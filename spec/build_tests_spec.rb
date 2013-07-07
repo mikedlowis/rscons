@@ -52,6 +52,14 @@ gcc -o simple simple.o
 EOF
   end
 
+  it 'prints short representations of the commands being executed' do
+    test_dir('header')
+    File.read('build.out').should == <<EOF
+CC header.o
+LD header
+EOF
+  end
+
   it 'builds a C program with one source file and one header file' do
     test_dir('header')
     File.exists?('header.o').should be_true
