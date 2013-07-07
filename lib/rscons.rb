@@ -4,6 +4,7 @@ require "rscons/environment"
 require "rscons/version"
 
 require "rscons/monkey/module"
+require "rscons/monkey/string"
 
 # default builders
 require "rscons/builders/cc"

@@ -3,5 +3,8 @@ module Rscons
     def initialize(env)
       @env = env
     end
+    def default_variables(env)
+      {}
+    end
   end
 end

@@ -25,6 +25,7 @@ module Rscons
 
     def up_to_date?(file, deps = nil)
       # TODO
+      false
     end
 
     def register_build(target, deps)
