@@ -13,7 +13,7 @@ describe Rscons do
 
   def build_testdir
     if File.exists?("build.rb")
-      system("ruby -I #{@owd}/lib -r rscons build.rb")
+      system("ruby -I #{@owd}/lib -r rscons build.rb > build.out")
     end
   end
 
@@ -42,6 +42,14 @@ describe Rscons do
     test_dir('simple')
     File.exists?('simple.o').should be_true
     `./simple`.should == "This is a simple C program\n"
+  end
+
+  it 'prints commands as they are executed' do
+    test_dir('simple')
+    File.read('build.out').should == <<EOF
+gcc -c -o simple.o -MMD -MF simple.mf simple.c
+gcc -o simple simple.o
+EOF
   end
 
   it 'builds a C program with one source file and one header file' do

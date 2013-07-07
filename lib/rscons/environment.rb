@@ -39,6 +39,7 @@ module Rscons
       (@variables[:builders] || []).each do |builder|
         add_builder(builder)
       end
+      @variables[:echo] ||= :command
     end
 
     def add_builder(builder)
@@ -117,9 +118,9 @@ module Rscons
         end
       end
       command = expand_varref.call(command.flatten).flatten
-      if @echo == :command
+      if @variables[:echo] == :command
         puts command.map { |c| c =~ /\s/ ?  "'#{c}'" : c }.join(' ')
-      elsif @echo == :short
+      elsif @variables[:echo] == :short
         puts short_desc
       end
       system(*command)
