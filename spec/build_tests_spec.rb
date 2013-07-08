@@ -15,13 +15,13 @@ describe Rscons do
     if File.exists?("build.rb")
       system("ruby -I #{@owd}/lib -r rscons build.rb > build.out")
     end
+    get_build_output
   end
 
   def test_dir(build_test_directory)
     FileUtils.cp_r("build_tests/#{build_test_directory}", 'build_tests_run')
     Dir.chdir("build_tests_run")
     build_testdir
-    get_build_output
   end
 
   def file_sub(fname)
@@ -77,5 +77,16 @@ describe Rscons do
     file_sub('header.h') {|line| line.sub(/2/, '5')}
     build_testdir
     `./header`.should == "The value is 5\n"
+  end
+
+  xit 'does not rebuild a C module when its dependencies have not changed' do
+    lines = test_dir('header')
+    `./header`.should == "The value is 2\n"
+    lines.should == [
+      'CC header.o',
+      'LD header',
+    ]
+    lines = build_testdir
+    lines.should == []
   end
 end
