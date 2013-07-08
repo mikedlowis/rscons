@@ -21,6 +21,7 @@ describe Rscons do
     FileUtils.cp_r("build_tests/#{build_test_directory}", 'build_tests_run')
     Dir.chdir("build_tests_run")
     build_testdir
+    get_build_output
   end
 
   def file_sub(fname)
@@ -34,6 +35,10 @@ describe Rscons do
     end
   end
 
+  def get_build_output
+    File.read('build.out').lines.map(&:strip)
+  end
+
   ###########################################################################
   # Tests
   ###########################################################################
@@ -45,19 +50,19 @@ describe Rscons do
   end
 
   it 'prints commands as they are executed' do
-    test_dir('simple')
-    File.read('build.out').should == <<EOF
-gcc -c -o simple.o -MMD -MF simple.mf simple.c
-gcc -o simple simple.o
-EOF
+    lines = test_dir('simple')
+    lines.should == [
+      'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
+      'gcc -o simple simple.o',
+    ]
   end
 
   it 'prints short representations of the commands being executed' do
-    test_dir('header')
-    File.read('build.out').should == <<EOF
-CC header.o
-LD header
-EOF
+    lines = test_dir('header')
+    lines.should == [
+      'CC header.o',
+      'LD header',
+    ]
   end
 
   it 'builds a C program with one source file and one header file' do
