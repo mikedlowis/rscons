@@ -1,6 +1,7 @@
 require "rscons/builder"
 require "rscons/cache"
 require "rscons/environment"
+require "rscons/varset"
 require "rscons/version"
 
 require "rscons/monkey/module"

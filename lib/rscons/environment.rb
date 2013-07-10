@@ -11,7 +11,7 @@ module Rscons
     #   uppercase strings (such as "CC" or "LDFLAGS"), and rscons options,
     #   which are lowercase symbols (such as :echo).
     def initialize(variables = {})
-      @variables = variables
+      @variables = VarSet.new(variables)
       @targets = {}
       @builders = {}
       @variables[:exclude_builders] ||= []
@@ -44,19 +44,12 @@ module Rscons
       end
     end
 
-    def [](key, type = nil)
-      val = @variables[key]
-      if type == :array and val.is_a?(String)
-        [val]
-      elsif type == :string and val.is_a?(Array)
-        val.first
-      else
-        val
-      end
+    def [](*args)
+      @variables.send(:[], *args)
     end
 
-    def []=(key, val)
-      @variables[key] = val
+    def []=(*args)
+      @variables.send(:[]=, *args)
     end
 
     def process
