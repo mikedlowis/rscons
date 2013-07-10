@@ -4,19 +4,6 @@ module Rscons
   class Environment
     attr_reader :builders
 
-    class << self
-      alias_method :orig_new, :new
-    end
-
-    def self.new(*args)
-      e = Environment.orig_new(*args)
-      if block_given?
-        yield e
-        e.process
-      end
-      e
-    end
-
     # Initialize a newly constructed Environment object
     # === Arguments
     # +variables+ _Hash_ ::
@@ -40,6 +27,11 @@ module Rscons
         add_builder(builder)
       end
       @variables[:echo] ||= :command
+
+      if block_given?
+        yield self
+        self.process
+      end
     end
 
     def add_builder(builder)
