@@ -11,22 +11,22 @@ module Rscons
     #   uppercase strings (such as "CC" or "LDFLAGS"), and rscons options,
     #   which are lowercase symbols (such as :echo).
     def initialize(variables = {})
-      @variables = VarSet.new(variables)
+      @varset = VarSet.new(variables)
       @targets = {}
       @builders = {}
-      @variables[:exclude_builders] ||= []
-      unless @variables[:exclude_builders] == :all
-        exclude_builders = Set.new(@variables[:exclude_builders] || [])
+      @varset[:exclude_builders] ||= []
+      unless @varset[:exclude_builders] == :all
+        exclude_builders = Set.new(@varset[:exclude_builders] || [])
         DEFAULT_BUILDERS.each do |builder_class|
           unless exclude_builders.include?(builder_class.short_name)
             add_builder(builder_class.new(self))
           end
         end
       end
-      (@variables[:builders] || []).each do |builder|
+      (@varset[:builders] || []).each do |builder|
         add_builder(builder)
       end
-      @variables[:echo] ||= :command
+      @varset[:echo] ||= :command
 
       if block_given?
         yield self
@@ -39,17 +39,17 @@ module Rscons
       var_defs = builder.default_variables(self)
       if var_defs
         var_defs.each_pair do |var, val|
-          @variables[var] ||= val
+          @varset[var] ||= val
         end
       end
     end
 
     def [](*args)
-      @variables.send(:[], *args)
+      @varset.send(:[], *args)
     end
 
     def []=(*args)
-      @variables.send(:[]=, *args)
+      @varset.send(:[]=, *args)
     end
 
     def process
@@ -76,10 +76,10 @@ module Rscons
     end
 
     def execute(short_desc, command, extra_vars)
-      command = @variables.merge(extra_vars).expand_varref(command)
-      if @variables[:echo] == :command
+      command = @varset.merge(extra_vars).expand_varref(command)
+      if @varset[:echo] == :command
         puts command.map { |c| c =~ /\s/ ?  "'#{c}'" : c }.join(' ')
-      elsif @variables[:echo] == :short
+      elsif @varset[:echo] == :short
         puts short_desc
       end
       system(*command)
