@@ -76,33 +76,7 @@ module Rscons
     end
 
     def execute(short_desc, command, extra_vars)
-      merged_variables = @variables.merge(extra_vars)
-      expand_varref = proc do |varref|
-        if varref.is_a?(Array)
-          varref.map do |ent|
-            expand_varref.call(ent)
-          end
-        else
-          if varref =~ /^(.*)\$\[(\w+)\](.*)$/
-            # expand array with given prefix, suffix
-            prefix, varname, suffix = $1, $2, $3
-            varval = merged_variables[varname]
-            unless varval.is_a?(Array)
-              raise "Array expected for $#{varname}"
-            end
-            varval.map {|e| "#{prefix}#{e}#{suffix}"}
-          elsif varref =~ /^\$(.*)$/
-            # expand a single variable reference
-            varname = $1
-            varval = merged_variables[varname]
-            varval or raise "Could not find variable #{varname.inspect}"
-            expand_varref.call(varval)
-          else
-            varref
-          end
-        end
-      end
-      command = expand_varref.call(command.flatten).flatten
+      command = @variables.merge(extra_vars).expand_varref(command)
       if @variables[:echo] == :command
         puts command.map { |c| c =~ /\s/ ?  "'#{c}'" : c }.join(' ')
       elsif @variables[:echo] == :short
