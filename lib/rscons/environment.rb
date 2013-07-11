@@ -56,10 +56,9 @@ module Rscons
       cache = Cache.new
       targets_processed = Set.new
       process_target = proc do |target|
-        sources_built = @targets[target][:source].map do |src|
+        if @targets[target][:source].map do |src|
           targets_processed.include?(src) or not @targets.include?(src) or process_target.call(src)
         end.all?
-        if sources_built
           @targets[target][:builder].run(target,
                                          @targets[target][:source],
                                          cache,
