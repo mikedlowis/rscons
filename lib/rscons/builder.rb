@@ -6,5 +6,8 @@ module Rscons
     def default_variables(env)
       {}
     end
+    def produces?(target, source)
+      false
+    end
   end
 end
