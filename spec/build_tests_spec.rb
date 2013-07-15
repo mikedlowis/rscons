@@ -89,4 +89,19 @@ describe Rscons do
     lines = build_testdir
     lines.should == []
   end
+
+  it "does not rebuild a C module when only the file's timestampe has changed" do
+    lines = test_dir('header')
+    `./header`.should == "The value is 2\n"
+    lines.should == [
+      'CC header.o',
+      'LD header',
+    ]
+    header_c = File.read('header.c')
+    File.open('header.c', 'w') do |fh|
+      fh.write(header_c)
+    end
+    lines = build_testdir
+    lines.should == []
+  end
 end
