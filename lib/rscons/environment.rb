@@ -52,6 +52,10 @@ module Rscons
       @varset.send(:[]=, *args)
     end
 
+    def append(*args)
+      @varset.send(:append, *args)
+    end
+
     def process
       cache = Cache.new
       targets_processed = Set.new
