@@ -24,13 +24,15 @@ module Rscons
           builder.run(o_file, [source], cache)
         end
       end
-      unless cache.up_to_date?(target, sources)
-        vars = {
-          'TARGET' => target,
-          'SOURCES' => sources,
-          'LD' => @env['LD'] || @env['CC'], # TODO: figure out whether to use CC or CXX
-        }
-        @env.execute("LD #{target}", @env['LDCOM'], vars)
+      vars = {
+        'TARGET' => target,
+        'SOURCES' => sources,
+        'LD' => @env['LD'] || @env['CC'], # TODO: figure out whether to use CC or CXX
+      }
+      command = @env.build_command(@env['LDCOM'], vars)
+      unless cache.up_to_date?(target, command, sources)
+        return false unless @env.execute("LD #{target}", command)
+        cache.register_build(target, command, sources)
       end
       target
     end

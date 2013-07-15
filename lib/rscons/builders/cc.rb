@@ -17,19 +17,20 @@ module Rscons
     end
 
     def run(target, sources, cache)
-      unless cache.up_to_date?(target, sources)
-        vars = {
-          'TARGET' => target,
-          'SOURCES' => sources,
-          'DEPFILE' => target.set_suffix('.mf'),
-        }
-        @env.execute("CC #{target}", @env['CCCOM'], vars)
+      vars = {
+        'TARGET' => target,
+        'SOURCES' => sources,
+        'DEPFILE' => target.set_suffix('.mf'),
+      }
+      command = @env.build_command(@env['CCCOM'], vars)
+      unless cache.up_to_date?(target, command, sources)
+        return false unless @env.execute("CC #{target}", command)
         deps = sources
         if File.exists?(vars['DEPFILE'])
           deps += @env.parse_makefile_deps(vars['DEPFILE'], target)
           FileUtils.rm_f(vars['DEPFILE'])
         end
-        cache.register_build(target, deps.uniq)
+        cache.register_build(target, command, deps.uniq)
       end
       target
     end

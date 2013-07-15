@@ -74,8 +74,11 @@ module Rscons
       cache.write
     end
 
-    def execute(short_desc, command, extra_vars)
-      command = @varset.merge(extra_vars).expand_varref(command)
+    def build_command(command_template, extra_vars)
+      @varset.merge(extra_vars).expand_varref(command_template)
+    end
+
+    def execute(short_desc, command)
       if @varset[:echo] == :command
         puts command.map { |c| c =~ /\s/ ?  "'#{c}'" : c }.join(' ')
       elsif @varset[:echo] == :short
