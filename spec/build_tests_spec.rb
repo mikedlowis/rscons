@@ -97,11 +97,19 @@ describe Rscons do
       'CC header.o',
       'LD header',
     ]
-    header_c = File.read('header.c')
-    File.open('header.c', 'w') do |fh|
-      fh.write(header_c)
-    end
+    file_sub('header.c') {|line| line}
     lines = build_testdir
     lines.should == []
+  end
+
+  it 're-links a program when the link flags have changed' do
+    lines = test_dir('simple')
+    lines.should == [
+      'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
+      'gcc -o simple simple.o',
+    ]
+    file_sub('build.rb') {|line| line.sub(/.*CHANGE.FLAGS.*/, '  env["LIBS"] += ["c"]')}
+    lines = build_testdir
+    lines.should == ['gcc -o simple simple.o -lc']
   end
 end
