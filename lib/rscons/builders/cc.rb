@@ -5,10 +5,11 @@ module Rscons
         'CC' => 'gcc',
         'CFLAGS' => [],
         'CPPFLAGS' => [],
+        'CPPPATH' => [],
         'OBJSUFFIX' => '.o',
         'CSUFFIX' => '.c',
         'CCDEPGEN' => ['-MMD', '-MF', '$DEPFILE'],
-        'CCCOM' => ['$CC', '-c', '-o', '$TARGET', '$CCDEPGEN', '$CPPFLAGS', '$CFLAGS', '$SOURCES']
+        'CCCOM' => ['$CC', '-c', '-o', '$TARGET', '$CCDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CFLAGS', '$SOURCES']
       }
     end
 
