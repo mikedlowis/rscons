@@ -1,4 +1,5 @@
 require 'set'
+require 'fileutils'
 
 module Rscons
   class Environment
@@ -14,6 +15,7 @@ module Rscons
       @varset = VarSet.new(variables)
       @targets = {}
       @builders = {}
+      @build_dirs = []
       @varset[:exclude_builders] ||= []
       unless @varset[:exclude_builders] == :all
         exclude_builders = Set.new(@varset[:exclude_builders] || [])
@@ -42,6 +44,19 @@ module Rscons
           @varset[var] ||= val
         end
       end
+    end
+
+    def build_dir(src_dir, obj_dir)
+      @build_dirs << [src_dir.gsub('\\', '/'), obj_dir.gsub('\\', '/')]
+    end
+
+    def get_build_fname(source_fname, suffix)
+      build_fname = source_fname.set_suffix(suffix).gsub('\\', '/')
+      @build_dirs.each do |src_dir, obj_dir|
+        build_fname.sub!(/^#{src_dir}\//, "#{obj_dir}/")
+      end
+      FileUtils.mkdir_p(File.dirname(build_fname))
+      build_fname
     end
 
     def [](*args)
