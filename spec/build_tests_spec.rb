@@ -79,7 +79,7 @@ describe Rscons do
     `./header`.should == "The value is 5\n"
   end
 
-  xit 'does not rebuild a C module when its dependencies have not changed' do
+  it 'does not rebuild a C module when its dependencies have not changed' do
     lines = test_dir('header')
     `./header`.should == "The value is 2\n"
     lines.should == [

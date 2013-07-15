@@ -60,7 +60,8 @@ module Rscons
       # command line used to build target must be identical
       return false unless @cache[target][:command] == command
       # all dependencies passed in must exist in cache (but cache may have more)
-      return false unless (Set.new(deps) - Set.new(@cache[target][:deps])).empty?
+      cached_deps = @cache[target][:deps].map { |dc| dc[:fname] }
+      return false unless (Set.new(deps) - Set.new(cached_deps)).empty?
       # all cached dependencies must have their checksums match
       @cache[target][:deps].map do |dep_cache|
         dep_cache[:checksum] == lookup_checksum(dep_cache[:fname])
