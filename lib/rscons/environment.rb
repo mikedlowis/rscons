@@ -99,7 +99,7 @@ module Rscons
 
     def execute(short_desc, command)
       if @varset[:echo] == :command
-        puts command.map { |c| c =~ /\s/ ?  "'#{c}'" : c }.join(' ')
+        puts command.map { |c| c =~ /\s/ ? "'#{c}'" : c }.join(' ')
       elsif @varset[:echo] == :short
         puts short_desc
       end

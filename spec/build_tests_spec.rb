@@ -112,4 +112,11 @@ describe Rscons do
     lines = build_testdir
     lines.should == ['gcc -o simple simple.o -lc']
   end
+
+  it 'builds object files in a different build directory' do
+    lines = test_dir('build_dir')
+    `./build_dir`.should == "Hello from two()\n"
+    File.exists?('build/one/one.o').should be_true
+    File.exists?('build/two/two.o').should be_true
+  end
 end
