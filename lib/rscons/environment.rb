@@ -88,7 +88,10 @@ module Rscons
       end
       @targets.each do |target, info|
         next if targets_processed.include?(target)
-        break unless process_target.call(target)
+        unless process_target.call(target)
+          $stderr.puts "Error: failed to build #{target}"
+          break
+        end
       end
       cache.write
     end

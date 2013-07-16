@@ -119,4 +119,11 @@ describe Rscons do
     File.exists?('build/one/one.o').should be_true
     File.exists?('build/two/two.o').should be_true
   end
+
+  it 'allows Ruby classes as custom builders to be used to construct files' do
+    lines = test_dir('custom_builder')
+    lines.should == ['CC program.o', 'LD program']
+    File.exists?('inc.h').should be_true
+    `./program`.should == "The value is 5678\n"
+  end
 end
