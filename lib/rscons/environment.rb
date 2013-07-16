@@ -15,7 +15,7 @@ module Rscons
       @varset = VarSet.new(variables)
       @targets = {}
       @builders = {}
-      @build_dirs = []
+      @build_dirs = {}
       @varset[:exclude_builders] ||= []
       unless @varset[:exclude_builders] == :all
         exclude_builders = Set.new(@varset[:exclude_builders] || [])
@@ -47,7 +47,7 @@ module Rscons
     end
 
     def build_dir(src_dir, obj_dir)
-      @build_dirs << [src_dir.gsub('\\', '/'), obj_dir.gsub('\\', '/')]
+      @build_dirs[src_dir.gsub('\\', '/')] = obj_dir.gsub('\\', '/')
     end
 
     def get_build_fname(source_fname, suffix)
