@@ -12,27 +12,27 @@ module Rscons
       }
     end
 
-    def run(target, sources, cache)
+    def run(target, sources, cache, env)
       # convert sources to object file names
       sources = sources.map do |source|
-        if source.has_suffix?([@env['OBJSUFFIX'], @env['LIBSUFFIX']])
+        if source.has_suffix?([env['OBJSUFFIX'], env['LIBSUFFIX']])
           source
         else
-          o_file = @env.get_build_fname(source, @env['OBJSUFFIX', :string])
-          builder = @env.builders.values.find { |b| b.produces?(o_file, source) }
+          o_file = env.get_build_fname(source, env['OBJSUFFIX', :string])
+          builder = env.builders.values.find { |b| b.produces?(o_file, source, env) }
           builder or raise "No builder found to convert input source #{source.inspect} to an object file."
-          builder.run(o_file, [source], cache) or break
+          builder.run(o_file, [source], cache, env) or break
         end
       end
       if sources
         vars = {
           'TARGET' => target,
           'SOURCES' => sources,
-          'LD' => @env['LD'] || @env['CC'], # TODO: figure out whether to use CC or CXX
+          'LD' => env['LD'] || env['CC'], # TODO: figure out whether to use CC or CXX
         }
-        command = @env.build_command(@env['LDCOM'], vars)
+        command = env.build_command(env['LDCOM'], vars)
         unless cache.up_to_date?(target, command, sources)
-          return false unless @env.execute("LD #{target}", command)
+          return false unless env.execute("LD #{target}", command)
           cache.register_build(target, command, sources)
         end
         target

@@ -13,22 +13,22 @@ module Rscons
       }
     end
 
-    def produces?(target, source)
-      target.has_suffix?(@env['OBJSUFFIX']) and source.has_suffix?(@env['CSUFFIX'])
+    def produces?(target, source, env)
+      target.has_suffix?(env['OBJSUFFIX']) and source.has_suffix?(env['CSUFFIX'])
     end
 
-    def run(target, sources, cache)
+    def run(target, sources, cache, env)
       vars = {
         'TARGET' => target,
         'SOURCES' => sources,
         'DEPFILE' => target.set_suffix('.mf'),
       }
-      command = @env.build_command(@env['CCCOM'], vars)
+      command = env.build_command(env['CCCOM'], vars)
       unless cache.up_to_date?(target, command, sources)
-        return false unless @env.execute("CC #{target}", command)
+        return false unless env.execute("CC #{target}", command)
         deps = sources
         if File.exists?(vars['DEPFILE'])
-          deps += @env.parse_makefile_deps(vars['DEPFILE'], target)
+          deps += env.parse_makefile_deps(vars['DEPFILE'], target)
           FileUtils.rm_f(vars['DEPFILE'])
         end
         cache.register_build(target, command, deps.uniq)

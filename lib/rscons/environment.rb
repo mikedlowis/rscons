@@ -21,7 +21,7 @@ module Rscons
         exclude_builders = Set.new(@varset[:exclude_builders] || [])
         DEFAULT_BUILDERS.each do |builder_class|
           unless exclude_builders.include?(builder_class.short_name)
-            add_builder(builder_class.new(self))
+            add_builder(builder_class.new)
           end
         end
       end
@@ -81,6 +81,7 @@ module Rscons
           @targets[target][:builder].run(target,
                                          @targets[target][:source],
                                          cache,
+                                         self,
                                          *@targets[target][:args])
         else
           false

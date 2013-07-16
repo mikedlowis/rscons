@@ -1,5 +1,5 @@
 class MySource < Rscons::Builder
-  def run(target, sources, cache)
+  def run(target, sources, cache, env)
     File.open(target, 'w') do |fh|
       fh.puts <<EOF
 #define THE_VALUE 5678
@@ -10,7 +10,7 @@ EOF
 end
 
 Rscons::Environment.new(echo: :short) do |env|
-  env.add_builder(MySource.new(env))
+  env.add_builder(MySource.new)
   env.MySource('inc.h', [])
   env.Program('program', Dir['*.c'])
 end

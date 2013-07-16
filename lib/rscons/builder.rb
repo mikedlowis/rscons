@@ -1,12 +1,9 @@
 module Rscons
   class Builder
-    def initialize(env)
-      @env = env
-    end
     def default_variables(env)
       {}
     end
-    def produces?(target, source)
+    def produces?(target, source, env)
       false
     end
   end
