@@ -126,4 +126,14 @@ describe Rscons do
     File.exists?('inc.h').should be_true
     `./program`.should == "The value is 5678\n"
   end
+
+  it 'allows cloning Environment objects' do
+    lines = test_dir('clone_env')
+    lines.should == [
+      %q{gcc -c -o debug/program.o -MMD -MF debug/program.mf '-DSTRING="Debug Version"' -O2 src/program.c},
+      %q{gcc -o program-debug debug/program.o},
+      %q{gcc -c -o release/program.o -MMD -MF release/program.mf '-DSTRING="Release Version"' -O2 src/program.c},
+      %q{gcc -o program-release release/program.o},
+    ]
+  end
 end

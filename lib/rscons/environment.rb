@@ -36,6 +36,24 @@ module Rscons
       end
     end
 
+    def clone(variables = {})
+      env = Environment.new()
+      @builders.each do |builder_name, builder|
+        env.add_builder(builder)
+      end
+      @build_dirs.each do |src_dir, obj_dir|
+        env.build_dir(src_dir, obj_dir)
+      end
+      env.append(@varset)
+      env.append(variables)
+
+      if block_given?
+        yield env
+        env.process
+      end
+      env
+    end
+
     def add_builder(builder)
       @builders[builder.class.short_name] = builder
       var_defs = builder.default_variables(self)
