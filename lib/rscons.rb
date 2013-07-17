@@ -8,12 +8,12 @@ require "rscons/monkey/module"
 require "rscons/monkey/string"
 
 # default builders
-require "rscons/builders/cc"
+require "rscons/builders/object"
 require "rscons/builders/program"
 
 module Rscons
   DEFAULT_BUILDERS = [
-    CC,
+    Object,
     Program,
   ]
 end
