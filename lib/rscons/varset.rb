@@ -41,7 +41,7 @@ module Rscons
         if varref =~ /^(.*)\$\[(\w+)\](.*)$/
           # expand array with given prefix, suffix
           prefix, varname, suffix = $1, $2, $3
-          varval = @vars[varname]
+          varval = expand_varref(@vars[varname])
           unless varval.is_a?(Array)
             raise "Array expected for $#{varname}"
           end
@@ -49,7 +49,7 @@ module Rscons
         elsif varref =~ /^\$(.*)$/
           # expand a single variable reference
           varname = $1
-          varval = @vars[varname]
+          varval = expand_varref(@vars[varname])
           varval or raise "Could not find variable #{varname.inspect}"
           expand_varref(varval)
         else
