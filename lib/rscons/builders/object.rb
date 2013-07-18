@@ -4,7 +4,7 @@ module Rscons
       {
         'OBJSUFFIX' => '.o',
 
-        'AS' => 'gcc',
+        'AS' => '$CC',
         'ASFLAGS' => [],
         'ASSUFFIX' => '.S',
         'ASPPPATH' => '$CPPPATH',
