@@ -59,11 +59,12 @@ module Rscons
       # target must be registered in the cache
       return false unless @cache.has_key?(target)
 
-      # command line used to build target must be identical
+      # command used to build target must be identical
       return false unless @cache[target][:command] == command
 
       cached_deps = @cache[target][:deps].map { |dc| dc[:fname] }
       if options[:strict_deps]
+        # depedencies passed in must exactly equal those in the cache
         return false unless deps == cached_deps
       else
         # all dependencies passed in must exist in cache (but cache may have more)
