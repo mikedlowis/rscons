@@ -52,16 +52,24 @@ module Rscons
       end
     end
 
-    def up_to_date?(target, command, deps)
+    def up_to_date?(target, command, deps, options = {})
       # target file must exist on disk
       return false unless File.exists?(target)
+
       # target must be registered in the cache
       return false unless @cache.has_key?(target)
+
       # command line used to build target must be identical
       return false unless @cache[target][:command] == command
-      # all dependencies passed in must exist in cache (but cache may have more)
+
       cached_deps = @cache[target][:deps].map { |dc| dc[:fname] }
-      return false unless (Set.new(deps) - Set.new(cached_deps)).empty?
+      if options[:strict_deps]
+        return false unless deps == cached_deps
+      else
+        # all dependencies passed in must exist in cache (but cache may have more)
+        return false unless (Set.new(deps) - Set.new(cached_deps)).empty?
+      end
+
       # all cached dependencies must have their checksums match
       @cache[target][:deps].map do |dep_cache|
         dep_cache[:checksum] == lookup_checksum(dep_cache[:fname])
