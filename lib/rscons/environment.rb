@@ -120,12 +120,20 @@ module Rscons
     end
 
     def execute(short_desc, command)
-      if @varset[:echo] == :command
+      print_command = proc do
         puts command.map { |c| c =~ /\s/ ? "'#{c}'" : c }.join(' ')
+      end
+      if @varset[:echo] == :command
+        print_command.call
       elsif @varset[:echo] == :short
         puts short_desc
       end
-      system(*command)
+      system(*command).tap do |result|
+        unless result or @varset[:echo] == :command
+          $stdout.write "Failed command was: "
+          print_command.call
+        end
+      end
     end
 
     alias_method :orig_method_missing, :method_missing
