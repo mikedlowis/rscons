@@ -119,7 +119,7 @@ module Rscons
       @varset.merge(extra_vars).expand_varref(command_template)
     end
 
-    def execute(short_desc, command)
+    def execute(short_desc, command, options = {})
       print_command = proc do
         puts command.map { |c| c =~ /\s/ ? "'#{c}'" : c }.join(' ')
       end
@@ -128,7 +128,7 @@ module Rscons
       elsif @varset[:echo] == :short
         puts short_desc
       end
-      system(*command).tap do |result|
+      system(*command, options).tap do |result|
         unless result or @varset[:echo] == :command
           $stdout.write "Failed command was: "
           print_command.call
