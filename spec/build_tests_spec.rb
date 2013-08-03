@@ -136,4 +136,11 @@ describe Rscons do
       %q{gcc -o program-release release/program.o},
     ]
   end
+
+  it 'builds a C++ program with one source file' do
+    test_dir('simple_cc')
+    File.exists?('simple.o').should be_true
+    `./simple`.should == "This is a simple C++ program\n"
+  end
+
 end

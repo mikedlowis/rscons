@@ -89,6 +89,14 @@ module Rscons
       @varset.send(:append, *args)
     end
 
+    def targets
+      @targets.keys
+    end
+
+    def target_sources(target)
+      @targets[target][:source] rescue nil
+    end
+
     def process
       cache = Cache.new
       targets_processed = Set.new

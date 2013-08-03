@@ -14,7 +14,7 @@ module Rscons
 
     def run(target, sources, cache, env)
       # convert sources to object file names
-      sources = sources.map do |source|
+      objects = sources.map do |source|
         if source.has_suffix?([env['OBJSUFFIX'], env['LIBSUFFIX']])
           source
         else
@@ -24,16 +24,20 @@ module Rscons
           builder.run(o_file, [source], cache, env) or break
         end
       end
-      if sources
+      if objects
+        use_cxx = sources.map do |s|
+          s.has_suffix?(env['CXXSUFFIX'])
+        end.any?
+        ld_alt = use_cxx ? env['CXX'] : env['CC']
         vars = {
           'TARGET' => target,
-          'SOURCES' => sources,
-          'LD' => env['LD'] || env['CC'], # TODO: figure out whether to use CC or CXX
+          'SOURCES' => objects,
+          'LD' => env['LD'] || ld_alt,
         }
         command = env.build_command(env['LDCOM'], vars)
-        unless cache.up_to_date?(target, command, sources)
+        unless cache.up_to_date?(target, command, objects)
           return false unless env.execute("LD #{target}", command)
-          cache.register_build(target, command, sources)
+          cache.register_build(target, command, objects)
         end
         target
       end

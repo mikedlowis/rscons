@@ -12,20 +12,28 @@ module Rscons
         'ASDEPGEN' => ['-MMD', '-MF', '$DEPFILE'],
         'ASCOM' => ['$AS', '-c', '-o', '$TARGET', '$ASDEPGEN', '-I$[ASPPPATH]', '$ASPPFLAGS', '$ASFLAGS', '$SOURCES'],
 
-        'CC' => 'gcc',
-        'CFLAGS' => [],
         'CPPFLAGS' => [],
         'CPPPATH' => [],
+
+        'CC' => 'gcc',
+        'CFLAGS' => [],
         'CSUFFIX' => '.c',
         'CCDEPGEN' => ['-MMD', '-MF', '$DEPFILE'],
         'CCCOM' => ['$CC', '-c', '-o', '$TARGET', '$CCDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CFLAGS', '$SOURCES'],
+
+        'CXX' => 'g++',
+        'CXXFLAGS' => [],
+        'CXXSUFFIX' => '.cc',
+        'CXXDEPGEN' => ['-MMD', '-MF', '$DEPFILE'],
+        'CXXCOM' =>['$CXX', '-c', '-o', '$TARGET', '$CXXDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CXXFLAGS', '$SOURCES'],
       }
     end
 
     def produces?(target, source, env)
       target.has_suffix?(env['OBJSUFFIX']) and (
         source.has_suffix?(env['ASSUFFIX']) or
-        source.has_suffix?(env['CSUFFIX']))
+        source.has_suffix?(env['CSUFFIX']) or
+        source.has_suffix?(env['CXXSUFFIX']))
     end
 
     def run(target, sources, cache, env)
@@ -38,6 +46,8 @@ module Rscons
                      'AS'
                    elsif sources.first.has_suffix?(env['CSUFFIX'])
                      'CC'
+                   elsif sources.first.has_suffix?(env['CXXSUFFIX'])
+                     'CXX'
                    else
                      raise "Error: unknown input file type: #{sources.first.inspect}"
                    end
