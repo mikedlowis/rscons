@@ -1,4 +1,6 @@
 module Rscons
+  # A default RScons builder which knows how to produce an object file from
+  # various types of source files.
   class Object < Builder
     def default_variables(env)
       {

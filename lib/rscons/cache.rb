@@ -5,46 +5,55 @@ require 'set'
 require 'rscons/version'
 
 module Rscons
+  # The Cache class keeps track of file checksums, build target commands and
+  # dependencies in a YAML file which persists from one invocation to the next.
   # Example cache:
-  # {
-  #   version: '1.2.3',
-  #   targets: {
-  #     'program' => {
-  #       'checksum' => 'A1B2C3D4',
-  #       'command' => ['gcc', '-o', 'program', 'program.o'],
-  #       'deps' => [
-  #         {
-  #           'fname' => 'program.o',
-  #           'checksum' => '87654321',
-  #         }
-  #       ],
-  #     }
-  #     'program.o' => {
-  #       'checksum' => '87654321',
-  #       'command' => ['gcc', '-c', '-o', 'program.o', 'program.c'],
-  #       'deps' => [
-  #         {
-  #           'fname' => 'program.c',
-  #           'checksum' => '456789ABC',
-  #         },
-  #         {
-  #           'fname' => 'program.h',
-  #           'checksum' => '7979764643',
-  #         }
-  #       ]
+  #   {
+  #     version: '1.2.3',
+  #     targets: {
+  #       'program' => {
+  #         'checksum' => 'A1B2C3D4',
+  #         'command' => ['gcc', '-o', 'program', 'program.o'],
+  #         'deps' => [
+  #           {
+  #             'fname' => 'program.o',
+  #             'checksum' => '87654321',
+  #           }
+  #         ],
+  #       }
+  #       'program.o' => {
+  #         'checksum' => '87654321',
+  #         'command' => ['gcc', '-c', '-o', 'program.o', 'program.c'],
+  #         'deps' => [
+  #           {
+  #             'fname' => 'program.c',
+  #             'checksum' => '456789ABC',
+  #           },
+  #           {
+  #             'fname' => 'program.h',
+  #             'checksum' => '7979764643',
+  #           }
+  #         ]
+  #       }
   #     }
   #   }
-  # }
   class Cache
-    # Constants
+    #### Constants
+
+    # Name of the file to store cache information in
     CACHE_FILE = '.rsconscache'
 
-    # Class Methods
+    #### Class Methods
+
+    # Remove the cache file
     def self.clear
       FileUtils.rm_f(CACHE_FILE)
     end
 
-    # Instance Methods
+    #### Instance Methods
+
+    # Create a Cache object and load in the previous contents from the cache
+    # file.
     def initialize
       @cache = YAML.load(File.read(CACHE_FILE)) rescue {
         targets: {},
@@ -53,12 +62,30 @@ module Rscons
       @lookup_checksums = {}
     end
 
+    # Write the cache to disk to be loaded next time.
     def write
       File.open(CACHE_FILE, 'w') do |fh|
         fh.puts(YAML.dump(@cache))
       end
     end
 
+    # Check if a target is up to date
+    # @param target [String] The name of the target file.
+    # @param command [Array] The command used to build the target.
+    # @param deps [Array] List of the target's dependency files.
+    # @param options [Hash] Optional options. Can contain the following keys:
+    #   :strict_deps::
+    #     Only consider a target up to date if its list of dependencies is
+    #     exactly equal (including order) to the cached list of dependencies
+    # @return true value if the target is up to date, meaning that:
+    #   - the target exists on disk
+    #   - the cache has information for the target
+    #   - the command used to build the target is the same as last time
+    #   - all dependencies listed are also listed in the cache, or, if
+    #     :strict_deps was given in options, the list of dependencies is
+    #     exactly equal to those cached
+    #   - each cached dependency file's current checksum matches the checksum
+    #     stored in the cache file
     def up_to_date?(target, command, deps, options = {})
       # target file must exist on disk
       return false unless File.exists?(target)
@@ -84,6 +111,10 @@ module Rscons
       end.all?
     end
 
+    # Store cache information about a target built by a builder
+    # @param target [String] The name of the target.
+    # @param command [Array] The command used to build the target.
+    # @param deps [Array] List of dependencies for the target.
     def register_build(target, command, deps)
       @cache[:targets][target] = {
         command: command,
@@ -100,10 +131,15 @@ module Rscons
     # Private Instance Methods
     private
 
+    # Return a file's checksum, or the previously calculated checksum for
+    # the same file
+    # @param file [String] The file name.
     def lookup_checksum(file)
       @lookup_checksums[file] || calculate_checksum(file)
     end
 
+    # Calculate and return a file's checksum
+    # @param file [String] The file name.
     def calculate_checksum(file)
       @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file)).encode(__ENCODING__) rescue ''
     end

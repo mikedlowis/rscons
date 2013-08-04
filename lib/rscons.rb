@@ -11,6 +11,7 @@ require "rscons/monkey/string"
 require "rscons/builders/object"
 require "rscons/builders/program"
 
+# Namespace module for rscons classes
 module Rscons
   DEFAULT_BUILDERS = [
     Object,

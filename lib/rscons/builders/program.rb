@@ -1,4 +1,6 @@
 module Rscons
+  # A default RScons builder that knows how to link object files into an
+  # executable program.
   class Program < Builder
     def default_variables(env)
       {
