@@ -14,6 +14,8 @@ module Rscons
     #   The variables hash can contain both construction variables, which are
     #   uppercase strings (such as "CC" or "LDFLAGS"), and RScons options,
     #   which are lowercase symbols (such as :echo).
+    # If a block is given, the Environment object is yielded to the block and
+    # when the block returns, the {#process} method is automatically called.
     def initialize(variables = {})
       @varset = VarSet.new(variables)
       @targets = {}
@@ -43,6 +45,8 @@ module Rscons
     # The cloned environment will contain a copy of all environment options,
     # construction variables, builders, and build directories. It will not
     # contain a copy of the targets.
+    # If a block is given, the Environment object is yielded to the block and
+    # when the block returns, the {#process} method is automatically called.
     def clone(variables = {})
       env = Environment.new()
       @builders.each do |builder_name, builder|
