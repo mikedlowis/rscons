@@ -1,6 +1,6 @@
 # Rscons
 
-TODO: Write a gem description
+Software construction library inspired by SCons and implemented in Ruby
 
 ## Installation
 
@@ -18,7 +18,20 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+    RScons::Environment.new do |env|
+      env.Program('program', Dir['*.c'])
+    end
+
+    main_env = RScons::Environment.new do |env|
+      env.build_dir('src', 'build/main')
+      env.Program('program', Dir['src/**/*.cc'])
+    end
+
+    debug_env = main_env.clone do |env|
+      env.build_dir('src', 'build/debug')
+      env['CFLAGS'] = ['-g', '-O0']
+      env.Program('program-debug', Dir['src/**/*.cc'])
+    end
 
 ## Contributing
 
