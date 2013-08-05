@@ -6,6 +6,7 @@ class String
   def has_suffix?(suffix)
     if suffix
       suffix = [suffix] if suffix.is_a?(String)
+      suffix = suffix.flatten
       suffix.find {|s| self.end_with?(s)}
     end
   end
