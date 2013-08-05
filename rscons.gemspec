@@ -10,7 +10,8 @@ Gem::Specification.new do |gem|
   gem.email         = ["jholtrop@gmail.com"]
   gem.description   = %q{Software construction library inspired by SCons and implemented in Ruby}
   gem.summary       = %q{Software construction library inspired by SCons and implemented in Ruby}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/holtrop/rscons"
+  gem.license       = 'MIT'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
