@@ -8,9 +8,9 @@ module Rscons
         'OBJSUFFIX' => '.o',
         'LIBSUFFIX' => '.a',
         'LDFLAGS' => [],
-        'LIBPATHS' => [],
+        'LIBPATH' => [],
         'LIBS' => [],
-        'LDCOM' => ['$LD', '-o', '$TARGET', '$LDFLAGS', '$SOURCES', '-L$[LIBPATHS]', '-l$[LIBS]']
+        'LDCOM' => ['$LD', '-o', '$TARGET', '$LDFLAGS', '$SOURCES', '-L$[LIBPATH]', '-l$[LIBS]']
       }
     end
 
