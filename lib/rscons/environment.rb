@@ -52,9 +52,6 @@ module Rscons
       @builders.each do |builder_name, builder|
         env.add_builder(builder)
       end
-      @build_dirs.each do |src_dir, obj_dir|
-        env.build_dir(src_dir, obj_dir)
-      end
       env.append(@varset)
       env.append(variables)
 
