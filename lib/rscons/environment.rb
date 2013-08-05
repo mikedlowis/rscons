@@ -212,10 +212,11 @@ module Rscons
         if line =~ /^(.*)\\\s*$/
           buildup += ' ' + $1
         else
-          if line =~ /^(.*): (.*)$/
-            target, tdeps = $1.strip, $2
-            if target == target
-              deps += tdeps.split(' ').map(&:strip)
+          buildup += ' ' + line
+          if buildup =~ /^(.*): (.*)$/
+            mf_target, mf_deps = $1.strip, $2
+            if mf_target == target
+              deps += mf_deps.split(' ').map(&:strip)
             end
           end
           buildup = ''
