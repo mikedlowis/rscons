@@ -20,7 +20,7 @@ module Rscons
       @varset = VarSet.new(variables)
       @targets = {}
       @builders = {}
-      @build_dirs = {}
+      @build_dirs = []
       @varset[:exclude_builders] ||= []
       unless @varset[:exclude_builders] == :all
         exclude_builders = Set.new(@varset[:exclude_builders] || [])
@@ -76,7 +76,9 @@ module Rscons
     # Specify a build directory for this Environment.
     # Source files from src_dir will produce object files under obj_dir.
     def build_dir(src_dir, obj_dir)
-      @build_dirs[src_dir.gsub('\\', '/')] = obj_dir.gsub('\\', '/')
+      src_dir = src_dir.gsub('\\', '/') if src_dir.is_a?(String)
+      obj_dir = obj_dir.gsub('\\', '/')
+      @build_dirs << [src_dir, obj_dir]
     end
 
     # Return the file name to be built from source_fname with suffix suffix.
@@ -86,7 +88,12 @@ module Rscons
     def get_build_fname(source_fname, suffix)
       build_fname = source_fname.set_suffix(suffix).gsub('\\', '/')
       @build_dirs.each do |src_dir, obj_dir|
-        build_fname.sub!(/^#{src_dir}\//, "#{obj_dir}/")
+        if src_dir.is_a?(Regexp)
+          build_fname.sub!(src_dir, obj_dir)
+        else
+          build_fname.sub!(/^#{src_dir}\//, "#{obj_dir}/")
+        end
+        build_fname.gsub!('\\', '/')
       end
       FileUtils.mkdir_p(File.dirname(build_fname))
       build_fname
