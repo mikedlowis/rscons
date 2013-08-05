@@ -80,6 +80,7 @@ module Rscons
     # @return true value if the target is up to date, meaning that:
     #   - the target exists on disk
     #   - the cache has information for the target
+    #   - the target's checksum matches its checksum when it was last built
     #   - the command used to build the target is the same as last time
     #   - all dependencies listed are also listed in the cache, or, if
     #     :strict_deps was given in options, the list of dependencies is
@@ -92,6 +93,9 @@ module Rscons
 
       # target must be registered in the cache
       return false unless @cache[:targets].has_key?(target)
+
+      # target must have the same checksum as when it was built last
+      return false unless @cache[:targets][target][:checksum] == lookup_checksum(target)
 
       # command used to build target must be identical
       return false unless @cache[:targets][target][:command] == command
@@ -141,7 +145,7 @@ module Rscons
     # Calculate and return a file's checksum
     # @param file [String] The file name.
     def calculate_checksum(file)
-      @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file)).encode(__ENCODING__) rescue ''
+      @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file, {mode: 'rb'})).encode(__ENCODING__) rescue ''
     end
   end
 end
