@@ -17,4 +17,7 @@ module Rscons
     Object,
     Program,
   ]
+
+  class BuildError < Exception
+  end
 end
