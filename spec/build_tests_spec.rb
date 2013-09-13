@@ -143,4 +143,14 @@ describe Rscons do
     `./simple`.should == "This is a simple C++ program\n"
   end
 
+  it 'allows overriding construction variables for individual builder calls' do
+    lines = test_dir('two_sources')
+    lines.should == [
+      'gcc -c -o one.o -MMD -MF one.mf -DONE one.c',
+      'gcc -c -o two.o -MMD -MF two.mf two.c',
+      'gcc -o two_sources one.o two.o',
+    ]
+    File.exists?('two_sources').should be_true
+    `./two_sources`.should == "This is a C program with two sources.\n"
+  end
 end
