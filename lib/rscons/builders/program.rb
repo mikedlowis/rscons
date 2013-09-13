@@ -15,17 +15,8 @@ module Rscons
     end
 
     def run(target, sources, cache, env)
-      # convert sources to object file names
-      objects = sources.map do |source|
-        if source.has_suffix?([env['OBJSUFFIX'], env['LIBSUFFIX']])
-          source
-        else
-          o_file = env.get_build_fname(source, env['OBJSUFFIX', :string])
-          builder = env.builders.values.find { |b| b.produces?(o_file, source, env) }
-          builder or raise "No builder found to convert input source #{source.inspect} to an object file."
-          builder.run(o_file, [source], cache, env) or break
-        end
-      end
+      # build sources to linkable objects
+      objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache)
       if objects
         use_cxx = sources.map do |s|
           s.has_suffix?(env['CXXSUFFIX'])

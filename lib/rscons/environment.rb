@@ -228,5 +228,32 @@ module Rscons
       end
       deps
     end
+
+    # Build a list of source files into files containing one of the suffixes
+    # given by suffixes.
+    # This method is used internally by RScons builders.
+    # @param sources [Array] List of source files to build.
+    # @param suffixes [Array] List of suffixes to try to convert source files into.
+    # @param cache [Cache] The Cache.
+    # Return a list of the converted file names.
+    def build_sources(sources, suffixes, cache)
+      sources.map do |source|
+        if source.has_suffix?(suffixes)
+          source
+        else
+          converted = nil
+          suffixes.each do |suffix|
+            converted_fname = get_build_fname(source, suffix)
+            builder = @builders.values.find { |b| b.produces?(converted_fname, source, self) }
+            if builder
+              converted = builder.run(converted_fname, [source], cache, self)
+              return nil unless converted
+              break
+            end
+          end
+          converted or raise "Could not find a builder to handle #{source.inspect}."
+        end
+      end
+    end
   end
 end
