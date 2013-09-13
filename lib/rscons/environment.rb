@@ -194,6 +194,9 @@ module Rscons
     def method_missing(method, *args)
       if @builders.has_key?(method.to_s)
         target, source, vars, *rest = args
+        unless vars.nil? or vars.is_a?(Hash) or vars.is_a?(VarSet)
+          raise "Unexpected construction variable set: #{vars.inspect}"
+        end
         source = [source] unless source.is_a?(Array)
         @targets[target] = {
           builder: @builders[method.to_s],

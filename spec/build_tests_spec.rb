@@ -153,4 +153,17 @@ describe Rscons do
     File.exists?('two_sources').should be_true
     `./two_sources`.should == "This is a C program with two sources.\n"
   end
+
+  it 'builds a static library archive' do
+    lines = test_dir('library')
+    lines.should == [
+      'gcc -c -o one.o -MMD -MF one.mf -Dmake_lib one.c',
+      'gcc -c -o two.o -MMD -MF two.mf -Dmake_lib two.c',
+      'ar rcs lib.a one.o two.o',
+      'gcc -c -o three.o -MMD -MF three.mf three.c',
+      'gcc -o library lib.a three.o',
+    ]
+    File.exists?('library').should be_true
+    `ar t lib.a`.should == "one.o\ntwo.o\n"
+  end
 end
