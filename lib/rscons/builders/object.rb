@@ -38,12 +38,12 @@ module Rscons
         source.has_suffix?(env['CXXSUFFIX']))
     end
 
-    def run(target, sources, cache, env)
-      vars = {
+    def run(target, sources, cache, env, vars = {})
+      vars = vars.merge({
         'TARGET' => target,
         'SOURCES' => sources,
         'DEPFILE' => target.set_suffix('.mf'),
-      }
+      })
       com_prefix = if sources.first.has_suffix?(env['ASSUFFIX'])
                      'AS'
                    elsif sources.first.has_suffix?(env['CSUFFIX'])

@@ -8,7 +8,11 @@ module Rscons
     # Create a VarSet
     # @param vars [Hash] Optional initial variables.
     def initialize(vars = {})
-      @vars = vars
+      if vars.is_a?(VarSet)
+        @vars = vars.clone.vars
+      else
+        @vars = vars
+      end
     end
 
     # Access the value of variable as a particular type

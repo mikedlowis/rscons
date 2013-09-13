@@ -141,7 +141,7 @@ module Rscons
                                          @targets[target][:source],
                                          cache,
                                          self,
-                                         *@targets[target][:args])
+                                         @targets[target][:vars] || {})
         else
           false
         end
@@ -193,11 +193,12 @@ module Rscons
     alias_method :orig_method_missing, :method_missing
     def method_missing(method, *args)
       if @builders.has_key?(method.to_s)
-        target, source, *rest = args
+        target, source, vars, *rest = args
         source = [source] unless source.is_a?(Array)
         @targets[target] = {
           builder: @builders[method.to_s],
           source: source,
+          vars: vars,
           args: rest,
         }
       else
@@ -236,7 +237,7 @@ module Rscons
     # @param suffixes [Array] List of suffixes to try to convert source files into.
     # @param cache [Cache] The Cache.
     # Return a list of the converted file names.
-    def build_sources(sources, suffixes, cache)
+    def build_sources(sources, suffixes, cache, vars = {})
       sources.map do |source|
         if source.has_suffix?(suffixes)
           source
@@ -246,7 +247,7 @@ module Rscons
             converted_fname = get_build_fname(source, suffix)
             builder = @builders.values.find { |b| b.produces?(converted_fname, source, self) }
             if builder
-              converted = builder.run(converted_fname, [source], cache, self)
+              converted = builder.run(converted_fname, [source], cache, self, vars)
               return nil unless converted
               break
             end

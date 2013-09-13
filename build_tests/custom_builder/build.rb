@@ -1,5 +1,5 @@
 class MySource < Rscons::Builder
-  def run(target, sources, cache, env)
+  def run(target, sources, cache, env, vars = {})
     File.open(target, 'w') do |fh|
       fh.puts <<EOF
 #define THE_VALUE 5678

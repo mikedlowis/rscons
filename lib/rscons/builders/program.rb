@@ -14,19 +14,19 @@ module Rscons
       }
     end
 
-    def run(target, sources, cache, env)
+    def run(target, sources, cache, env, vars = {})
       # build sources to linkable objects
-      objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache)
+      objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache, vars)
       if objects
         use_cxx = sources.map do |s|
           s.has_suffix?(env['CXXSUFFIX'])
         end.any?
         ld_alt = use_cxx ? env['CXX'] : env['CC']
-        vars = {
+        vars = vars.merge({
           'TARGET' => target,
           'SOURCES' => objects,
           'LD' => env['LD'] || ld_alt,
-        }
+        })
         command = env.build_command(env['LDCOM'], vars)
         unless cache.up_to_date?(target, command, objects)
           return false unless env.execute("LD #{target}", command)
