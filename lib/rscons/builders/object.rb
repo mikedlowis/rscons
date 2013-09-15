@@ -55,6 +55,8 @@ module Rscons
                    end
       command = env.build_command(env["#{com_prefix}COM"], vars)
       unless cache.up_to_date?(target, command, sources)
+        FileUtils.mkdir_p(File.dirname(target))
+        FileUtils.rm_f(target)
         return false unless env.execute("#{com_prefix} #{target}", command)
         deps = sources
         if File.exists?(vars['DEPFILE'])

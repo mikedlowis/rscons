@@ -1,3 +1,5 @@
+require "fileutils"
+
 module Rscons
   # Class to hold an object that knows how to build a certain type of file.
   class Builder
@@ -15,6 +17,19 @@ module Rscons
     # @param env [Environment] The Environment.
     def produces?(target, source, env)
       false
+    end
+
+    # Check if the cache is up to date for the target and if not execute the
+    # build command.
+    # Return the name of the target or false on failure.
+    def standard_build(short_cmd_string, target, command, sources, env, cache)
+      unless cache.up_to_date?(target, command, sources)
+        FileUtils.mkdir_p(File.dirname(target))
+        FileUtils.rm_f(target)
+        return false unless env.execute(short_cmd_string, command)
+        cache.register_build(target, command, sources)
+      end
+      target
     end
   end
 end

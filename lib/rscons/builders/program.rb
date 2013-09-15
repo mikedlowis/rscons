@@ -28,11 +28,7 @@ module Rscons
           'LD' => env['LD'] || ld_alt,
         })
         command = env.build_command(env['LDCOM'], vars)
-        unless cache.up_to_date?(target, command, objects)
-          return false unless env.execute("LD #{target}", command)
-          cache.register_build(target, command, objects)
-        end
-        target
+        standard_build("LD #{target}", target, command, objects, env, cache)
       end
     end
   end

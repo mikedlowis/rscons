@@ -21,12 +21,7 @@ module Rscons
           'SOURCES' => objects,
         })
         command = env.build_command(env['ARCOM'], vars)
-        unless cache.up_to_date?(target, command, objects)
-          FileUtils.rm_f(target)
-          return false unless env.execute("AR #{target}", command)
-          cache.register_build(target, command, objects)
-        end
-        target
+        standard_build("AR #{target}", target, command, objects, env, cache)
       end
     end
   end
