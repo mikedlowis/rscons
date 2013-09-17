@@ -11,9 +11,10 @@ module Rscons
 
     # Create an Environment object.
     # @param variables [Hash]
-    #   The variables hash can contain both construction variables, which are
-    #   uppercase strings (such as "CC" or "LDFLAGS"), and RScons options,
-    #   which are lowercase symbols (such as :echo).
+    #   The variables hash can contain construction variables, which are
+    #   uppercase strings (such as "CC" or "LDFLAGS"), user variables, which
+    #   are lowercase strings (such as "sources"), and RScons options, which
+    #   are lowercase symbols (such as :echo).
     # If a block is given, the Environment object is yielded to the block and
     # when the block returns, the {#process} method is automatically called.
     def initialize(variables = {})

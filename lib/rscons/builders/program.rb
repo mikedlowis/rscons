@@ -10,7 +10,7 @@ module Rscons
         'LDFLAGS' => [],
         'LIBPATH' => [],
         'LIBS' => [],
-        'LDCOM' => ['$LD', '-o', '$TARGET', '$LDFLAGS', '$SOURCES', '-L$[LIBPATH]', '-l$[LIBS]']
+        'LDCOM' => ['$LD', '-o', '$_TARGET', '$LDFLAGS', '$_SOURCES', '-L$[LIBPATH]', '-l$[LIBS]']
       }
     end
 
@@ -23,8 +23,8 @@ module Rscons
         end.any?
         ld_alt = use_cxx ? env['CXX'] : env['CC']
         vars = vars.merge({
-          'TARGET' => target,
-          'SOURCES' => objects,
+          '_TARGET' => target,
+          '_SOURCES' => objects,
           'LD' => env['LD'] || ld_alt,
         })
         command = env.build_command(env['LDCOM'], vars)

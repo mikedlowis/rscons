@@ -11,8 +11,8 @@ module Rscons
         'ASSUFFIX' => '.S',
         'ASPPPATH' => '$CPPPATH',
         'ASPPFLAGS' => '$CPPFLAGS',
-        'ASDEPGEN' => ['-MMD', '-MF', '$DEPFILE'],
-        'ASCOM' => ['$AS', '-c', '-o', '$TARGET', '$ASDEPGEN', '-I$[ASPPPATH]', '$ASPPFLAGS', '$ASFLAGS', '$SOURCES'],
+        'ASDEPGEN' => ['-MMD', '-MF', '$_DEPFILE'],
+        'ASCOM' => ['$AS', '-c', '-o', '$_TARGET', '$ASDEPGEN', '-I$[ASPPPATH]', '$ASPPFLAGS', '$ASFLAGS', '$_SOURCES'],
 
         'CPPFLAGS' => [],
         'CPPPATH' => [],
@@ -20,14 +20,14 @@ module Rscons
         'CC' => 'gcc',
         'CFLAGS' => [],
         'CSUFFIX' => '.c',
-        'CCDEPGEN' => ['-MMD', '-MF', '$DEPFILE'],
-        'CCCOM' => ['$CC', '-c', '-o', '$TARGET', '$CCDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CFLAGS', '$SOURCES'],
+        'CCDEPGEN' => ['-MMD', '-MF', '$_DEPFILE'],
+        'CCCOM' => ['$CC', '-c', '-o', '$_TARGET', '$CCDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CFLAGS', '$_SOURCES'],
 
         'CXX' => 'g++',
         'CXXFLAGS' => [],
         'CXXSUFFIX' => '.cc',
-        'CXXDEPGEN' => ['-MMD', '-MF', '$DEPFILE'],
-        'CXXCOM' =>['$CXX', '-c', '-o', '$TARGET', '$CXXDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CXXFLAGS', '$SOURCES'],
+        'CXXDEPGEN' => ['-MMD', '-MF', '$_DEPFILE'],
+        'CXXCOM' =>['$CXX', '-c', '-o', '$_TARGET', '$CXXDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CXXFLAGS', '$_SOURCES'],
       }
     end
 
@@ -40,9 +40,9 @@ module Rscons
 
     def run(target, sources, cache, env, vars = {})
       vars = vars.merge({
-        'TARGET' => target,
-        'SOURCES' => sources,
-        'DEPFILE' => target.set_suffix('.mf'),
+        '_TARGET' => target,
+        '_SOURCES' => sources,
+        '_DEPFILE' => target.set_suffix('.mf'),
       })
       com_prefix = if sources.first.has_suffix?(env['ASSUFFIX'])
                      'AS'
@@ -59,9 +59,9 @@ module Rscons
         FileUtils.rm_f(target)
         return false unless env.execute("#{com_prefix} #{target}", command)
         deps = sources
-        if File.exists?(vars['DEPFILE'])
-          deps += env.parse_makefile_deps(vars['DEPFILE'], target)
-          FileUtils.rm_f(vars['DEPFILE'])
+        if File.exists?(vars['_DEPFILE'])
+          deps += env.parse_makefile_deps(vars['_DEPFILE'], target)
+          FileUtils.rm_f(vars['_DEPFILE'])
         end
         cache.register_build(target, command, deps.uniq)
       end

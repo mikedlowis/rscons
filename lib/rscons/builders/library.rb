@@ -8,7 +8,7 @@ module Rscons
         'AR' => 'ar',
         'LIBSUFFIX' => '.a',
         'ARFLAGS' => [],
-        'ARCOM' => ['$AR', 'rcs', '$ARFLAGS', '$TARGET', '$SOURCES']
+        'ARCOM' => ['$AR', 'rcs', '$ARFLAGS', '$_TARGET', '$_SOURCES']
       }
     end
 
@@ -17,8 +17,8 @@ module Rscons
       objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache, vars)
       if objects
         vars = vars.merge({
-          'TARGET' => target,
-          'SOURCES' => objects,
+          '_TARGET' => target,
+          '_SOURCES' => objects,
         })
         command = env.build_command(env['ARCOM'], vars)
         standard_build("AR #{target}", target, command, objects, env, cache)
