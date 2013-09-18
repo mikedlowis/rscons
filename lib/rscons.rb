@@ -22,4 +22,13 @@ module Rscons
 
   class BuildError < Exception
   end
+
+  # Remove all generated files
+  def self.clean
+    cache = Cache.new
+    cache.targets.each do |target|
+      FileUtils.rm_f(target)
+    end
+    Cache.clear
+  end
 end

@@ -120,6 +120,17 @@ describe Rscons do
     File.exists?('build/two/two.o').should be_true
   end
 
+  it 'cleans built files' do
+    lines = test_dir('build_dir')
+    `./build_dir`.should == "Hello from two()\n"
+    File.exists?('build/one/one.o').should be_true
+    File.exists?('build/two/two.o').should be_true
+    Rscons.clean
+    File.exists?('build/one/one.o').should be_false
+    File.exists?('build/two/two.o').should be_false
+    File.exists?('src/one/one.c').should be_true
+  end
+
   it 'allows Ruby classes as custom builders to be used to construct files' do
     lines = test_dir('custom_builder')
     lines.should == ['CC program.o', 'LD program']

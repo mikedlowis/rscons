@@ -132,6 +132,11 @@ module Rscons
       }
     end
 
+    # Return a list of targets that have been built
+    def targets
+      @cache[:targets].keys
+    end
+
     # Private Instance Methods
     private
 
