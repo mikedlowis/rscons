@@ -32,6 +32,7 @@ module Rscons
     end
     # remove all created directories if they are empty
     cache.directories.sort {|a, b| b.size <=> a.size}.each do |directory|
+      next unless File.directory?(directory)
       if (Dir.entries(directory) - ['.', '..']).empty?
         Dir.rmdir(directory) rescue nil
       end
