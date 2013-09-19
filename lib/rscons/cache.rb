@@ -61,6 +61,10 @@ module Rscons
     # file.
     def initialize
       @cache = YAML.load(File.read(CACHE_FILE)) rescue {}
+      unless @cache.is_a?(Hash)
+        $stderr.puts "Warning: #{CACHE_FILE} was corrupt. Contents:\n#{@cache.inspect}"
+        @cache = {}
+      end
       @cache[:targets] ||= {}
       @cache[:directories] ||= {}
       @cache[:version] ||= VERSION
