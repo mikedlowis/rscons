@@ -151,7 +151,7 @@ module Rscons
     def mkdir_p(path)
       parts = path.split(/[\\\/]/)
       (0..parts.size).each do |i|
-        subpath = File.join(*parts[0, i + 1])
+        subpath = File.join(*parts[0, i + 1]).encode(__ENCODING__)
         unless File.exists?(subpath)
           FileUtils.mkdir(subpath)
           unless @cache[:directories].include?(subpath)
