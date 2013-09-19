@@ -36,6 +36,11 @@ module Rscons
   #         ]
   #       }
   #     }
+  #     directories: {
+  #       'build' => true,
+  #       'build/one' => true,
+  #       'build/two' => true,
+  #     }
   #   }
   class Cache
     #### Constants
@@ -57,6 +62,7 @@ module Rscons
     def initialize
       @cache = YAML.load(File.read(CACHE_FILE)) rescue {
         targets: {},
+        directories: {},
         version: VERSION,
       }
       @lookup_checksums = {}
@@ -135,6 +141,26 @@ module Rscons
     # Return a list of targets that have been built
     def targets
       @cache[:targets].keys
+    end
+
+    # Make any needed directories and record the ones that are created for
+    # removal upon a "clean" operation.
+    def mkdir_p(path)
+      parts = path.split(/[\\\/]/)
+      (0..parts.size).each do |i|
+        subpath = File.join(*parts[0, i + 1])
+        unless File.exists?(subpath)
+          FileUtils.mkdir(subpath)
+          unless @cache[:directories].include?(subpath)
+            @cache[:directories][subpath] = true
+          end
+        end
+      end
+    end
+
+    # Return a list of directories which were created as a part of the build
+    def directories
+      @cache[:directories].keys
     end
 
     # Private Instance Methods

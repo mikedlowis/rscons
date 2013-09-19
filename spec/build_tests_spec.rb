@@ -128,6 +128,24 @@ describe Rscons do
     Rscons.clean
     File.exists?('build/one/one.o').should be_false
     File.exists?('build/two/two.o').should be_false
+    File.exists?('build/one').should be_false
+    File.exists?('build/two').should be_false
+    File.exists?('build').should be_false
+    File.exists?('src/one/one.c').should be_true
+  end
+
+  it 'does not clean created directories if other non-rscons-generated files reside there' do
+    lines = test_dir('build_dir')
+    `./build_dir`.should == "Hello from two()\n"
+    File.exists?('build/one/one.o').should be_true
+    File.exists?('build/two/two.o').should be_true
+    File.open('build/two/tmp', 'w') { |fh| fh.puts "dum" }
+    Rscons.clean
+    File.exists?('build/one/one.o').should be_false
+    File.exists?('build/two/two.o').should be_false
+    File.exists?('build/one').should be_false
+    File.exists?('build/two').should be_true
+    File.exists?('build').should be_true
     File.exists?('src/one/one.c').should be_true
   end
 

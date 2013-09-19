@@ -96,7 +96,6 @@ module Rscons
         end
         build_fname.gsub!('\\', '/')
       end
-      FileUtils.mkdir_p(File.dirname(build_fname))
       build_fname
     end
 

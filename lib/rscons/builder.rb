@@ -24,7 +24,7 @@ module Rscons
     # Return the name of the target or false on failure.
     def standard_build(short_cmd_string, target, command, sources, env, cache)
       unless cache.up_to_date?(target, command, sources)
-        FileUtils.mkdir_p(File.dirname(target))
+        cache.mkdir_p(File.dirname(target))
         FileUtils.rm_f(target)
         return false unless env.execute(short_cmd_string, command)
         cache.register_build(target, command, sources)
