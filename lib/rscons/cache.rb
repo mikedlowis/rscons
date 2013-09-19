@@ -60,11 +60,10 @@ module Rscons
     # Create a Cache object and load in the previous contents from the cache
     # file.
     def initialize
-      @cache = YAML.load(File.read(CACHE_FILE)) rescue {
-        targets: {},
-        directories: {},
-        version: VERSION,
-      }
+      @cache = YAML.load(File.read(CACHE_FILE)) rescue {}
+      @cache[:targets] ||= {}
+      @cache[:directories] ||= {}
+      @cache[:version] ||= VERSION
       @lookup_checksums = {}
     end
 
