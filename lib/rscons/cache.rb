@@ -129,12 +129,12 @@ module Rscons
     # @param command [Array] The command used to build the target.
     # @param deps [Array] List of dependencies for the target.
     def register_build(target, command, deps)
-      @cache[:targets][target] = {
+      @cache[:targets][target.encode(__ENCODING__)] = {
         command: command,
         checksum: calculate_checksum(target),
         deps: deps.map do |dep|
           {
-            fname: dep,
+            fname: dep.encode(__ENCODING__),
             checksum: lookup_checksum(dep),
           }
         end
