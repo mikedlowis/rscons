@@ -78,7 +78,6 @@ module Rscons
     # Source files from src_dir will produce object files under obj_dir.
     def build_dir(src_dir, obj_dir)
       src_dir = src_dir.gsub('\\', '/') if src_dir.is_a?(String)
-      obj_dir = obj_dir.gsub('\\', '/')
       @build_dirs << [src_dir, obj_dir]
     end
 
@@ -92,7 +91,7 @@ module Rscons
         if src_dir.is_a?(Regexp)
           build_fname.sub!(src_dir, obj_dir)
         else
-          build_fname.sub!(/^#{src_dir}\//, "#{obj_dir}/")
+          build_fname.sub!(%r{^#{src_dir}/}, "#{obj_dir}/")
         end
         build_fname.gsub!('\\', '/')
       end
