@@ -13,12 +13,30 @@ describe Rscons do
 
   def build_testdir
     if File.exists?("build.rb")
-      system("ruby -I #{@owd}/lib -r rscons build.rb > build.out")
+      build_rb = File.read("build.rb")
+      File.open("build.rb", "w") do |fh|
+        fh.puts(<<EOF + build_rb)
+require "simplecov"
+
+SimpleCov.start do
+  root("#{@owd}")
+  command_name("build_test_#{@build_test_name}")
+  add_filter("spec")
+end
+
+require "rscons"
+EOF
+      end
+      IO.popen(%{ruby -I #{@owd}/lib build.rb}) do |io|
+        io.readlines.reject do |line|
+          line =~ /^Coverage report/
+        end
+      end.map(&:strip)
     end
-    get_build_output
   end
 
   def test_dir(build_test_directory)
+    @build_test_name = build_test_directory
     FileUtils.cp_r("build_tests/#{build_test_directory}", 'build_tests_run')
     Dir.chdir("build_tests_run")
     build_testdir
@@ -33,10 +51,6 @@ describe Rscons do
     File.open(fname, 'w') do |fh|
       fh.write(replaced)
     end
-  end
-
-  def get_build_output
-    File.read('build.out').lines.map(&:strip)
   end
 
   ###########################################################################
