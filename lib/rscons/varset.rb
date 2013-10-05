@@ -24,9 +24,9 @@ module Rscons
     #   returned.
     def [](key, type = nil)
       val = @vars[key]
-      if type == :array and val.is_a?(String)
+      if type == :array and not val.is_a?(Array)
         [val]
-      elsif type == :string and val.is_a?(Array)
+      elsif type == :scalar and val.is_a?(Array)
         val.first
       else
         val
