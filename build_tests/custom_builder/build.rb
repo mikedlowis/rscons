@@ -9,8 +9,7 @@ EOF
   end
 end
 
-Rscons::Environment.new(echo: :short) do |env|
-  env.add_builder(MySource.new)
+Rscons::Environment.new(echo: :short, builders: [MySource.new]) do |env|
   env.MySource('inc.h', [])
   env.Program('program', Dir['*.c'])
 end
