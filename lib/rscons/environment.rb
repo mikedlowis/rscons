@@ -6,7 +6,7 @@ module Rscons
   # contains a collection of construction variables, options, builders, and
   # rules for building targets.
   class Environment
-    # [Array] of {Builder} objects.
+    # [Hash] of {"builder_name" => builder_object} pairs.
     attr_reader :builders
 
     # Create an Environment object.
@@ -53,7 +53,7 @@ module Rscons
       @builders.each do |builder_name, builder|
         env.add_builder(builder)
       end
-      env.append(@varset)
+      env.append(@varset.clone)
       env.append(variables)
 
       if block_given?
