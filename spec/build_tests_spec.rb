@@ -11,10 +11,10 @@ describe Rscons do
     FileUtils.rm_rf('build_tests_run')
   end
 
-  def build_testdir
-    if File.exists?("build.rb")
-      build_rb = File.read("build.rb")
-      File.open("build.rb", "w") do |fh|
+  def build_testdir(build_script = "build.rb")
+    if File.exists?(build_script)
+      build_rb = File.read(build_script)
+      File.open(build_script, "w") do |fh|
         fh.puts(<<EOF + build_rb)
 require "simplecov"
 
@@ -27,7 +27,7 @@ end
 require "rscons"
 EOF
       end
-      IO.popen(%{ruby -I #{@owd}/lib build.rb}) do |io|
+      IO.popen(%{ruby -I #{@owd}/lib #{build_script}}) do |io|
         io.readlines.reject do |line|
           line =~ /^Coverage report/
         end
@@ -35,11 +35,11 @@ EOF
     end
   end
 
-  def test_dir(build_test_directory)
+  def test_dir(build_test_directory, build_script = "build.rb")
     @build_test_name = build_test_directory
     FileUtils.cp_r("build_tests/#{build_test_directory}", 'build_tests_run')
     Dir.chdir("build_tests_run")
-    build_testdir
+    build_testdir(build_script)
   end
 
   def file_sub(fname)
@@ -206,5 +206,15 @@ EOF
     ]
     File.exists?('library').should be_true
     `ar t lib.a`.should == "one.o\ntwo.o\n"
+  end
+
+  it 'supports tweakers to override construction variables' do
+    lines = test_dir("build_dir", "tweaker_build.rb")
+    `./tweaker`.should == "Hello from two()\n"
+    lines.should =~ [
+      'gcc -c -o build_one/one.o -MMD -MF build_one/one.mf -Isrc/one/ -Isrc/two/ -O1 src/one/one.c',
+      'gcc -c -o build_two/two.o -MMD -MF build_two/two.mf -Isrc/one/ -Isrc/two/ -O2 src/two/two.c',
+      'gcc -o tweaker build_one/one.o build_two/two.o',
+    ]
   end
 end

@@ -22,6 +22,7 @@ module Rscons
       @targets = {}
       @builders = {}
       @build_dirs = []
+      @tweakers = []
       @varset[:exclude_builders] ||= []
       unless @varset[:exclude_builders] == :all
         exclude_builders = Set.new(@varset[:exclude_builders] || [])
@@ -45,7 +46,7 @@ module Rscons
     # Make a copy of the Environment object.
     # The cloned environment will contain a copy of all environment options,
     # construction variables, builders, and build directories. It will not
-    # contain a copy of the targets.
+    # contain a copy of the targets or tweakers.
     # If a block is given, the Environment object is yielded to the block and
     # when the block returns, the {#process} method is automatically called.
     def clone(variables = {})
@@ -72,6 +73,11 @@ module Rscons
           @varset[var] ||= val
         end
       end
+    end
+
+    # Add a tweaker block to the Environment.
+    def add_tweaker(&block)
+      @tweakers << block
     end
 
     # Specify a build directory for this Environment.
@@ -268,6 +274,16 @@ module Rscons
     # @param vars [Hash] Extra variables to pass to the builder.
     # Return the result of the builder's run() method.
     def run_builder(builder, target, sources, cache, vars)
+      vars = @varset.merge(vars)
+      @tweakers.each do |tweaker_block|
+        build_operation = {
+          builder: builder,
+          target: target,
+          sources: sources,
+          vars: vars,
+        }
+        tweaker_block.call(build_operation)
+      end
       builder.run(target, sources, cache, self, vars)
     end
   end
