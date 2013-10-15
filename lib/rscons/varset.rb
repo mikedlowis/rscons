@@ -44,7 +44,7 @@ module Rscons
     # @param values [VarSet, Hash] New set of variables.
     def append(values)
       values = values.vars if values.is_a?(VarSet)
-      @vars.merge!(values)
+      @vars.merge!(Marshal.load(Marshal.dump(values)))
       self
     end
 
