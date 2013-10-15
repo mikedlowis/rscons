@@ -136,11 +136,11 @@ module Rscons
         if @targets[target][:source].map do |src|
           targets_processed.include?(src) or not @targets.include?(src) or process_target.call(src)
         end.all?
-          @targets[target][:builder].run(target,
-                                         @targets[target][:source],
-                                         cache,
-                                         self,
-                                         @targets[target][:vars] || {})
+          run_builder(@targets[target][:builder],
+                      target,
+                      @targets[target][:source],
+                      cache,
+                      @targets[target][:vars] || {})
         else
           false
         end
@@ -238,6 +238,7 @@ module Rscons
     # @param sources [Array] List of source files to build.
     # @param suffixes [Array] List of suffixes to try to convert source files into.
     # @param cache [Cache] The Cache.
+    # @param vars [Hash] Extra variables to pass to the builder.
     # Return a list of the converted file names.
     def build_sources(sources, suffixes, cache, vars = {})
       sources.map do |source|
@@ -249,7 +250,7 @@ module Rscons
             converted_fname = get_build_fname(source, suffix)
             builder = @builders.values.find { |b| b.produces?(converted_fname, source, self) }
             if builder
-              converted = builder.run(converted_fname, [source], cache, self, vars)
+              converted = run_builder(builder, converted_fname, [source], cache, vars)
               return nil unless converted
               break
             end
@@ -257,6 +258,17 @@ module Rscons
           converted or raise "Could not find a builder to handle #{source.inspect}."
         end
       end
+    end
+
+    # Invoke a builder to build the given target based on the given sources.
+    # @param builder [Builder] The Builder to use.
+    # @param target [String] The target output file.
+    # @param sources [Array] List of source files.
+    # @param cache [Cache] The Cache.
+    # @param vars [Hash] Extra variables to pass to the builder.
+    # Return the result of the builder's run() method.
+    def run_builder(builder, target, sources, cache, vars)
+      builder.run(target, sources, cache, self, vars)
     end
   end
 end
