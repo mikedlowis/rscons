@@ -28,6 +28,12 @@ module Rscons
         'CXXSUFFIX' => '.cc',
         'CXXDEPGEN' => ['-MMD', '-MF', '$_DEPFILE'],
         'CXXCOM' =>['$CXX', '-c', '-o', '$_TARGET', '$CXXDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CXXFLAGS', '$_SOURCES'],
+
+        'DC' => 'gdc',
+        'DFLAGS' => [],
+        'DSUFFIX' => '.d',
+        'D_IMPORT_PATH' => [],
+        'DCCOM' => ['$DC', '-c', '-o', '$_TARGET', '-I$[D_IMPORT_PATH]', '$DFLAGS', '$_SOURCES'],
       }
     end
 
@@ -35,7 +41,8 @@ module Rscons
       target.has_suffix?(env['OBJSUFFIX']) and (
         source.has_suffix?(env['ASSUFFIX']) or
         source.has_suffix?(env['CSUFFIX']) or
-        source.has_suffix?(env['CXXSUFFIX']))
+        source.has_suffix?(env['CXXSUFFIX']) or
+        source.has_suffix?(env['DSUFFIX']))
     end
 
     def run(target, sources, cache, env, vars = {})
@@ -50,6 +57,8 @@ module Rscons
                      'CC'
                    elsif sources.first.has_suffix?(env['CXXSUFFIX'])
                      'CXX'
+                   elsif sources.first.has_suffix?(env['DSUFFIX'])
+                     'DC'
                    else
                      raise "Error: unknown input file type: #{sources.first.inspect}"
                    end

@@ -18,14 +18,19 @@ module Rscons
       # build sources to linkable objects
       objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache, vars)
       if objects
-        use_cxx = sources.map do |s|
-          s.has_suffix?(env['CXXSUFFIX'])
-        end.any?
-        ld_alt = use_cxx ? env['CXX'] : env['CC']
+        ld = if env["LD"]
+               env["LD"]
+             elsif sources.find {|s| s.has_suffix?(env["DSUFFIX"])}
+               env["DC"]
+             elsif sources.find {|s| s.has_suffix?(env["CXXSUFFIX"])}
+               env["CXX"]
+             else
+               env["CC"]
+             end
         vars = vars.merge({
           '_TARGET' => target,
           '_SOURCES' => objects,
-          'LD' => env['LD'] || ld_alt,
+          'LD' => ld,
         })
         command = env.build_command(env['LDCOM'], vars)
         standard_build("LD #{target}", target, command, objects, env, cache)
