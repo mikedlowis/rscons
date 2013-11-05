@@ -2,6 +2,13 @@ module Rscons
   # A default RScons builder which knows how to produce an object file from
   # various types of source files.
   class Object < Builder
+    KNOWN_SUFFIXES = {
+      "AS" => "ASSUFFIX",
+      "CC" => "CSUFFIX",
+      "CXX" => "CXXSUFFIX",
+      "DC" => "DSUFFIX",
+    }
+
     def default_variables(env)
       {
         'OBJSUFFIX' => '.o',
@@ -38,11 +45,9 @@ module Rscons
     end
 
     def produces?(target, source, env)
-      target.has_suffix?(env['OBJSUFFIX']) and (
-        source.has_suffix?(env['ASSUFFIX']) or
-        source.has_suffix?(env['CSUFFIX']) or
-        source.has_suffix?(env['CXXSUFFIX']) or
-        source.has_suffix?(env['DSUFFIX']))
+      target.has_suffix?(env['OBJSUFFIX']) and KNOWN_SUFFIXES.find do |compiler, suffix_var|
+        source.has_suffix?(env[suffix_var])
+      end
     end
 
     def run(target, sources, cache, env, vars = {})
@@ -51,17 +56,11 @@ module Rscons
         '_SOURCES' => sources,
         '_DEPFILE' => target.set_suffix('.mf'),
       })
-      com_prefix = if sources.first.has_suffix?(env['ASSUFFIX'])
-                     'AS'
-                   elsif sources.first.has_suffix?(env['CSUFFIX'])
-                     'CC'
-                   elsif sources.first.has_suffix?(env['CXXSUFFIX'])
-                     'CXX'
-                   elsif sources.first.has_suffix?(env['DSUFFIX'])
-                     'DC'
-                   else
-                     raise "Error: unknown input file type: #{sources.first.inspect}"
-                   end
+      com_prefix = KNOWN_SUFFIXES.find do |compiler, suffix_var|
+        sources.first.has_suffix?(env[suffix_var])
+      end.tap do |v|
+        v.nil? and raise "Error: unknown input file type: #{sources.first.inspect}"
+      end.first
       command = env.build_command(env["#{com_prefix}COM"], vars)
       unless cache.up_to_date?(target, command, sources)
         cache.mkdir_p(File.dirname(target))
