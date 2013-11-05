@@ -122,16 +122,6 @@ module Rscons
       @varset.send(:append, *args)
     end
 
-    # Return a list of target file names
-    def targets
-      @targets.keys
-    end
-
-    # Return a list of sources needed to build target target.
-    def target_sources(target)
-      @targets[target][:source] rescue nil
-    end
-
     # Build all target specified in the Environment.
     # When a block is passed to Environment.new, this method is automatically
     # called after the block returns.
