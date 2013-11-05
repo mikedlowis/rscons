@@ -6,7 +6,7 @@ module Rscons
   # contains a collection of construction variables, options, builders, and
   # rules for building targets.
   class Environment
-    # [Hash] of {"builder_name" => builder_object} pairs.
+    # Hash of +{"builder_name" => builder_object}+ pairs.
     attr_reader :builders
 
     # Create an Environment object.
@@ -164,7 +164,7 @@ module Rscons
     # @param short_desc [String] Message to print if the Environment's :echo
     #   mode is set to :short
     # @param command [Array] The command to execute.
-    # @param options [Hash] Optional options to pass to {Kernel#system}.
+    # @param options [Hash] Optional options to pass to Kernel#system.
     def execute(short_desc, command, options = {})
       print_command = proc do
         puts command.map { |c| c =~ /\s/ ? "'#{c}'" : c }.join(' ')
