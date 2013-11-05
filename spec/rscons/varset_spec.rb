@@ -103,6 +103,14 @@ module Rscons
         v.expand_varref("${compiler}").should == "gcc"
         v.expand_varref("${cmd}").should == ["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"]
       end
+      it "resolves multiple variable references in one element by enumerating all combinations" do
+        v.expand_varref("cflag: ${CFLAGS}, cpppath: ${CPPPATH}, compiler: ${compiler}").should == [
+          "cflag: -Wall, cpppath: dir1, compiler: gcc",
+          "cflag: -O2, cpppath: dir1, compiler: gcc",
+          "cflag: -Wall, cpppath: dir2, compiler: gcc",
+          "cflag: -O2, cpppath: dir2, compiler: gcc",
+        ]
+      end
       it "raises an error when a variable reference refers to a non-existent variable" do
         expect { v.expand_varref("${not_here}") }.to raise_error /I do not know how to expand a variable reference to a NilClass/
       end

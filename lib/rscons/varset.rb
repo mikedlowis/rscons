@@ -68,9 +68,9 @@ module Rscons
           prefix, varname, suffix = $1, $2, $3
           varval = expand_varref(@vars[varname])
           if varval.is_a?(String)
-            "#{prefix}#{varval}#{suffix}"
+            expand_varref("#{prefix}#{varval}#{suffix}")
           elsif varval.is_a?(Array)
-            varval.map {|vv| "#{prefix}#{vv}#{suffix}"}
+            varval.map {|vv| expand_varref("#{prefix}#{vv}#{suffix}")}.flatten
           else
             raise "I do not know how to expand a variable reference to a #{varval.class.name}"
           end
