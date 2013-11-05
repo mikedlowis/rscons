@@ -28,6 +28,14 @@ module Rscons
         env.builders.find {|name, builder| name == "Program"}.should_not be_nil
         env.builders.find {|name, builder| name == "Library"}.should be_nil
       end
+
+      context "when a block is given" do
+        it "yields self and invokes #process()" do
+          env = Environment.new do |env|
+            env.should_receive(:process)
+          end
+        end
+      end
     end
 
     describe "#clone" do
@@ -38,6 +46,15 @@ module Rscons
         env2["CPPPATH"] << "path2"
         env["CPPPATH"].should == ["path1"]
         env2["CPPPATH"].should == ["path1", "path2"]
+      end
+
+      context "when a block is given" do
+        it "yields self and invokes #process()" do
+          env = Environment.new
+          env.clone do |env2|
+            env2.should_receive(:process)
+          end
+        end
       end
     end
 
@@ -225,6 +242,25 @@ module Rscons
         env.builders["Object"].should_receive(:run).with("mod.o", ["mod.c"], cache, env, anything).and_return("mod.o")
         env.builders["ABuilder"].should_receive(:run).with("mod2.ab_out", ["mod2.ab_in"], cache, env, anything).and_return("mod2.ab_out")
         env.build_sources(["precompiled.o", "mod.c", "mod2.ab_in"], [".o", ".ab_out"], cache, {}).should == ["precompiled.o", "mod.o", "mod2.ab_out"]
+      end
+    end
+
+    describe "#run_builder" do
+      it "tweaks the construction variables using given tweakers and invokes the builder" do
+        env = Environment.new
+        env.add_tweaker do |build_op|
+          if build_op[:sources].first =~ %r{src/special}
+            build_op[:vars]["CFLAGS"] += ["-O3", "-DSPECIAL"]
+          end
+        end
+        env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
+          vars["CFLAGS"].should == []
+        end
+        env.run_builder(env.builders["Object"], "build/normal/module.o", ["src/normal/module.c"], "cache", {})
+        env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
+          vars["CFLAGS"].should == ["-O3", "-DSPECIAL"]
+        end
+        env.run_builder(env.builders["Object"], "build/special/module.o", ["src/special/module.c"], "cache", {})
       end
     end
 
