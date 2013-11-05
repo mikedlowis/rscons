@@ -162,9 +162,9 @@ module Rscons
       it "returns a command based on the variables in the Environment" do
         env = Environment.new
         env["path"] = ["dir1", "dir2"]
-        env["flags"] = ["-x", "-y", "$specialflag"]
+        env["flags"] = ["-x", "-y", "${specialflag}"]
         env["specialflag"] = "-z"
-        template = ["cmd", "-I$[path]", "$flags", "$_source", "$_dest"]
+        template = ["cmd", "-I${path}", "${flags}", "${_source}", "${_dest}"]
         cmd = env.build_command(template, "_source" => "infile", "_dest" => "outfile")
         cmd.should == ["cmd", "-Idir1", "-Idir2", "-x", "-y", "-z", "infile", "outfile"]
       end

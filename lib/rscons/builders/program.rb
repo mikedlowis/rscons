@@ -10,7 +10,7 @@ module Rscons
         'LDFLAGS' => [],
         'LIBPATH' => [],
         'LIBS' => [],
-        'LDCOM' => ['$LD', '-o', '$_TARGET', '$LDFLAGS', '$_SOURCES', '-L$[LIBPATH]', '-l$[LIBS]']
+        'LDCOM' => ['${LD}', '-o', '${_TARGET}', '${LDFLAGS}', '${_SOURCES}', '-L${LIBPATH}', '-l${LIBS}']
       }
     end
 

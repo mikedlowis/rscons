@@ -13,13 +13,13 @@ module Rscons
       {
         'OBJSUFFIX' => '.o',
 
-        'AS' => '$CC',
+        'AS' => '${CC}',
         'ASFLAGS' => [],
         'ASSUFFIX' => '.S',
-        'ASPPPATH' => '$CPPPATH',
-        'ASPPFLAGS' => '$CPPFLAGS',
-        'ASDEPGEN' => ['-MMD', '-MF', '$_DEPFILE'],
-        'ASCOM' => ['$AS', '-c', '-o', '$_TARGET', '$ASDEPGEN', '-I$[ASPPPATH]', '$ASPPFLAGS', '$ASFLAGS', '$_SOURCES'],
+        'ASPPPATH' => '${CPPPATH}',
+        'ASPPFLAGS' => '${CPPFLAGS}',
+        'ASDEPGEN' => ['-MMD', '-MF', '${_DEPFILE}'],
+        'ASCOM' => ['${AS}', '-c', '-o', '${_TARGET}', '${ASDEPGEN}', '-I${ASPPPATH}', '${ASPPFLAGS}', '${ASFLAGS}', '${_SOURCES}'],
 
         'CPPFLAGS' => [],
         'CPPPATH' => [],
@@ -27,20 +27,20 @@ module Rscons
         'CC' => 'gcc',
         'CFLAGS' => [],
         'CSUFFIX' => '.c',
-        'CCDEPGEN' => ['-MMD', '-MF', '$_DEPFILE'],
-        'CCCOM' => ['$CC', '-c', '-o', '$_TARGET', '$CCDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CFLAGS', '$_SOURCES'],
+        'CCDEPGEN' => ['-MMD', '-MF', '${_DEPFILE}'],
+        'CCCOM' => ['${CC}', '-c', '-o', '${_TARGET}', '${CCDEPGEN}', '-I${CPPPATH}', '${CPPFLAGS}', '${CFLAGS}', '${_SOURCES}'],
 
         'CXX' => 'g++',
         'CXXFLAGS' => [],
         'CXXSUFFIX' => '.cc',
-        'CXXDEPGEN' => ['-MMD', '-MF', '$_DEPFILE'],
-        'CXXCOM' =>['$CXX', '-c', '-o', '$_TARGET', '$CXXDEPGEN', '-I$[CPPPATH]', '$CPPFLAGS', '$CXXFLAGS', '$_SOURCES'],
+        'CXXDEPGEN' => ['-MMD', '-MF', '${_DEPFILE}'],
+        'CXXCOM' =>['${CXX}', '-c', '-o', '${_TARGET}', '${CXXDEPGEN}', '-I${CPPPATH}', '${CPPFLAGS}', '${CXXFLAGS}', '${_SOURCES}'],
 
         'DC' => 'gdc',
         'DFLAGS' => [],
         'DSUFFIX' => '.d',
         'D_IMPORT_PATH' => [],
-        'DCCOM' => ['$DC', '-c', '-o', '$_TARGET', '-I$[D_IMPORT_PATH]', '$DFLAGS', '$_SOURCES'],
+        'DCCOM' => ['${DC}', '-c', '-o', '${_TARGET}', '-I${D_IMPORT_PATH}', '${DFLAGS}', '${_SOURCES}'],
       }
     end
 

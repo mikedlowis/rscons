@@ -64,20 +64,16 @@ module Rscons
           expand_varref(ent)
         end.flatten
       else
-        if varref =~ /^(.*)\$\[(\w+)\](.*)$/
-          # expand array with given prefix, suffix
+        if varref =~ /^(.*)\$\{([^}]+)\}(.*)$/
           prefix, varname, suffix = $1, $2, $3
           varval = expand_varref(@vars[varname])
-          unless varval.is_a?(Array)
-            raise "Array expected for $#{varname}"
+          if varval.is_a?(String)
+            "#{prefix}#{varval}#{suffix}"
+          elsif varval.is_a?(Array)
+            varval.map {|vv| "#{prefix}#{vv}#{suffix}"}
+          else
+            raise "I do not know how to expand a variable reference to a #{varval.class.name}"
           end
-          varval.map {|e| "#{prefix}#{e}#{suffix}"}
-        elsif varref =~ /^\$(.*)$/
-          # expand a single variable reference
-          varname = $1
-          varval = expand_varref(@vars[varname])
-          varval or raise "Could not find variable #{varname.inspect}"
-          expand_varref(varval)
         else
           varref
         end

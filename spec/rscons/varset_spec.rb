@@ -84,30 +84,27 @@ module Rscons
       v = VarSet.new("CFLAGS" => ["-Wall", "-O2"],
                      "CC" => "gcc",
                      "CPPPATH" => ["dir1", "dir2"],
-                     "compiler" => "$CC",
-                     "cmd" => ["$CC", "-c", "$CFLAGS", "-I$[CPPPATH]"])
+                     "compiler" => "${CC}",
+                     "cmd" => ["${CC}", "-c", "${CFLAGS}", "-I${CPPPATH}"])
       it "expands to the string itself if the string is not a variable reference" do
         v.expand_varref("CC").should == "CC"
         v.expand_varref("CPPPATH").should == "CPPPATH"
         v.expand_varref("str").should == "str"
       end
       it "expands a single variable reference beginning with a '$'" do
-        v.expand_varref("$CC").should == "gcc"
-        v.expand_varref("$CPPPATH").should == ["dir1", "dir2"]
+        v.expand_varref("${CC}").should == "gcc"
+        v.expand_varref("${CPPPATH}").should == ["dir1", "dir2"]
       end
-      it "expands a single variable reference in $[arr] notation" do
-        v.expand_varref("prefix$[CFLAGS]suffix").should == ["prefix-Wallsuffix", "prefix-O2suffix"]
+      it "expands a single variable reference in ${arr} notation" do
+        v.expand_varref("prefix${CFLAGS}suffix").should == ["prefix-Wallsuffix", "prefix-O2suffix"]
         v.expand_varref(v["cmd"]).should == ["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"]
       end
       it "expands a variable reference recursively" do
-        v.expand_varref("$compiler").should == "gcc"
-        v.expand_varref("$cmd").should == ["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"]
-      end
-      it "raises an error when array notation is applied to a non-array variable" do
-        expect { v.expand_varref("$[CC]") }.to raise_error /Array.expected/
+        v.expand_varref("${compiler}").should == "gcc"
+        v.expand_varref("${cmd}").should == ["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"]
       end
       it "raises an error when a variable reference refers to a non-existent variable" do
-        expect { v.expand_varref("$not_here") }.to raise_error /Could.not.find.variable..not_here/
+        expect { v.expand_varref("${not_here}") }.to raise_error /I do not know how to expand a variable reference to a NilClass/
       end
     end
   end

@@ -8,7 +8,7 @@ module Rscons
         'AR' => 'ar',
         'LIBSUFFIX' => '.a',
         'ARFLAGS' => [],
-        'ARCOM' => ['$AR', 'rcs', '$ARFLAGS', '$_TARGET', '$_SOURCES']
+        'ARCOM' => ['${AR}', 'rcs', '${ARFLAGS}', '${_TARGET}', '${_SOURCES}']
       }
     end
 
