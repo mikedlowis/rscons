@@ -141,6 +141,93 @@ module Rscons
       end
     end
 
+    describe "#build_command" do
+      it "returns a command based on the variables in the Environment" do
+        env = Environment.new
+        env["path"] = ["dir1", "dir2"]
+        env["flags"] = ["-x", "-y", "$specialflag"]
+        env["specialflag"] = "-z"
+        template = ["cmd", "-I$[path]", "$flags", "$_source", "$_dest"]
+        cmd = env.build_command(template, "_source" => "infile", "_dest" => "outfile")
+        cmd.should == ["cmd", "-Idir1", "-Idir2", "-x", "-y", "-z", "infile", "outfile"]
+      end
+    end
+
+    describe "#execute" do
+      context "with echo: :short" do
+        context "with no errors" do
+          it "prints the short description and executes the command" do
+            env = Environment.new(echo: :short)
+            env.should_receive(:puts).with("short desc")
+            env.should_receive(:system).with("a", "command", {}).and_return(true)
+            env.execute("short desc", ["a", "command"])
+          end
+        end
+
+        context "with errors" do
+          it "prints the short description, executes the command, and prints the failed command line" do
+            env = Environment.new(echo: :short)
+            env.should_receive(:puts).with("short desc")
+            env.should_receive(:system).with("a", "command", {}).and_return(false)
+            $stdout.should_receive(:write).with("Failed command was: ")
+            env.should_receive(:puts).with("a command")
+            env.execute("short desc", ["a", "command"])
+          end
+        end
+      end
+
+      context "with echo: :command" do
+        it "prints the command executed and executes the command" do
+          env = Environment.new(echo: :command)
+          env.should_receive(:puts).with("a command '--arg=val with spaces'")
+          env.should_receive(:system).with("a", "command", "--arg=val with spaces", opt: :val).and_return(false)
+          env.execute("short desc", ["a", "command", "--arg=val with spaces"], opt: :val)
+        end
+      end
+    end
+
+    describe "#method_missing" do
+      it "calls the original method missing when the target method is not a known builder" do
+        env = Environment.new
+        env.should_receive(:orig_method_missing).with(:foobar)
+        env.foobar
+      end
+
+      it "records the target when the target method is a known builder" do
+        env = Environment.new
+        env.instance_variable_get(:@targets).should == {}
+        env.Program("target", ["src1", "src2"], var: "val")
+        target = env.instance_variable_get(:@targets)["target"]
+        target.should_not be_nil
+        target[:builder].is_a?(Builder).should be_true
+        target[:source].should == ["src1", "src2"]
+        target[:vars].should == {var: "val"}
+        target[:args].should == []
+      end
+
+      it "raises an error when vars is not a Hash" do
+        env = Environment.new
+        expect { env.Program("a.out", "main.c", "other") }.to raise_error /Unexpected construction variable set/
+      end
+    end
+
+    describe "#build_sources" do
+      class ABuilder < Builder
+        def produces?(target, source, env)
+          target =~ /\.ab_out$/ and source =~ /\.ab_in$/
+        end
+      end
+
+      it "finds and invokes a builder to produce output files with the requested suffixes" do
+        cache = "cache"
+        env = Environment.new
+        env.add_builder(ABuilder.new)
+        env.builders["Object"].should_receive(:run).with("mod.o", ["mod.c"], cache, env, anything).and_return("mod.o")
+        env.builders["ABuilder"].should_receive(:run).with("mod2.ab_out", ["mod2.ab_in"], cache, env, anything).and_return("mod2.ab_out")
+        env.build_sources(["precompiled.o", "mod.c", "mod2.ab_in"], [".o", ".ab_out"], cache, {}).should == ["precompiled.o", "mod.o", "mod2.ab_out"]
+      end
+    end
+
     describe ".parse_makefile_deps" do
       it 'handles dependencies on one line' do
         File.should_receive(:read).with('makefile').and_return(<<EOS)
