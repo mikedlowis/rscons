@@ -14,8 +14,14 @@ CLEAN.include 'build_tests_run'
 
 RSpec::Core::RakeTask.new(:spec)
 
+RSpec::Core::RakeTask.new(:build_tests) do |task|
+  task.pattern = "build_tests/*_spec.rb"
+end
+
 YARD::Rake::YardocTask.new do |yard|
   yard.files = ['lib/**/*.rb']
 end
 
 task :default => :spec
+
+task :tests => [:spec, :build_tests]
