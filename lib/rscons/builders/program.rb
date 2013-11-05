@@ -17,24 +17,22 @@ module Rscons
     def run(target, sources, cache, env, vars = {})
       # build sources to linkable objects
       objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache, vars)
-      if objects
-        ld = if env["LD"]
-               env["LD"]
-             elsif sources.find {|s| s.has_suffix?(env["DSUFFIX"])}
-               env["DC"]
-             elsif sources.find {|s| s.has_suffix?(env["CXXSUFFIX"])}
-               env["CXX"]
-             else
-               env["CC"]
-             end
-        vars = vars.merge({
-          '_TARGET' => target,
-          '_SOURCES' => objects,
-          'LD' => ld,
-        })
-        command = env.build_command(env['LDCOM'], vars)
-        standard_build("LD #{target}", target, command, objects, env, cache)
-      end
+      ld = if env["LD"]
+             env["LD"]
+           elsif sources.find {|s| s.has_suffix?(env["DSUFFIX"])}
+             env["DC"]
+           elsif sources.find {|s| s.has_suffix?(env["CXXSUFFIX"])}
+             env["CXX"]
+           else
+             env["CC"]
+           end
+      vars = vars.merge({
+        '_TARGET' => target,
+        '_SOURCES' => objects,
+        'LD' => ld,
+      })
+      command = env.build_command(env['LDCOM'], vars)
+      standard_build("LD #{target}", target, command, objects, env, cache)
     end
   end
 end
