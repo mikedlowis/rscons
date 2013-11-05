@@ -32,9 +32,6 @@ module Rscons
           end
         end
       end
-      (@varset[:builders] || []).each do |builder|
-        add_builder(builder)
-      end
       @varset[:echo] ||= :command
 
       if block_given?
