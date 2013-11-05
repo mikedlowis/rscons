@@ -89,8 +89,6 @@ module Rscons
 
     # Return the file name to be built from source_fname with suffix suffix.
     # This method takes into account the Environment's build directories.
-    # It also creates any parent directories needed to be able to open and
-    # write to the output file.
     def get_build_fname(source_fname, suffix)
       build_fname = source_fname.set_suffix(suffix).gsub('\\', '/')
       @build_dirs.each do |src_dir, obj_dir|
