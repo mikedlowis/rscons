@@ -119,9 +119,11 @@ module Rscons
       end
 
       # all cached dependencies must have their checksums match
-      @cache[:targets][target][:deps].map do |dep_cache|
-        dep_cache[:checksum] == lookup_checksum(dep_cache[:fname])
-      end.all?
+      @cache[:targets][target][:deps].each do |dep_cache|
+        return false unless dep_cache[:checksum] == lookup_checksum(dep_cache[:fname])
+      end
+
+      true
     end
 
     # Store cache information about a target built by a builder
@@ -150,13 +152,11 @@ module Rscons
     # removal upon a "clean" operation.
     def mkdir_p(path)
       parts = path.split(/[\\\/]/)
-      (0..parts.size).each do |i|
+      (0..parts.size-1).each do |i|
         subpath = File.join(*parts[0, i + 1]).encode(__ENCODING__)
         unless File.exists?(subpath)
           FileUtils.mkdir(subpath)
-          unless @cache[:directories].include?(subpath)
-            @cache[:directories][subpath] = true
-          end
+          @cache[:directories][subpath] = true
         end
       end
     end
@@ -179,7 +179,7 @@ module Rscons
     # Calculate and return a file's checksum
     # @param file [String] The file name.
     def calculate_checksum(file)
-      @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file, {mode: 'rb'})).encode(__ENCODING__) rescue ''
+      @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file, mode: 'rb')).encode(__ENCODING__) rescue ''
     end
   end
 end
