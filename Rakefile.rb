@@ -12,9 +12,12 @@ require "yard"
 
 CLEAN.include 'build_tests_run'
 
-RSpec::Core::RakeTask.new(:spec)
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.rspec_opts = "--default-path spec"
+end
 
 RSpec::Core::RakeTask.new(:build_tests) do |task|
+  task.rspec_opts = "--default-path build_tests"
   task.pattern = "build_tests/*_spec.rb"
 end
 
