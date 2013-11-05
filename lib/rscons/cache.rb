@@ -67,12 +67,12 @@ module Rscons
       end
       @cache[:targets] ||= {}
       @cache[:directories] ||= {}
-      @cache[:version] ||= VERSION
       @lookup_checksums = {}
     end
 
     # Write the cache to disk to be loaded next time.
     def write
+      @cache[:version] = VERSION
       File.open(CACHE_FILE, 'w') do |fh|
         fh.puts(YAML.dump(@cache))
       end
