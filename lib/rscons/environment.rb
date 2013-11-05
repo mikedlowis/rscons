@@ -125,26 +125,28 @@ module Rscons
     # called after the block returns.
     def process
       cache = Cache.new
-      targets_processed = Set.new
+      targets_processed = {}
       process_target = proc do |target|
-        if @targets[target][:source].map do |src|
-          targets_processed.include?(src) or not @targets.include?(src) or process_target.call(src)
-        end.all?
-          run_builder(@targets[target][:builder],
-                      target,
-                      @targets[target][:source],
-                      cache,
-                      @targets[target][:vars] || {})
-        else
-          false
+        targets_processed[target] ||= begin
+          @targets[target][:source].each do |src|
+            if @targets.include?(src) and not targets_processed.include?(src)
+              process_target.call(src)
+            end
+          end
+          result = run_builder(@targets[target][:builder],
+                               target,
+                               @targets[target][:source],
+                               cache,
+                               @targets[target][:vars] || {})
+          unless result
+            cache.write
+            raise BuildError.new("Failed to build #{target}")
+          end
+          result
         end
       end
       @targets.each do |target, info|
-        next if targets_processed.include?(target)
-        unless process_target.call(target)
-          cache.write
-          raise BuildError.new("Failed to build #{target}")
-        end
+        process_target.call(target)
       end
       cache.write
     end

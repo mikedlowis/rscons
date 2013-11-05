@@ -113,6 +113,20 @@ module Rscons
         env.process
       end
 
+      it "builds dependent targets first" do
+        env = Environment.new
+        env.Program("a.out", "main.o")
+        env.Object("main.o", "other.cc")
+
+        cache = "cache"
+        Cache.should_receive(:new).and_return(cache)
+        env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return("main.o")
+        env.should_receive(:run_builder).with(anything, "a.out", ["main.o"], cache, {}).and_return("a.out")
+        cache.should_receive(:write)
+
+        env.process
+      end
+
       it "raises a BuildError when building fails" do
         env = Environment.new
         env.Program("a.out", "main.o")
@@ -123,7 +137,7 @@ module Rscons
         env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return(false)
         cache.should_receive(:write)
 
-        expect { env.process }.to raise_error BuildError, /Failed.to.build.a\.out/
+        expect { env.process }.to raise_error BuildError, /Failed.to.build.main.o/
       end
     end
 
