@@ -1,45 +1,31 @@
 require 'fileutils'
 
 describe Rscons do
+  BUILD_TEST_RUN_DIR = "build_test_run"
+
   before(:all) do
-    FileUtils.rm_rf('build_tests_run')
+    FileUtils.rm_rf(BUILD_TEST_RUN_DIR)
     @owd = Dir.pwd
+  end
+
+  before(:each) do
+    @output = ""
+    $stdout.stub(:write) do |content|
+      @output += content
+    end
+    $stderr.stub(:write) do |content|
+      @output += content
+    end
   end
 
   after(:each) do
     Dir.chdir(@owd)
-    FileUtils.rm_rf('build_tests_run')
+    FileUtils.rm_rf(BUILD_TEST_RUN_DIR)
   end
 
-  def build_testdir(build_script = "build.rb")
-    if File.exists?(build_script)
-      build_rb = File.read(build_script)
-      File.open(build_script, "w") do |fh|
-        fh.puts(<<EOF + build_rb)
-require "simplecov"
-
-SimpleCov.start do
-  root("#{@owd}")
-  command_name("build_test_#{@build_test_name}")
-  add_filter("spec")
-end
-
-require "rscons"
-EOF
-      end
-      IO.popen(%{ruby -I #{@owd}/lib #{build_script}}) do |io|
-        io.readlines.reject do |line|
-          line =~ /^Coverage report/
-        end
-      end.map(&:strip)
-    end
-  end
-
-  def test_dir(build_test_directory, build_script = "build.rb")
-    @build_test_name = build_test_directory
-    FileUtils.cp_r("build_tests/#{build_test_directory}", 'build_tests_run')
-    Dir.chdir("build_tests_run")
-    build_testdir(build_script)
+  def test_dir(build_test_directory)
+    FileUtils.cp_r("build_tests/#{build_test_directory}", BUILD_TEST_RUN_DIR)
+    Dir.chdir(BUILD_TEST_RUN_DIR)
   end
 
   def file_sub(fname)
@@ -53,18 +39,30 @@ EOF
     end
   end
 
+  def lines
+    @output.lines.map(&:rstrip).tap do |v|
+      @output = ""
+    end
+  end
+
   ###########################################################################
   # Tests
   ###########################################################################
 
   it 'builds a C program with one source file' do
     test_dir('simple')
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.c'])
+    end
     File.exists?('simple.o').should be_true
     `./simple`.should == "This is a simple C program\n"
   end
 
   it 'prints commands as they are executed' do
-    lines = test_dir('simple')
+    test_dir('simple')
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.c'])
+    end
     lines.should == [
       'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
       'gcc -o simple simple.o',
@@ -72,7 +70,10 @@ EOF
   end
 
   it 'prints short representations of the commands being executed' do
-    lines = test_dir('header')
+    test_dir('header')
+    Rscons::Environment.new(echo: :short) do |env|
+      env.Program('header', Dir['*.c'])
+    end
     lines.should == [
       'CC header.o',
       'LD header',
@@ -81,61 +82,88 @@ EOF
 
   it 'builds a C program with one source file and one header file' do
     test_dir('header')
+    Rscons::Environment.new(echo: :short) do |env|
+      env.Program('header', Dir['*.c'])
+    end
     File.exists?('header.o').should be_true
     `./header`.should == "The value is 2\n"
   end
 
   it 'rebuilds a C module when a header it depends on changes' do
     test_dir('header')
+    env = Rscons::Environment.new(echo: :short) do |env|
+      env.Program('header', Dir['*.c'])
+    end
     `./header`.should == "The value is 2\n"
     file_sub('header.h') {|line| line.sub(/2/, '5')}
-    build_testdir
+    env.process
     `./header`.should == "The value is 5\n"
   end
 
   it 'does not rebuild a C module when its dependencies have not changed' do
-    lines = test_dir('header')
+    test_dir('header')
+    env = Rscons::Environment.new(echo: :short) do |env|
+      env.Program('header', Dir['*.c'])
+    end
     `./header`.should == "The value is 2\n"
     lines.should == [
       'CC header.o',
       'LD header',
     ]
-    lines = build_testdir
+    env.process
     lines.should == []
   end
 
   it "does not rebuild a C module when only the file's timestampe has changed" do
-    lines = test_dir('header')
+    test_dir('header')
+    env = Rscons::Environment.new(echo: :short) do |env|
+      env.Program('header', Dir['*.c'])
+    end
     `./header`.should == "The value is 2\n"
     lines.should == [
       'CC header.o',
       'LD header',
     ]
     file_sub('header.c') {|line| line}
-    lines = build_testdir
+    env.process
     lines.should == []
   end
 
   it 're-links a program when the link flags have changed' do
-    lines = test_dir('simple')
+    test_dir('simple')
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.c'])
+    end
     lines.should == [
       'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
       'gcc -o simple simple.o',
     ]
-    file_sub('build.rb') {|line| line.sub(/.*CHANGE.FLAGS.*/, '  env["LIBS"] += ["c"]')}
-    lines = build_testdir
+    Rscons::Environment.new do |env|
+      env["LIBS"] += ["c"]
+      env.Program('simple', Dir['*.c'])
+    end
     lines.should == ['gcc -o simple simple.o -lc']
   end
 
   it 'builds object files in a different build directory' do
-    lines = test_dir('build_dir')
+    test_dir('build_dir')
+    Rscons::Environment.new do |env|
+      env.append('CPPPATH' => Dir['src/**/*/'])
+      env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
+      env.Program('build_dir', Dir['src/**/*.c'])
+    end
     `./build_dir`.should == "Hello from two()\n"
     File.exists?('build_one/one.o').should be_true
     File.exists?('build_two/two.o').should be_true
   end
 
   it 'cleans built files' do
-    lines = test_dir('build_dir')
+    test_dir('build_dir')
+    Rscons::Environment.new do |env|
+      env.append('CPPPATH' => Dir['src/**/*/'])
+      env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
+      env.Program('build_dir', Dir['src/**/*.c'])
+    end
     `./build_dir`.should == "Hello from two()\n"
     File.exists?('build_one/one.o').should be_true
     File.exists?('build_two/two.o').should be_true
@@ -148,7 +176,12 @@ EOF
   end
 
   it 'does not clean created directories if other non-rscons-generated files reside there' do
-    lines = test_dir('build_dir')
+    test_dir('build_dir')
+    Rscons::Environment.new do |env|
+      env.append('CPPPATH' => Dir['src/**/*/'])
+      env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
+      env.Program('build_dir', Dir['src/**/*.c'])
+    end
     `./build_dir`.should == "Hello from two()\n"
     File.exists?('build_one/one.o').should be_true
     File.exists?('build_two/two.o').should be_true
@@ -162,14 +195,44 @@ EOF
   end
 
   it 'allows Ruby classes as custom builders to be used to construct files' do
-    lines = test_dir('custom_builder')
+   test_dir('custom_builder')
+    class MySource < Rscons::Builder
+      def run(target, sources, cache, env, vars = {})
+        File.open(target, 'w') do |fh|
+          fh.puts <<EOF
+    #define THE_VALUE 5678
+EOF
+        end
+        target
+      end
+    end
+
+    Rscons::Environment.new(echo: :short) do |env|
+      env.add_builder(MySource.new)
+      env.MySource('inc.h', [])
+      env.Program('program', Dir['*.c'])
+    end
+
     lines.should == ['CC program.o', 'LD program']
     File.exists?('inc.h').should be_true
     `./program`.should == "The value is 5678\n"
   end
 
   it 'allows cloning Environment objects' do
-    lines = test_dir('clone_env')
+    test_dir('clone_env')
+
+    debug = Rscons::Environment.new do |env|
+      env.build_dir('src', 'debug')
+      env['CFLAGS'] = '-O2'
+      env['CPPFLAGS'] = '-DSTRING="Debug Version"'
+      env.Program('program-debug', Dir['src/*.c'])
+    end
+
+    release = debug.clone('CPPFLAGS' => '-DSTRING="Release Version"') do |env|
+      env.build_dir('src', 'release')
+      env.Program('program-release', Dir['src/*.c'])
+    end
+
     lines.should == [
       %q{gcc -c -o debug/program.o -MMD -MF debug/program.mf '-DSTRING="Debug Version"' -O2 src/program.c},
       %q{gcc -o program-debug debug/program.o},
@@ -180,12 +243,19 @@ EOF
 
   it 'builds a C++ program with one source file' do
     test_dir('simple_cc')
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.cc'])
+    end
     File.exists?('simple.o').should be_true
     `./simple`.should == "This is a simple C++ program\n"
   end
 
   it 'allows overriding construction variables for individual builder calls' do
-    lines = test_dir('two_sources')
+    test_dir('two_sources')
+    Rscons::Environment.new(echo: :command) do |env|
+      env.Object("one.o", "one.c", 'CPPFLAGS' => ['-DONE'])
+      env.Program('two_sources', ['one.o', 'two.c'])
+    end
     lines.should == [
       'gcc -c -o one.o -MMD -MF one.mf -DONE one.c',
       'gcc -c -o two.o -MMD -MF two.mf two.c',
@@ -196,7 +266,11 @@ EOF
   end
 
   it 'builds a static library archive' do
-    lines = test_dir('library')
+    test_dir('library')
+    Rscons::Environment.new(echo: :command) do |env|
+      env.Program('library', ['lib.a', 'three.c'])
+      env.Library("lib.a", ['one.c', 'two.c'], 'CPPFLAGS' => ['-Dmake_lib'])
+    end
     lines.should == [
       'gcc -c -o one.o -MMD -MF one.mf -Dmake_lib one.c',
       'gcc -c -o two.o -MMD -MF two.mf -Dmake_lib two.c',
@@ -209,7 +283,19 @@ EOF
   end
 
   it 'supports tweakers to override construction variables' do
-    lines = test_dir("build_dir", "tweaker_build.rb")
+    test_dir("build_dir")
+    Rscons::Environment.new do |env|
+      env.append('CPPPATH' => Dir['src/**/*/'])
+      env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
+      env.add_tweaker do |build_op|
+        if build_op[:target] =~ %r{build_one/.*\.o}
+          build_op[:vars]["CFLAGS"] << "-O1"
+        elsif build_op[:target] =~ %r{build_two/.*\.o}
+          build_op[:vars]["CFLAGS"] << "-O2"
+        end
+      end
+      env.Program('tweaker', Dir['src/**/*.c'])
+    end
     `./tweaker`.should == "Hello from two()\n"
     lines.should =~ [
       'gcc -c -o build_one/one.o -MMD -MF build_one/one.mf -Isrc/one/ -Isrc/two/ -O1 src/one/one.c',
