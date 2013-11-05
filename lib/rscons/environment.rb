@@ -204,30 +204,6 @@ module Rscons
       end
     end
 
-    # Parse dependencies for a given target from a Makefile.
-    # This method is used internally by RScons builders.
-    # @param mf_fname [String] File name of the Makefile to read.
-    # @param target [String] Name of the target to gather dependencies for.
-    def parse_makefile_deps(mf_fname, target)
-      deps = []
-      buildup = ''
-      File.read(mf_fname).each_line do |line|
-        if line =~ /^(.*)\\\s*$/
-          buildup += ' ' + $1
-        else
-          buildup += ' ' + line
-          if buildup =~ /^(.*): (.*)$/
-            mf_target, mf_deps = $1.strip, $2
-            if mf_target == target
-              deps += mf_deps.split(' ').map(&:strip)
-            end
-          end
-          buildup = ''
-        end
-      end
-      deps
-    end
-
     # Build a list of source files into files containing one of the suffixes
     # given by suffixes.
     # This method is used internally by RScons builders.
@@ -275,6 +251,30 @@ module Rscons
         tweaker_block.call(build_operation)
       end
       builder.run(target, sources, cache, self, vars)
+    end
+
+    # Parse dependencies for a given target from a Makefile.
+    # This method is used internally by RScons builders.
+    # @param mf_fname [String] File name of the Makefile to read.
+    # @param target [String] Name of the target to gather dependencies for.
+    def self.parse_makefile_deps(mf_fname, target)
+      deps = []
+      buildup = ''
+      File.read(mf_fname).each_line do |line|
+        if line =~ /^(.*)\\\s*$/
+          buildup += ' ' + $1
+        else
+          buildup += ' ' + line
+          if buildup =~ /^(.*): (.*)$/
+            mf_target, mf_deps = $1.strip, $2
+            if mf_target == target
+              deps += mf_deps.split(' ').map(&:strip)
+            end
+          end
+          buildup = ''
+        end
+      end
+      deps
     end
   end
 end

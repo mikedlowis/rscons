@@ -69,7 +69,7 @@ module Rscons
         return false unless env.execute("#{com_prefix} #{target}", command)
         deps = sources
         if File.exists?(vars['_DEPFILE'])
-          deps += env.parse_makefile_deps(vars['_DEPFILE'], target)
+          deps += Environment.parse_makefile_deps(vars['_DEPFILE'], target)
           FileUtils.rm_f(vars['_DEPFILE'])
         end
         cache.register_build(target, command, deps.uniq)
