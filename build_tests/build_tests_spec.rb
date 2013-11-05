@@ -61,6 +61,7 @@ describe Rscons do
   it 'prints commands as they are executed' do
     test_dir('simple')
     Rscons::Environment.new do |env|
+      env["LD"] = "gcc"
       env.Program('simple', Dir['*.c'])
     end
     lines.should == [
