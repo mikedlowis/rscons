@@ -304,4 +304,18 @@ EOF
       'gcc -o tweaker build_one/one.o build_two/two.o',
     ]
   end
+
+  unless ENV["omit_gdc_tests"]
+    it "supports building D sources" do
+      test_dir("d")
+      Rscons::Environment.new do |env|
+        env.Program("hello-d", Dir["*.d"])
+      end
+      lines.should == [
+        "gdc -c -o main.o main.d",
+        "gdc -o hello-d main.o",
+      ]
+      `./hello-d`.rstrip.should == "Hello from D!"
+    end
+  end
 end
