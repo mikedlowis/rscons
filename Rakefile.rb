@@ -10,21 +10,12 @@ require "rspec/core/rake_task"
 require "rake/clean"
 require "yard"
 
-CLEAN.include 'build_tests_run'
+CLEAN.include 'build_test_run'
 
-RSpec::Core::RakeTask.new(:spec) do |task|
-  task.rspec_opts = "--default-path spec"
-end
-
-RSpec::Core::RakeTask.new(:build_tests) do |task|
-  task.rspec_opts = "--default-path build_tests"
-  task.pattern = "build_tests/*_spec.rb"
-end
+RSpec::Core::RakeTask.new(:spec)
 
 YARD::Rake::YardocTask.new do |yard|
   yard.files = ['lib/**/*.rb']
 end
 
 task :default => :spec
-
-task :tests => [:spec, :build_tests]
