@@ -10,7 +10,7 @@ module Rscons
         'LDFLAGS' => [],
         'LIBPATH' => [],
         'LIBS' => [],
-        'LDCOM' => ['${LD}', '-o', '${_TARGET}', '${LDFLAGS}', '${_SOURCES}', '-L${LIBPATH}', '-l${LIBS}']
+        'LDCMD' => ['${LD}', '-o', '${_TARGET}', '${LDFLAGS}', '${_SOURCES}', '-L${LIBPATH}', '-l${LIBS}']
       }
     end
 
@@ -31,7 +31,7 @@ module Rscons
         '_SOURCES' => objects,
         'LD' => ld,
       })
-      command = env.build_command(env['LDCOM'], vars)
+      command = env.build_command(env['LDCMD'], vars)
       standard_build("LD #{target}", target, command, objects, env, cache)
     end
   end

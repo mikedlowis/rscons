@@ -8,7 +8,7 @@ module Rscons
         'AR' => 'ar',
         'LIBSUFFIX' => '.a',
         'ARFLAGS' => [],
-        'ARCOM' => ['${AR}', 'rcs', '${ARFLAGS}', '${_TARGET}', '${_SOURCES}']
+        'ARCMD' => ['${AR}', 'rcs', '${ARFLAGS}', '${_TARGET}', '${_SOURCES}']
       }
     end
 
@@ -20,7 +20,7 @@ module Rscons
           '_TARGET' => target,
           '_SOURCES' => objects,
         })
-        command = env.build_command(env['ARCOM'], vars)
+        command = env.build_command(env['ARCMD'], vars)
         standard_build("AR #{target}", target, command, objects, env, cache)
       end
     end
