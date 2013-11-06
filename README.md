@@ -2,6 +2,8 @@
 
 Software construction library inspired by SCons and implemented in Ruby
 
+[![Gem Version](https://badge.fury.io/rb/rscons.png)](http://badge.fury.io/rb/rscons)
+
 ## Installation
 
 Add this line to your application's Gemfile:
