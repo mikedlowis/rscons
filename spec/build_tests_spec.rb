@@ -283,25 +283,25 @@ EOF
     `ar t lib.a`.should == "one.o\ntwo.o\n"
   end
 
-  it 'supports tweakers to override construction variables' do
+  it 'supports build hooks to override construction variables' do
     test_dir("build_dir")
     Rscons::Environment.new(echo: :command) do |env|
       env.append('CPPPATH' => Dir['src/**/*/'])
       env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
-      env.add_tweaker do |build_op|
+      env.add_build_hook do |build_op|
         if build_op[:target] =~ %r{build_one/.*\.o}
           build_op[:vars]["CFLAGS"] << "-O1"
         elsif build_op[:target] =~ %r{build_two/.*\.o}
           build_op[:vars]["CFLAGS"] << "-O2"
         end
       end
-      env.Program('tweaker', Dir['src/**/*.c'])
+      env.Program('build_hook', Dir['src/**/*.c'])
     end
-    `./tweaker`.should == "Hello from two()\n"
+    `./build_hook`.should == "Hello from two()\n"
     lines.should =~ [
       'gcc -c -o build_one/one.o -MMD -MF build_one/one.mf -Isrc/one/ -Isrc/two/ -O1 src/one/one.c',
       'gcc -c -o build_two/two.o -MMD -MF build_two/two.mf -Isrc/one/ -Isrc/two/ -O2 src/two/two.c',
-      'gcc -o tweaker build_one/one.o build_two/two.o',
+      'gcc -o build_hook build_one/one.o build_two/two.o',
     ]
   end
 

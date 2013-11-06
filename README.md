@@ -86,7 +86,7 @@ end
 ```ruby
 Rscons::Environment.new do |env|
   env["CFLAGS"] = ["-O3", "-Wall", "-DDEFINE"]
-  env.add_tweaker do |build_op|
+  env.add_build_hook do |build_op|
     if build_op[:target] =~ %r{build/third-party}
       build_op[:vars]["CFLAGS"] -= ["-Wall"]
     end
@@ -125,11 +125,11 @@ An Rscons::Environment consists of:
 * a collection of builders
 * a mapping of build directories
 * a collection of targets to build
-* a collection of tweakers
+* a collection of build hooks
 
 When cloning an environment, the construction variables, builders, and build
 directories are cloned, but the new environment does not inherit any of the
-targets or tweakers from the source environment.
+targets or build hooks from the source environment.
 
 Cloned environments contain "deep copies" of construction variables.
 For example, in:

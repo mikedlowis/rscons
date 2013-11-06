@@ -246,9 +246,9 @@ module Rscons
     end
 
     describe "#run_builder" do
-      it "tweaks the construction variables using given tweakers and invokes the builder" do
+      it "modifies the construction variables using given build hooks and invokes the builder" do
         env = Environment.new
-        env.add_tweaker do |build_op|
+        env.add_build_hook do |build_op|
           if build_op[:sources].first =~ %r{src/special}
             build_op[:vars]["CFLAGS"] += ["-O3", "-DSPECIAL"]
           end
