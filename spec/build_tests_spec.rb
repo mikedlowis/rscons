@@ -60,7 +60,7 @@ describe Rscons do
 
   it 'prints commands as they are executed' do
     test_dir('simple')
-    Rscons::Environment.new do |env|
+    Rscons::Environment.new(echo: :command) do |env|
       env["LD"] = "gcc"
       env.Program('simple', Dir['*.c'])
     end
@@ -72,7 +72,7 @@ describe Rscons do
 
   it 'prints short representations of the commands being executed' do
     test_dir('header')
-    Rscons::Environment.new(echo: :short) do |env|
+    Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
     lines.should == [
@@ -83,7 +83,7 @@ describe Rscons do
 
   it 'builds a C program with one source file and one header file' do
     test_dir('header')
-    Rscons::Environment.new(echo: :short) do |env|
+    Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
     File.exists?('header.o').should be_true
@@ -92,7 +92,7 @@ describe Rscons do
 
   it 'rebuilds a C module when a header it depends on changes' do
     test_dir('header')
-    env = Rscons::Environment.new(echo: :short) do |env|
+    env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
     `./header`.should == "The value is 2\n"
@@ -103,7 +103,7 @@ describe Rscons do
 
   it 'does not rebuild a C module when its dependencies have not changed' do
     test_dir('header')
-    env = Rscons::Environment.new(echo: :short) do |env|
+    env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
     `./header`.should == "The value is 2\n"
@@ -117,7 +117,7 @@ describe Rscons do
 
   it "does not rebuild a C module when only the file's timestampe has changed" do
     test_dir('header')
-    env = Rscons::Environment.new(echo: :short) do |env|
+    env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
     `./header`.should == "The value is 2\n"
@@ -132,14 +132,14 @@ describe Rscons do
 
   it 're-links a program when the link flags have changed' do
     test_dir('simple')
-    Rscons::Environment.new do |env|
+    Rscons::Environment.new(echo: :command) do |env|
       env.Program('simple', Dir['*.c'])
     end
     lines.should == [
       'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
       'gcc -o simple simple.o',
     ]
-    Rscons::Environment.new do |env|
+    Rscons::Environment.new(echo: :command) do |env|
       env["LIBS"] += ["c"]
       env.Program('simple', Dir['*.c'])
     end
@@ -208,7 +208,7 @@ EOF
       end
     end
 
-    Rscons::Environment.new(echo: :short) do |env|
+    Rscons::Environment.new do |env|
       env.add_builder(MySource.new)
       env.MySource('inc.h', [])
       env.Program('program', Dir['*.c'])
@@ -222,7 +222,7 @@ EOF
   it 'allows cloning Environment objects' do
     test_dir('clone_env')
 
-    debug = Rscons::Environment.new do |env|
+    debug = Rscons::Environment.new(echo: :command) do |env|
       env.build_dir('src', 'debug')
       env['CFLAGS'] = '-O2'
       env['CPPFLAGS'] = '-DSTRING="Debug Version"'
@@ -285,7 +285,7 @@ EOF
 
   it 'supports tweakers to override construction variables' do
     test_dir("build_dir")
-    Rscons::Environment.new do |env|
+    Rscons::Environment.new(echo: :command) do |env|
       env.append('CPPPATH' => Dir['src/**/*/'])
       env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
       env.add_tweaker do |build_op|
@@ -308,7 +308,7 @@ EOF
   unless ENV["omit_gdc_tests"]
     it "supports building D sources" do
       test_dir("d")
-      Rscons::Environment.new do |env|
+      Rscons::Environment.new(echo: :command) do |env|
         env.Program("hello-d", Dir["*.d"])
       end
       lines.should == [

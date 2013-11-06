@@ -32,7 +32,7 @@ module Rscons
           end
         end
       end
-      @varset[:echo] ||= :command
+      @varset[:echo] ||= :short
 
       if block_given?
         yield self
