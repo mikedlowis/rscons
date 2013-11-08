@@ -158,6 +158,28 @@ describe Rscons do
     File.exists?('build_two/two.o').should be_true
   end
 
+  it 'uses build directories before build root' do
+    test_dir('build_dir')
+    Rscons::Environment.new do |env|
+      env.append('CPPPATH' => Dir['src/**/*/'])
+      env.build_dir("src", "build")
+      env.build_root = "build_root"
+      env.Program('build_dir', Dir['src/**/*.c'])
+    end
+    lines.should == ["CC build/one/one.o", "CC build/two/two.o", "LD build_dir"]
+  end
+
+  it 'uses build_root if no build directories match' do
+    test_dir('build_dir')
+    Rscons::Environment.new do |env|
+      env.append('CPPPATH' => Dir['src/**/*/'])
+      env.build_dir("src2", "build")
+      env.build_root = "build_root"
+      env.Program('build_dir', Dir['src/**/*.c'])
+    end
+    lines.should == ["CC build_root/src/one/one.o", "CC build_root/src/two/two.o", "LD build_dir"]
+  end
+
   it 'cleans built files' do
     test_dir('build_dir')
     Rscons::Environment.new do |env|

@@ -9,6 +9,9 @@ module Rscons
     # Hash of +{"builder_name" => builder_object}+ pairs.
     attr_reader :builders
 
+    # String or +nil+
+    attr_accessor :build_root
+
     # Create an Environment object.
     # @param variables [Hash]
     #   The variables hash can contain construction variables, which are
@@ -88,14 +91,19 @@ module Rscons
     # This method takes into account the Environment's build directories.
     def get_build_fname(source_fname, suffix)
       build_fname = source_fname.set_suffix(suffix).gsub('\\', '/')
-      @build_dirs.each do |src_dir, obj_dir|
+      found_match = @build_dirs.find do |src_dir, obj_dir|
         if src_dir.is_a?(Regexp)
           build_fname.sub!(src_dir, obj_dir)
         else
           build_fname.sub!(%r{^#{src_dir}/}, "#{obj_dir}/")
         end
-        build_fname.gsub!('\\', '/')
       end
+      if @build_root and not found_match
+        unless source_fname.start_with?('/') or source_fname =~ %r{^\w:[\\/]}
+          build_fname = "#{@build_root}/#{build_fname}"
+        end
+      end
+      build_fname.gsub!('\\', '/')
       build_fname
     end
 
