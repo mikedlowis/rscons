@@ -45,10 +45,10 @@ module Rscons
 
     # Make a copy of the Environment object.
     # The cloned environment will contain a copy of all environment options,
-    # construction variables, builders, and build directories. It will not
-    # contain a copy of the targets or build hooks.
-    # If a block is given, the Environment object is yielded to the block and
-    # when the block returns, the {#process} method is automatically called.
+    # construction variables, and builders. It will not contain a copy of the
+    # targets, build hooks, build directories, or the build root.  If a block
+    # is given, the Environment object is yielded to the block and when the
+    # block returns, the {#process} method is automatically called.
     def clone(variables = {})
       env = Environment.new()
       @builders.each do |builder_name, builder|

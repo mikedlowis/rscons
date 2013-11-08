@@ -127,9 +127,9 @@ An Rscons::Environment consists of:
 * a collection of targets to build
 * a collection of build hooks
 
-When cloning an environment, the construction variables, builders, and build
-directories are cloned, but the new environment does not inherit any of the
-targets or build hooks from the source environment.
+When cloning an environment, the construction variables and builders are
+cloned, but the new environment does not inherit any of the targets, build
+hooks, build directories, or the build root from the source environment.
 
 Cloned environments contain "deep copies" of construction variables.
 For example, in:
