@@ -50,7 +50,7 @@ module Rscons
     # is given, the Environment object is yielded to the block and when the
     # block returns, the {#process} method is automatically called.
     def clone(variables = {})
-      env = Environment.new()
+      env = self.class.new
       @builders.each do |builder_name, builder|
         env.add_builder(builder)
       end
