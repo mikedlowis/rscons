@@ -72,7 +72,7 @@ module Rscons
           elsif varval.is_a?(Array)
             varval.map {|vv| expand_varref("#{prefix}#{vv}#{suffix}")}.flatten
           else
-            raise "I do not know how to expand a variable reference to a #{varval.class.name}"
+            raise "I do not know how to expand a variable reference to a #{varval.class.name} (from #{varname.inspect} => #{@vars[varname].inspect})"
           end
         else
           varref
