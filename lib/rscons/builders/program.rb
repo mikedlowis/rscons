@@ -17,6 +17,7 @@ module Rscons
     def run(target, sources, cache, env, vars = {})
       # build sources to linkable objects
       objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache, vars)
+      return false unless objects
       ld = if env["LD"]
              env["LD"]
            elsif sources.find {|s| s.has_suffix?(env["DSUFFIX"])}
