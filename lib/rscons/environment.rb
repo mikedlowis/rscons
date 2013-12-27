@@ -99,7 +99,7 @@ module Rscons
         end
       end
       if @build_root and not found_match
-        unless source_fname.start_with?('/') or source_fname =~ %r{^\w:[\\/]}
+        unless source_fname.absolute_path?
           build_fname = "#{@build_root}/#{build_fname}"
         end
       end
