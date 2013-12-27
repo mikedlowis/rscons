@@ -228,7 +228,7 @@ module Rscons
     # @param cache [Cache] The Cache.
     # @param vars [Hash] Extra variables to pass to the builder.
     # Return a list of the converted file names.
-    def build_sources(sources, suffixes, cache, vars = {})
+    def build_sources(sources, suffixes, cache, vars)
       sources.map do |source|
         if source.has_suffix?(suffixes)
           source

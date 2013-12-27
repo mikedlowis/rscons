@@ -50,7 +50,7 @@ module Rscons
       end
     end
 
-    def run(target, sources, cache, env, vars = {})
+    def run(target, sources, cache, env, vars)
       vars = vars.merge({
         '_TARGET' => target,
         '_SOURCES' => sources,
