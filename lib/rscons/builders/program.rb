@@ -14,7 +14,7 @@ module Rscons
       }
     end
 
-    def run(target, sources, cache, env, vars)
+    def run(target, sources, user_deps, cache, env, vars)
       # build sources to linkable objects
       objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache, vars)
       return false unless objects
@@ -33,7 +33,7 @@ module Rscons
         'LD' => ld,
       })
       command = env.build_command(env['LDCMD'], vars)
-      standard_build("LD #{target}", target, command, objects, env, cache)
+      standard_build("LD #{target}", target, command, objects, user_deps, env, cache)
     end
   end
 end

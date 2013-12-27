@@ -147,6 +147,7 @@ module Rscons
           result = run_builder(@targets[target][:builder],
                                target,
                                @targets[target][:source],
+                               [],
                                cache,
                                @targets[target][:vars] || {})
           unless result
@@ -238,7 +239,7 @@ module Rscons
             converted_fname = get_build_fname(source, suffix)
             builder = @builders.values.find { |b| b.produces?(converted_fname, source, self) }
             if builder
-              converted = run_builder(builder, converted_fname, [source], cache, vars)
+              converted = run_builder(builder, converted_fname, [source], [], cache, vars)
               return nil unless converted
               break
             end
@@ -255,18 +256,19 @@ module Rscons
     # @param cache [Cache] The Cache.
     # @param vars [Hash] Extra variables to pass to the builder.
     # Return the result of the builder's run() method.
-    def run_builder(builder, target, sources, cache, vars)
+    def run_builder(builder, target, sources, user_deps, cache, vars)
       vars = @varset.merge(vars)
       @build_hooks.each do |build_hook_block|
         build_operation = {
           builder: builder,
           target: target,
           sources: sources,
+          user_deps: user_deps,
           vars: vars,
         }
         build_hook_block.call(build_operation)
       end
-      builder.run(target, sources, cache, self, vars)
+      builder.run(target, sources, user_deps, cache, self, vars)
     end
 
     # Parse dependencies for a given target from a Makefile.

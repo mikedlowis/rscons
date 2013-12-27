@@ -114,7 +114,7 @@ module Rscons
 
         cache = "cache"
         Cache.should_receive(:new).and_return(cache)
-        env.should_receive(:run_builder).with(anything, "a.out", ["main.c"], cache, {}).and_return(true)
+        env.should_receive(:run_builder).with(anything, "a.out", ["main.c"], [], cache, {}).and_return(true)
         cache.should_receive(:write)
 
         env.process
@@ -127,8 +127,8 @@ module Rscons
 
         cache = "cache"
         Cache.should_receive(:new).and_return(cache)
-        env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return("main.o")
-        env.should_receive(:run_builder).with(anything, "a.out", ["main.o"], cache, {}).and_return("a.out")
+        env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], [], cache, {}).and_return("main.o")
+        env.should_receive(:run_builder).with(anything, "a.out", ["main.o"], [], cache, {}).and_return("a.out")
         cache.should_receive(:write)
 
         env.process
@@ -141,7 +141,7 @@ module Rscons
 
         cache = "cache"
         Cache.should_receive(:new).and_return(cache)
-        env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return(false)
+        env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], [], cache, {}).and_return(false)
         cache.should_receive(:write)
 
         expect { env.process }.to raise_error BuildError, /Failed.to.build.main.o/
@@ -241,8 +241,8 @@ module Rscons
         cache = "cache"
         env = Environment.new
         env.add_builder(ABuilder.new)
-        env.builders["Object"].should_receive(:run).with("mod.o", ["mod.c"], cache, env, anything).and_return("mod.o")
-        env.builders["ABuilder"].should_receive(:run).with("mod2.ab_out", ["mod2.ab_in"], cache, env, anything).and_return("mod2.ab_out")
+        env.builders["Object"].should_receive(:run).with("mod.o", ["mod.c"], [], cache, env, anything).and_return("mod.o")
+        env.builders["ABuilder"].should_receive(:run).with("mod2.ab_out", ["mod2.ab_in"], [], cache, env, anything).and_return("mod2.ab_out")
         env.build_sources(["precompiled.o", "mod.c", "mod2.ab_in"], [".o", ".ab_out"], cache, {}).should == ["precompiled.o", "mod.o", "mod2.ab_out"]
       end
     end
@@ -255,14 +255,14 @@ module Rscons
             build_op[:vars]["CFLAGS"] += ["-O3", "-DSPECIAL"]
           end
         end
-        env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
+        env.builders["Object"].stub(:run) do |target, sources, user_deps, cache, env, vars|
           vars["CFLAGS"].should == []
         end
-        env.run_builder(env.builders["Object"], "build/normal/module.o", ["src/normal/module.c"], "cache", {})
-        env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
+        env.run_builder(env.builders["Object"], "build/normal/module.o", ["src/normal/module.c"], [], "cache", {})
+        env.builders["Object"].stub(:run) do |target, sources, user_deps, cache, env, vars|
           vars["CFLAGS"].should == ["-O3", "-DSPECIAL"]
         end
-        env.run_builder(env.builders["Object"], "build/special/module.o", ["src/special/module.c"], "cache", {})
+        env.run_builder(env.builders["Object"], "build/special/module.o", ["src/special/module.c"], [], "cache", {})
       end
     end
 

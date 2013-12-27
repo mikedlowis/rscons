@@ -220,7 +220,7 @@ describe Rscons do
   it 'allows Ruby classes as custom builders to be used to construct files' do
    test_dir('custom_builder')
     class MySource < Rscons::Builder
-      def run(target, sources, cache, env, vars = {})
+      def run(target, sources, user_deps, cache, env, vars = {})
         File.open(target, 'w') do |fh|
           fh.puts <<EOF
     #define THE_VALUE 5678

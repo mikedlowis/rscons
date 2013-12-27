@@ -18,9 +18,15 @@ module Rscons
   #           {
   #             'fname' => 'program.o',
   #             'checksum' => '87654321',
-  #           }
+  #           },
   #         ],
-  #       }
+  #         'user_deps' => [
+  #           {
+  #             'fname' => 'lscript.ld',
+  #             'checksum' => '77551133',
+  #           },
+  #         ],
+  #       },
   #       'program.o' => {
   #         'checksum' => '87654321',
   #         'command' => ['gcc', '-c', '-o', 'program.o', 'program.c'],
@@ -32,15 +38,16 @@ module Rscons
   #           {
   #             'fname' => 'program.h',
   #             'checksum' => '7979764643',
-  #           }
-  #         ]
+  #           },
+  #         ],
+  #         'user_deps' => [],
   #       }
-  #     }
+  #     },
   #     directories: {
   #       'build' => true,
   #       'build/one' => true,
   #       'build/two' => true,
-  #     }
+  #     },
   #   }
   class Cache
     #### Constants
@@ -82,6 +89,7 @@ module Rscons
     # @param target [String] The name of the target file.
     # @param command [Array] The command used to build the target.
     # @param deps [Array] List of the target's dependency files.
+    # @param user_deps [Array] List of user-specified extra dependencies.
     # @param options [Hash] Optional options. Can contain the following keys:
     #   :strict_deps::
     #     Only consider a target up to date if its list of dependencies is
@@ -96,7 +104,7 @@ module Rscons
     #     exactly equal to those cached
     #   - each cached dependency file's current checksum matches the checksum
     #     stored in the cache file
-    def up_to_date?(target, command, deps, options = {})
+    def up_to_date?(target, command, deps, user_deps, options = {})
       # target file must exist on disk
       return false unless File.exists?(target)
 
@@ -118,8 +126,11 @@ module Rscons
         return false unless (Set.new(deps) - Set.new(cached_deps)).empty?
       end
 
+      # set of user dependencies must match
+      return false unless user_deps == @cache[:targets][target][:user_deps].map { |dc| dc[:fname] }
+
       # all cached dependencies must have their checksums match
-      @cache[:targets][target][:deps].each do |dep_cache|
+      (@cache[:targets][target][:deps] + @cache[:targets][target][:user_deps]).each do |dep_cache|
         return false unless dep_cache[:checksum] == lookup_checksum(dep_cache[:fname])
       end
 
@@ -130,7 +141,8 @@ module Rscons
     # @param target [String] The name of the target.
     # @param command [Array] The command used to build the target.
     # @param deps [Array] List of dependencies for the target.
-    def register_build(target, command, deps)
+    # @param user_deps [Array] List of user-specified extra dependencies.
+    def register_build(target, command, deps, user_deps)
       @cache[:targets][target.encode(__ENCODING__)] = {
         command: command,
         checksum: calculate_checksum(target),
@@ -139,7 +151,13 @@ module Rscons
             fname: dep.encode(__ENCODING__),
             checksum: lookup_checksum(dep),
           }
-        end
+        end,
+        user_deps: user_deps.map do |dep|
+          {
+            fname: dep.encode(__ENCODING__),
+            checksum: lookup_checksum(dep),
+          }
+        end,
       }
     end
 
