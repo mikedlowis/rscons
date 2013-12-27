@@ -251,7 +251,8 @@ EOF
       env.Program('program-debug', Dir['src/*.c'])
     end
 
-    release = debug.clone('CPPFLAGS' => '-DSTRING="Release Version"') do |env|
+    release = debug.clone do |env|
+      env["CPPFLAGS"] = '-DSTRING="Release Version"'
       env.build_dir('src', 'release')
       env.Program('program-release', Dir['src/*.c'])
     end

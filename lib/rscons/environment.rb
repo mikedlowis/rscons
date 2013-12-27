@@ -9,33 +9,33 @@ module Rscons
     # Hash of +{"builder_name" => builder_object}+ pairs.
     attr_reader :builders
 
+    # :command, :short, or :off
+    attr_accessor :echo
+
     # String or +nil+
     attr_accessor :build_root
 
     # Create an Environment object.
-    # @param variables [Hash]
-    #   The variables hash can contain construction variables, which are
-    #   uppercase strings (such as "CC" or "LDFLAGS"), user variables, which
-    #   are lowercase strings (such as "sources"), and RScons options, which
-    #   are lowercase symbols (such as :echo).
+    # @param options [Hash]
+    # Possible options keys:
+    #   :echo => :command, :short, or :off (default :short)
+    #   :build_root => String specifying build root directory (default nil)
+    #   :exclude_builders => true to omit adding default builders (default false)
     # If a block is given, the Environment object is yielded to the block and
     # when the block returns, the {#process} method is automatically called.
-    def initialize(variables = {})
-      @varset = VarSet.new(variables)
+    def initialize(options = {})
+      @varset = VarSet.new
       @targets = {}
       @builders = {}
       @build_dirs = []
       @build_hooks = []
-      @varset[:exclude_builders] ||= []
-      unless @varset[:exclude_builders] == :all
-        exclude_builders = Set.new(@varset[:exclude_builders] || [])
+      unless options[:exclude_builders]
         DEFAULT_BUILDERS.each do |builder_class|
-          unless exclude_builders.include?(builder_class.short_name)
-            add_builder(builder_class.new)
-          end
+          add_builder(builder_class.new)
         end
       end
-      @varset[:echo] ||= :short
+      @echo = options[:echo] || :short
+      @build_root = options[:build_root]
 
       if block_given?
         yield self
@@ -45,17 +45,23 @@ module Rscons
 
     # Make a copy of the Environment object.
     # The cloned environment will contain a copy of all environment options,
-    # construction variables, and builders. It will not contain a copy of the
-    # targets, build hooks, build directories, or the build root.  If a block
-    # is given, the Environment object is yielded to the block and when the
-    # block returns, the {#process} method is automatically called.
-    def clone(variables = {})
-      env = self.class.new
-      @builders.each do |builder_name, builder|
-        env.add_builder(builder)
+    # construction variables, and builders (unless :exclude_builders => true is
+    # passed as an option). It will not contain a copy of the targets, build
+    # hooks, build directories, or the build root.  If a block is given, the
+    # Environment object is yielded to the block and when the block returns,
+    # the {#process} method is automatically called.  The possible options keys
+    # match those documented in the #initialize method.
+    def clone(options = {})
+      env = self.class.new(
+        echo: options[:echo] || @echo,
+        build_root: options[:build_root],
+        exclude_builders: true)
+      unless options[:exclude_builders]
+        @builders.each do |builder_name, builder|
+          env.add_builder(builder)
+        end
       end
       env.append(@varset.clone)
-      env.append(variables)
 
       if block_given?
         yield env
@@ -169,7 +175,7 @@ module Rscons
     end
 
     # Execute a builder command
-    # @param short_desc [String] Message to print if the Environment's :echo
+    # @param short_desc [String] Message to print if the Environment's echo
     #   mode is set to :short
     # @param command [Array] The command to execute.
     # @param options [Hash] Optional options to pass to Kernel#system.
@@ -177,13 +183,13 @@ module Rscons
       print_command = proc do
         puts command.map { |c| c =~ /\s/ ? "'#{c}'" : c }.join(' ')
       end
-      if @varset[:echo] == :command
+      if @echo == :command
         print_command.call
-      elsif @varset[:echo] == :short
+      elsif @echo == :short
         puts short_desc
       end
       system(*command, options).tap do |result|
-        unless result or @varset[:echo] == :command
+        unless result or @echo == :command
           $stdout.write "Failed command was: "
           print_command.call
         end

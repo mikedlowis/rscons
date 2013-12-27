@@ -1,12 +1,6 @@
 module Rscons
   describe Environment do
     describe "#initialize" do
-      it "stores the construction variables passed in" do
-        env = Environment.new("CFLAGS" => ["-g"], "CPPPATH" => ["dir"])
-        env["CFLAGS"].should == ["-g"]
-        env["CPPPATH"].should == ["dir"]
-      end
-
       it "adds the default builders when they are not excluded" do
         env = Environment.new
         env.builders.size.should be > 0
@@ -17,16 +11,8 @@ module Rscons
       end
 
       it "excludes the default builders with exclude_builders: :all" do
-        env = Environment.new(exclude_builders: :all)
+        env = Environment.new(exclude_builders: true)
         env.builders.size.should == 0
-      end
-
-      it "excludes the named builders" do
-        env = Environment.new(exclude_builders: ["Library"])
-        env.builders.size.should be > 0
-        env.builders.find {|name, builder| name == "Object"}.should_not be_nil
-        env.builders.find {|name, builder| name == "Program"}.should_not be_nil
-        env.builders.find {|name, builder| name == "Library"}.should be_nil
       end
 
       context "when a block is given" do
@@ -60,7 +46,7 @@ module Rscons
 
     describe "#add_builder" do
       it "adds the builder to the list of builders" do
-        env = Environment.new(exclude_builders: :all)
+        env = Environment.new(exclude_builders: true)
         env.builders.keys.should == []
         env.add_builder(Rscons::Object.new)
         env.builders.keys.should == ["Object"]
@@ -92,14 +78,16 @@ module Rscons
 
     describe "#[]" do
       it "allows reading construction variables" do
-        env = Environment.new("CFLAGS" => ["-g", "-Wall"])
+        env = Environment.new
+        env["CFLAGS"] = ["-g", "-Wall"]
         env["CFLAGS"].should == ["-g", "-Wall"]
       end
     end
 
     describe "#[]=" do
       it "allows writing construction variables" do
-        env = Environment.new("CFLAGS" => ["-g", "-Wall"])
+        env = Environment.new
+        env["CFLAGS"] = ["-g", "-Wall"]
         env["CFLAGS"] -= ["-g"]
         env["CFLAGS"] += ["-O3"]
         env["CFLAGS"].should == ["-Wall", "-O3"]
@@ -110,7 +98,9 @@ module Rscons
 
     describe "#append" do
       it "allows adding many construction variables at once" do
-        env = Environment.new("CFLAGS" => ["-g"], "CPPPATH" => ["inc"])
+        env = Environment.new
+        env["CFLAGS"] = ["-g"]
+        env["CPPPATH"] = ["inc"]
         env.append("CFLAGS" => ["-Wall"], "CPPPATH" => ["include"])
         env["CFLAGS"].should == ["-Wall"]
         env["CPPPATH"].should == ["include"]
