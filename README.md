@@ -66,7 +66,8 @@ end
 
 ```ruby
 class GenerateFoo < Rscons::Builder
-  def run(target, sources, cache, env, vars)
+  def run(target, sources, user_deps, cache, env, vars)
+    cache.mkdir_p(File.dirname(target))
     File.open(target, "w") do |fh|
       fh.puts <<EOF
 #define GENERATED 42
@@ -78,6 +79,40 @@ end
 Rscons::Environment.new do |env|
   env.GenerateFoo("foo.h", [])
   env.Program("a.out", Dir["*.c"])
+end
+```
+
+### Example: Custom Builder That Only Regenerates When Necessary
+
+```ruby
+class CmdBuilder < Rscons::Builder
+  def run(target, sources, user_deps, cache, env, vars)
+    cmd = ["cmd", "-i", sources.first, "-o", target]
+    unless cache.up_to_date?(target, cmd, sources, user_deps)
+      cache.mkdir_p(File.dirname(target))
+      system(cmd)
+      cache.register_build(target, cmd, sources, user_deps)
+    end
+  end
+end
+
+Rscons::Environment.new do |env|
+  env.CmdBuilder("foo.gen", "foo_gen.cfg")
+end
+```
+
+### Example: Custom Builder Using Builder#standard_build()
+
+```ruby
+class CmdBuilder < Rscons::Builder
+  def run(target, sources, user_deps, cache, env, vars)
+    cmd = ["cmd", "-i", sources.first, "-o", target]
+    standard_build("CmdBld #{target}", target, cmd, sources, user_deps, env, cache)
+  end
+end
+
+Rscons::Environment.new do |env|
+  env.CmdBuilder("foo.gen", "foo_gen.cfg")
 end
 ```
 
