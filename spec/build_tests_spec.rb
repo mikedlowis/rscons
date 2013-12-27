@@ -328,6 +328,37 @@ EOF
     ]
   end
 
+  it 'rebuilds when user-specified dependencies change' do
+    test_dir('simple')
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.c'])
+      File.open("file.ld", "w") do |fh|
+        fh.puts("foo")
+      end
+      env.depends('simple', 'file.ld')
+    end
+    lines.should == ["CC simple.o", "LD simple"]
+    File.exists?('simple.o').should be_true
+    `./simple`.should == "This is a simple C program\n"
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.c'])
+      File.open("file.ld", "w") do |fh|
+        fh.puts("bar")
+      end
+      env.depends('simple', 'file.ld')
+    end
+    lines.should == ["LD simple"]
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.c'])
+      File.unlink("file.ld")
+    end
+    lines.should == ["LD simple"]
+    Rscons::Environment.new do |env|
+      env.Program('simple', Dir['*.c'])
+    end
+    lines.should == []
+  end
+
   unless ENV["omit_gdc_tests"]
     it "supports building D sources" do
       test_dir("d")

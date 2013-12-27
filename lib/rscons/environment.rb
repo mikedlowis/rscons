@@ -26,6 +26,7 @@ module Rscons
     def initialize(options = {})
       @varset = VarSet.new
       @targets = {}
+      @user_deps = {}
       @builders = {}
       @build_dirs = []
       @build_hooks = []
@@ -147,7 +148,7 @@ module Rscons
           result = run_builder(@targets[target][:builder],
                                target,
                                @targets[target][:source],
-                               [],
+                               @user_deps[target] || [],
                                cache,
                                @targets[target][:vars] || {})
           unless result
@@ -219,6 +220,13 @@ module Rscons
       else
         orig_method_missing(method, *args)
       end
+    end
+
+    # Manually record a given target as depending on the specified
+    # dependency files.
+    def depends(target, *user_deps)
+      @user_deps[target] ||= []
+      @user_deps[target] = (@user_deps[target] + user_deps).uniq
     end
 
     # Build a list of source files into files containing one of the suffixes

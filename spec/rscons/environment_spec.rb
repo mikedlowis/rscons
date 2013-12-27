@@ -230,6 +230,20 @@ module Rscons
       end
     end
 
+    describe "#depends" do
+      it "records the given dependencies in @user_deps" do
+        env = Environment.new
+        env.depends("foo", "bar", "baz")
+        env.instance_variable_get(:@user_deps).should == {"foo" => ["bar", "baz"]}
+      end
+      it "records user dependencies only once" do
+        env = Environment.new
+        env.instance_variable_set(:@user_deps, {"foo" => ["bar"]})
+        env.depends("foo", "bar", "baz")
+        env.instance_variable_get(:@user_deps).should == {"foo" => ["bar", "baz"]}
+      end
+    end
+
     describe "#build_sources" do
       class ABuilder < Builder
         def produces?(target, source, env)
