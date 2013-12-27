@@ -162,6 +162,11 @@ module Rscons
       cache.write
     end
 
+    # Clear all targets registered for the Environment.
+    def clear_targets
+      @targets = {}
+    end
+
     # Build a command line from the given template, resolving references to
     # variables using the Environment's construction variables and any extra
     # variables specified.

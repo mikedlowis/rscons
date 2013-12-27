@@ -148,6 +148,18 @@ module Rscons
       end
     end
 
+    describe "#clear_targets" do
+      it "resets @targets to an empty hash" do
+        env = Environment.new
+        env.Program("a.out", "main.o")
+        expect(env.instance_variable_get(:@targets).keys).to eq(["a.out"])
+
+        env.clear_targets
+
+        expect(env.instance_variable_get(:@targets).keys).to eq([])
+      end
+    end
+
     describe "#build_command" do
       it "returns a command based on the variables in the Environment" do
         env = Environment.new
