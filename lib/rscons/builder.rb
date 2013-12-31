@@ -3,6 +3,12 @@ require "fileutils"
 module Rscons
   # Class to hold an object that knows how to build a certain type of file.
   class Builder
+    # Return the name of the builder.
+    # If not overridden this defaults to the last component of the class name.
+    def name
+      self.class.name.split(":").last
+    end
+
     # Return a set of default variable values for the Environment to use
     # unless the user overrides any.
     # @param env [Environment] The Environment.

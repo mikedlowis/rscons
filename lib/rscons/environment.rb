@@ -76,7 +76,7 @@ module Rscons
 
     # Add a {Builder} object to the Environment.
     def add_builder(builder)
-      @builders[builder.class.short_name] = builder
+      @builders[builder.name] = builder
       var_defs = builder.default_variables(self)
       if var_defs
         var_defs.each_pair do |var, val|
