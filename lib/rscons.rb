@@ -20,8 +20,7 @@ module Rscons
     Program,
   ]
 
-  class BuildError < Exception
-  end
+  class BuildError < RuntimeError; end
 
   # Remove all generated files
   def self.clean
