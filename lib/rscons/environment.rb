@@ -34,7 +34,9 @@ module Rscons
       @build_dirs = []
       @build_hooks = []
       unless options[:exclude_builders]
-        DEFAULT_BUILDERS.each do |builder_class|
+        DEFAULT_BUILDERS.each do |builder_class_name|
+          builder_class = Builders.const_get(builder_class_name)
+          builder_class or raise "Could not find builder class #{builder_class_name}"
           add_builder(builder_class.new)
         end
       end

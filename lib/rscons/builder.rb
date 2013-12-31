@@ -1,6 +1,9 @@
 require "fileutils"
 
 module Rscons
+  # Namespace module in which to store builders for convenient grouping
+  module Builders; end
+
   # Class to hold an object that knows how to build a certain type of file.
   class Builder
     # Return the name of the builder.

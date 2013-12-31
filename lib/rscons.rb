@@ -14,9 +14,9 @@ require "rscons/builders/program"
 # Namespace module for rscons classes
 module Rscons
   DEFAULT_BUILDERS = [
-    Library,
-    Object,
-    Program,
+    :Library,
+    :Object,
+    :Program,
   ]
 
   class BuildError < RuntimeError; end

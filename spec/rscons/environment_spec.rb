@@ -48,7 +48,7 @@ module Rscons
       it "adds the builder to the list of builders" do
         env = Environment.new(exclude_builders: true)
         env.builders.keys.should == []
-        env.add_builder(Rscons::Object.new)
+        env.add_builder(Rscons::Builders::Object.new)
         env.builders.keys.should == ["Object"]
       end
     end
