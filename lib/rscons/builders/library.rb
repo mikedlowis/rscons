@@ -12,7 +12,7 @@ module Rscons
       }
     end
 
-    def run(target, sources, user_deps, cache, env, vars)
+    def run(target, sources, cache, env, vars)
       # build sources to linkable objects
       objects = env.build_sources(sources, [env['OBJSUFFIX'], env['LIBSUFFIX']].flatten, cache, vars)
       if objects
@@ -21,7 +21,7 @@ module Rscons
           '_SOURCES' => objects,
         })
         command = env.build_command(env['ARCMD'], vars)
-        standard_build("AR #{target}", target, command, objects, user_deps, env, cache)
+        standard_build("AR #{target}", target, command, objects, env, cache)
       end
     end
   end

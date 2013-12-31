@@ -50,7 +50,7 @@ module Rscons
       end
     end
 
-    def run(target, sources, user_deps, cache, env, vars)
+    def run(target, sources, cache, env, vars)
       vars = vars.merge({
         '_TARGET' => target,
         '_SOURCES' => sources,
@@ -62,7 +62,7 @@ module Rscons
         v.nil? and raise "Error: unknown input file type: #{sources.first.inspect}"
       end.first
       command = env.build_command(env["#{com_prefix}CMD"], vars)
-      unless cache.up_to_date?(target, command, sources, user_deps)
+      unless cache.up_to_date?(target, command, sources, env)
         cache.mkdir_p(File.dirname(target))
         FileUtils.rm_f(target)
         return false unless env.execute("#{com_prefix} #{target}", command)
@@ -71,7 +71,7 @@ module Rscons
           deps += Environment.parse_makefile_deps(vars['_DEPFILE'], target)
           FileUtils.rm_f(vars['_DEPFILE'])
         end
-        cache.register_build(target, command, deps.uniq, user_deps)
+        cache.register_build(target, command, deps.uniq, env)
       end
       target
     end
