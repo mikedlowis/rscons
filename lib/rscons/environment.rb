@@ -13,7 +13,10 @@ module Rscons
     attr_accessor :echo
 
     # String or +nil+
-    attr_accessor :build_root
+    attr_reader :build_root
+    def build_root=(build_root)
+      @build_root = build_root.gsub('\\', '/')
+    end
 
     # Create an Environment object.
     # @param options [Hash]
@@ -106,7 +109,7 @@ module Rscons
         end
       end
       if @build_root and not found_match
-        unless source_fname.absolute_path?
+        unless source_fname.absolute_path? or build_fname.start_with?("#{@build_root}/")
           build_fname = "#{@build_root}/#{build_fname}"
         end
       end

@@ -61,6 +61,18 @@ module Rscons
           env.get_build_fname("src\\dir\\other.d", ".a").should == "src/dir/other.a"
           env.get_build_fname("source.cc", ".o").should == "source.o"
         end
+
+        context "with a build_root" do
+          it "uses the build_root unless the path is absolute" do
+            env = Environment.new
+            env.build_root = "build/proj"
+            env.get_build_fname("src/dir/file.c", ".o").should == "build/proj/src/dir/file.o"
+            env.get_build_fname("/some/lib.c", ".a").should == "/some/lib.a"
+            env.get_build_fname("C:\\abspath\\mod.cc", ".o").should == "C:/abspath/mod.o"
+            env.get_build_fname("build\\proj\\generated.c", ".o").should == "build/proj/generated.o"
+            env.get_build_fname("build/proj.XX", ".yy").should == "build/proj/build/proj.yy"
+          end
+        end
       end
 
       context "with build directories" do
@@ -72,6 +84,21 @@ module Rscons
           env.get_build_fname("libs/lib1/some/file.c", ".o").should == "build/libs/lib1/some/file.o"
           env.get_build_fname("libs/otherlib/otherlib.cc", ".o").should == "build/libs/otherlib/otherlib.o"
           env.get_build_fname("other_directory/o.d", ".a").should == "other_directory/o.a"
+        end
+
+        context "with a build_root" do
+          it "uses the build_root unless a build directory matches or the path is absolute" do
+            env = Environment.new
+            env.build_dir("src", "bld")
+            env.build_dir(%r{^libs/([^/]+)}, 'build/libs/\1')
+            env.build_root = "bldit"
+
+            env.get_build_fname("src/input.cc", ".o").should == "bld/input.o"
+            env.get_build_fname("libs/lib1/some/file.c", ".o").should == "build/libs/lib1/some/file.o"
+            env.get_build_fname("libs/otherlib/otherlib.cc", ".o").should == "build/libs/otherlib/otherlib.o"
+            env.get_build_fname("other_directory/o.d", ".a").should == "bldit/other_directory/o.a"
+            env.get_build_fname("bldit/some/mod.d", ".a").should == "bldit/some/mod.a"
+          end
         end
       end
     end
