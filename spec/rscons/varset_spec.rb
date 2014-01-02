@@ -30,12 +30,6 @@ module Rscons
         v["qax"].should == [3, 6]
         v["qux"].should == {a: :b}
       end
-      it "allows accessing a non-array converted to an array" do
-        v["fuz", :array].should == ["a string"]
-      end
-      it "allows accessing an array as a single value" do
-        v["qax", :scalar].should == 3
-      end
     end
 
     describe :[]= do

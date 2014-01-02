@@ -17,20 +17,8 @@ module Rscons
 
     # Access the value of variable as a particular type
     # @param key [String, Symbol] The variable name.
-    # @param type [Symbol, nil] Optional specification of the type desired.
-    #   If the variable is a String and type is :array, a 1-element array with
-    #   the variable value will be returned. If the variable is an Array and
-    #   type is :string, the first element from the variable value will be
-    #   returned.
-    def [](key, type = nil)
-      val = @vars[key]
-      if type == :array and not val.is_a?(Array)
-        [val]
-      elsif type == :scalar and val.is_a?(Array)
-        val.first
-      else
-        val
-      end
+    def [](key)
+      @vars[key]
     end
 
     # Assign a value to a variable.
