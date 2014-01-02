@@ -185,6 +185,11 @@ module Rscons
       @varset.merge(extra_vars).expand_varref(command_template)
     end
 
+    # Expand a construction variable reference (String or Array)
+    def expand_varref(varref)
+      @varset.expand_varref(varref)
+    end
+
     # Execute a builder command
     # @param short_desc [String] Message to print if the Environment's echo
     #   mode is set to :short

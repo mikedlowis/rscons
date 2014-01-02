@@ -199,6 +199,20 @@ module Rscons
       end
     end
 
+    describe "#expand_varref" do
+      it "returns the fully expanded variable reference" do
+        env = Environment.new
+        env["path"] = ["dir1", "dir2"]
+        env["flags"] = ["-x", "-y", "${specialflag}"]
+        env["specialflag"] = "-z"
+        env.expand_varref(["-p${path}", "${flags}"]).should == ["-pdir1", "-pdir2", "-x", "-y", "-z"]
+        env.expand_varref("foo").should == "foo"
+        expect {env.expand_varref("${foo}")}.to raise_error /expand.a.variable.reference/
+        env.expand_varref("${specialflag}").should == "-z"
+        env.expand_varref("${path}").should == ["dir1", "dir2"]
+      end
+    end
+
     describe "#execute" do
       context "with echo: :short" do
         context "with no errors" do
