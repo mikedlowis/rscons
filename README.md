@@ -66,7 +66,7 @@ end
 
 ```ruby
 class GenerateFoo < Rscons::Builder
-  def run(target, sources, user_deps, cache, env, vars)
+  def run(target, sources, cache, env, vars)
     cache.mkdir_p(File.dirname(target))
     File.open(target, "w") do |fh|
       fh.puts <<EOF
@@ -86,12 +86,12 @@ end
 
 ```ruby
 class CmdBuilder < Rscons::Builder
-  def run(target, sources, user_deps, cache, env, vars)
+  def run(target, sources, cache, env, vars)
     cmd = ["cmd", "-i", sources.first, "-o", target]
-    unless cache.up_to_date?(target, cmd, sources, user_deps)
+    unless cache.up_to_date?(target, cmd, sources, env)
       cache.mkdir_p(File.dirname(target))
       system(cmd)
-      cache.register_build(target, cmd, sources, user_deps)
+      cache.register_build(target, cmd, sources, env)
     end
   end
 end
@@ -105,9 +105,9 @@ end
 
 ```ruby
 class CmdBuilder < Rscons::Builder
-  def run(target, sources, user_deps, cache, env, vars)
+  def run(target, sources, cache, env, vars)
     cmd = ["cmd", "-i", sources.first, "-o", target]
-    standard_build("CmdBld #{target}", target, cmd, sources, user_deps, env, cache)
+    standard_build("CmdBld #{target}", target, cmd, sources, env, cache)
   end
 end
 
