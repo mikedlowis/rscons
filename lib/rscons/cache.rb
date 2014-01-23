@@ -117,7 +117,7 @@ module Rscons
       # command used to build target must be identical
       return false unless @cache[:targets][target][:command] == command
 
-      cached_deps = @cache[:targets][target][:deps] or []
+      cached_deps = @cache[:targets][target][:deps] || []
       cached_deps_fnames = cached_deps.map { |dc| dc[:fname] }
       if options[:strict_deps]
         # depedencies passed in must exactly equal those in the cache
@@ -129,7 +129,7 @@ module Rscons
 
       # set of user dependencies must match
       user_deps = env.get_user_deps(target) || []
-      cached_user_deps = @cache[:targets][target][:user_deps] or []
+      cached_user_deps = @cache[:targets][target][:user_deps] || []
       cached_user_deps_fnames = cached_user_deps.map { |dc| dc[:fname] }
       return false unless user_deps == cached_user_deps_fnames
 
