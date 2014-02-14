@@ -1,13 +1,13 @@
-require "rscons/builder"
-require "rscons/cache"
-require "rscons/environment"
-require "rscons/varset"
-require "rscons/version"
+require_relative "rscons/builder"
+require_relative "rscons/cache"
+require_relative "rscons/environment"
+require_relative "rscons/varset"
+require_relative "rscons/version"
 
 # default builders
-require "rscons/builders/library"
-require "rscons/builders/object"
-require "rscons/builders/program"
+require_relative "rscons/builders/library"
+require_relative "rscons/builders/object"
+require_relative "rscons/builders/program"
 
 # Namespace module for rscons classes
 module Rscons
