@@ -102,7 +102,7 @@ module Rscons
     # Return the file name to be built from source_fname with suffix suffix.
     # This method takes into account the Environment's build directories.
     def get_build_fname(source_fname, suffix)
-      build_fname = source_fname.set_suffix(suffix).gsub('\\', '/')
+      build_fname = Rscons.set_suffix(source_fname, suffix).gsub('\\', '/')
       found_match = @build_dirs.find do |src_dir, obj_dir|
         if src_dir.is_a?(Regexp)
           build_fname.sub!(src_dir, obj_dir)

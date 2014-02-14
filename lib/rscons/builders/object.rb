@@ -55,7 +55,7 @@ module Rscons
         vars = vars.merge({
           '_TARGET' => target,
           '_SOURCES' => sources,
-          '_DEPFILE' => target.set_suffix('.mf'),
+          '_DEPFILE' => Rscons.set_suffix(target, '.mf'),
         })
         com_prefix = KNOWN_SUFFIXES.find do |compiler, suffix_var|
           sources.first.end_with?(*env[suffix_var])

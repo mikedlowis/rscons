@@ -4,8 +4,6 @@ require "rscons/environment"
 require "rscons/varset"
 require "rscons/version"
 
-require "rscons/monkey/string"
-
 # default builders
 require "rscons/builders/library"
 require "rscons/builders/object"
@@ -42,5 +40,12 @@ module Rscons
   # @param path [String] the path to examine
   def self.absolute_path?(path)
     path =~ %r{^(/|\w:[\\/])}
+  end
+
+  # Return a new path by changing the suffix in path to suffix.
+  # @param path [String] the path to alter
+  # @param suffix [String] the new filename suffix
+  def self.set_suffix(path, suffix)
+    path.sub(/\.[^.]*$/, suffix)
   end
 end
