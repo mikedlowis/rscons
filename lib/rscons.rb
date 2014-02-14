@@ -37,4 +37,10 @@ module Rscons
     end
     Cache.clear
   end
+
+  # Return whether the given path is an absolute filesystem path or not
+  # @param path [String] the path to examine
+  def self.absolute_path?(path)
+    path =~ %r{^(/|\w:[\\/])}
+  end
 end
