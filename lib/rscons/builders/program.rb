@@ -21,9 +21,9 @@ module Rscons
         return false unless objects
         ld = if env["LD"]
                env["LD"]
-             elsif sources.find {|s| s.has_suffix?(env["DSUFFIX"])}
+             elsif sources.find {|s| s.end_with?(*env["DSUFFIX"])}
                env["DC"]
-             elsif sources.find {|s| s.has_suffix?(env["CXXSUFFIX"])}
+             elsif sources.find {|s| s.end_with?(*env["CXXSUFFIX"])}
                env["CXX"]
              else
                env["CC"]

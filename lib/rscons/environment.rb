@@ -254,7 +254,7 @@ module Rscons
     # Return a list of the converted file names.
     def build_sources(sources, suffixes, cache, vars)
       sources.map do |source|
-        if source.has_suffix?(suffixes)
+        if source.end_with?(*suffixes)
           source
         else
           converted = nil

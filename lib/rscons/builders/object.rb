@@ -46,8 +46,8 @@ module Rscons
       end
 
       def produces?(target, source, env)
-        target.has_suffix?(env['OBJSUFFIX']) and KNOWN_SUFFIXES.find do |compiler, suffix_var|
-          source.has_suffix?(env[suffix_var])
+        target.end_with?(*env['OBJSUFFIX']) and KNOWN_SUFFIXES.find do |compiler, suffix_var|
+          source.end_with?(*env[suffix_var])
         end
       end
 
@@ -58,7 +58,7 @@ module Rscons
           '_DEPFILE' => target.set_suffix('.mf'),
         })
         com_prefix = KNOWN_SUFFIXES.find do |compiler, suffix_var|
-          sources.first.has_suffix?(env[suffix_var])
+          sources.first.end_with?(*env[suffix_var])
         end.tap do |v|
           v.nil? and raise "Error: unknown input file type: #{sources.first.inspect}"
         end.first
