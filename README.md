@@ -27,7 +27,7 @@ called from your Rakefile.
 ### Example: Building a C Program
 
 ```ruby
-RScons::Environment.new do |env|
+Rscons::Environment.new do |env|
   env["CFLAGS"] << "-Wall"
   env.Program("program", Dir["**/*.c"])
 end
@@ -36,7 +36,7 @@ end
 ### Example: Building a D Program
 
 ```ruby
-RScons::Environment.new do |env|
+Rscons::Environment.new do |env|
   env["DFLAGS"] << "-Wall"
   env.Program("program", Dir["**/*.d"])
 end
@@ -45,7 +45,7 @@ end
 ### Example: Cloning an Environment
 
 ```ruby
-main_env = RScons::Environment.new do |env|
+main_env = Rscons::Environment.new do |env|
   # Store object files from sources under "src" in "build/main"
   env.build_dir("src", "build/main")
   env["CFLAGS"] = ["-DSOME_DEFINE", "-O3"]
@@ -131,6 +131,19 @@ Rscons::Environment.new do |env|
 end
 ```
 
+Each build hook block will be invoked for every build operation, so the block
+should test the target or sources if its action should only apply to some
+subset of build targets or source files.
+
+The `build_op` parameter to the build hook block is a Hash describing the
+build operation with the following keys:
+* `:builder` - `Builder` instance in use
+* `:target` - `String` name of the target file
+* `:sources` - `Array` of the source files
+* `:vars` - `Rscons::VarSet` containing the construction variables to use
+The build hook can overwrite entries in `build_op[:vars]` to alter the
+construction variables in use for this specific build operation.
+
 ### Example: Creating a static library
 
 ```ruby
@@ -149,8 +162,8 @@ Rscons ships with a number of default builders:
 * Object, which compiles source files to produce an object file
 * Program, which links object files to produce an executable
 
-If you want to create an Environment that does not contain any (or select)
-builders, you can use the `exclude_builders` key to the Environment constructor.
+If you want to create an Environment that does not contain any builders,
+you can use the `exclude_builders` key to the Environment constructor.
 
 ### Managing Environments
 
@@ -158,7 +171,8 @@ An Rscons::Environment consists of:
 
 * a collection of construction variables
 * a collection of builders
-* a mapping of build directories
+* a mapping of build directories from source directories
+* a default build root to apply if no build directories are matched
 * a collection of targets to build
 * a collection of build hooks
 
@@ -178,12 +192,11 @@ cloned_env["CPPPATH"] << "three"
 
 `base_env["CPPPATH"]` will not include "three".
 
-### Construction Variables
+### Construction Variable Naming
 
-The default construction variables that Rscons uses are named using uppercase
-strings.
-Rscons options are lowercase symbols.
-Lowercase strings are reserved as user-defined construction variables.
+* uppercase strings - the default construction variables that Rscons uses
+* lowercase symbols - Rscons options
+* lowercase strings - reserved as user-defined construction variables
 
 ## Contributing
 
