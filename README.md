@@ -213,6 +213,11 @@ cloned_env["CPPPATH"] << "three"
 * lowercase symbols - Rscons options
 * lowercase strings - reserved as user-defined construction variables
 
+### API documentation
+
+Documentation for the complete Rscons API can be found at
+http://rubydoc.info/github/holtrop/rscons/frames.
+
 ## Contributing
 
 1. Fork it
