@@ -64,6 +64,11 @@ end
 
 ### Example: Custom Builder
 
+Custom builders are implemented as classes which extend from `Rscons::Builder`.
+The builder must have a `run` method which is called to invoke the builder.
+The `run` method should return the name of the target built on success, and
+`false` on failure.
+
 ```ruby
 class GenerateFoo < Rscons::Builder
   def run(target, sources, cache, env, vars)
@@ -73,10 +78,12 @@ class GenerateFoo < Rscons::Builder
 #define GENERATED 42
 EOF
     end
+    target
   end
 end
 
 Rscons::Environment.new do |env|
+  env.add_builder(GenerateFoo.new)
   env.GenerateFoo("foo.h", [])
   env.Program("a.out", Dir["*.c"])
 end
@@ -93,15 +100,22 @@ class CmdBuilder < Rscons::Builder
       system(cmd)
       cache.register_build(target, cmd, sources, env)
     end
+    target
   end
 end
 
 Rscons::Environment.new do |env|
+  env.add_builder(CmdBuilder.new)
   env.CmdBuilder("foo.gen", "foo_gen.cfg")
 end
 ```
 
 ### Example: Custom Builder Using Builder#standard_build()
+
+The `standard_build` method from the `Rscons::Builder` base class can be used
+when the builder needs to execute a system command to produce the target file.
+The `standard_build` method will return the correct value so its return value
+can be used as the return value from the `run` method.
 
 ```ruby
 class CmdBuilder < Rscons::Builder
@@ -112,6 +126,7 @@ class CmdBuilder < Rscons::Builder
 end
 
 Rscons::Environment.new do |env|
+  env.add_builder(CmdBuilder.new)
   env.CmdBuilder("foo.gen", "foo_gen.cfg")
 end
 ```
