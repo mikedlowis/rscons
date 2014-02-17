@@ -218,9 +218,9 @@ describe Rscons do
   end
 
   it 'allows Ruby classes as custom builders to be used to construct files' do
-   test_dir('custom_builder')
+    test_dir('custom_builder')
     class MySource < Rscons::Builder
-      def run(target, sources, user_deps, cache, env, vars = {})
+      def run(target, sources, cache, env, vars)
         File.open(target, 'w') do |fh|
           fh.puts <<EOF
     #define THE_VALUE 5678
@@ -239,6 +239,39 @@ EOF
     lines.should == ['CC program.o', 'LD program']
     File.exists?('inc.h').should be_true
     `./program`.should == "The value is 5678\n"
+  end
+
+  it 'supports custom builders with multiple targets' do
+    test_dir('custom_builder')
+    class CHGen < Rscons::Builder
+      def run(target, sources, cache, env, vars)
+        c_fname = target
+        h_fname = target.sub(/\.c$/, ".h")
+        unless cache.up_to_date?([c_fname, h_fname], "", sources, env)
+          puts "CHGen #{c_fname}"
+          File.open(c_fname, "w") {|fh| fh.puts "int THE_VALUE = 42;"}
+          File.open(h_fname, "w") {|fh| fh.puts "extern int THE_VALUE;"}
+          cache.register_build([c_fname, h_fname], "", sources, env)
+        end
+        target
+      end
+    end
+
+    env = Rscons::Environment.new do |env|
+      env.add_builder(CHGen.new)
+      env.CHGen("inc.c", ["program.c"])
+      env.Program("program", Dir["*.c"] + ["inc.c"])
+    end
+
+    lines.should == ["CHGen inc.c", "CC program.o", "CC inc.o", "LD program"]
+    File.exists?("inc.c").should be_true
+    File.exists?("inc.h").should be_true
+    `./program`.should == "The value is 42\n"
+
+    File.open("inc.c", "w") {|fh| fh.puts "int THE_VALUE = 33;"}
+    env.process
+    lines.should == ["CHGen inc.c"]
+    `./program`.should == "The value is 42\n"
   end
 
   it 'allows cloning Environment objects' do

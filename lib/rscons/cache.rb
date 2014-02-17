@@ -85,16 +85,17 @@ module Rscons
       end
     end
 
-    # Check if a target is up to date
-    # @param target [String] The name of the target file.
-    # @param command [Array] The command used to build the target.
+    # Check if target(s) are up to date
+    # @param targets [String, Array] The name(s) of the target file(s).
+    # @param command [String, Array] The command used to build the target.
     # @param deps [Array] List of the target's dependency files.
     # @param env [Environment] The Rscons::Environment.
     # @param options [Hash] Optional options. Can contain the following keys:
     #   :strict_deps::
     #     Only consider a target up to date if its list of dependencies is
     #     exactly equal (including order) to the cached list of dependencies
-    # @return true value if the target is up to date, meaning that:
+    # @return true if the targets are all up to date, meaning that,
+    #   for each target:
     #   - the target exists on disk
     #   - the cache has information for the target
     #   - the target's checksum matches its checksum when it was last built
@@ -104,65 +105,69 @@ module Rscons
     #     exactly equal to those cached
     #   - each cached dependency file's current checksum matches the checksum
     #     stored in the cache file
-    def up_to_date?(target, command, deps, env, options = {})
-      # target file must exist on disk
-      return false unless File.exists?(target)
+    def up_to_date?(targets, command, deps, env, options = {})
+      Array(targets).each do |target|
+        # target file must exist on disk
+        return false unless File.exists?(target)
 
-      # target must be registered in the cache
-      return false unless @cache[:targets].has_key?(target)
+        # target must be registered in the cache
+        return false unless @cache[:targets].has_key?(target)
 
-      # target must have the same checksum as when it was built last
-      return false unless @cache[:targets][target][:checksum] == lookup_checksum(target)
+        # target must have the same checksum as when it was built last
+        return false unless @cache[:targets][target][:checksum] == lookup_checksum(target)
 
-      # command used to build target must be identical
-      return false unless @cache[:targets][target][:command] == command
+        # command used to build target must be identical
+        return false unless @cache[:targets][target][:command] == command
 
-      cached_deps = @cache[:targets][target][:deps] || []
-      cached_deps_fnames = cached_deps.map { |dc| dc[:fname] }
-      if options[:strict_deps]
-        # depedencies passed in must exactly equal those in the cache
-        return false unless deps == cached_deps_fnames
-      else
-        # all dependencies passed in must exist in cache (but cache may have more)
-        return false unless (Set.new(deps) - Set.new(cached_deps_fnames)).empty?
-      end
+        cached_deps = @cache[:targets][target][:deps] || []
+        cached_deps_fnames = cached_deps.map { |dc| dc[:fname] }
+        if options[:strict_deps]
+          # depedencies passed in must exactly equal those in the cache
+          return false unless deps == cached_deps_fnames
+        else
+          # all dependencies passed in must exist in cache (but cache may have more)
+          return false unless (Set.new(deps) - Set.new(cached_deps_fnames)).empty?
+        end
 
-      # set of user dependencies must match
-      user_deps = env.get_user_deps(target) || []
-      cached_user_deps = @cache[:targets][target][:user_deps] || []
-      cached_user_deps_fnames = cached_user_deps.map { |dc| dc[:fname] }
-      return false unless user_deps == cached_user_deps_fnames
+        # set of user dependencies must match
+        user_deps = env.get_user_deps(target) || []
+        cached_user_deps = @cache[:targets][target][:user_deps] || []
+        cached_user_deps_fnames = cached_user_deps.map { |dc| dc[:fname] }
+        return false unless user_deps == cached_user_deps_fnames
 
-      # all cached dependencies must have their checksums match
-      (cached_deps + cached_user_deps).each do |dep_cache|
-        return false unless dep_cache[:checksum] == lookup_checksum(dep_cache[:fname])
+        # all cached dependencies must have their checksums match
+        (cached_deps + cached_user_deps).each do |dep_cache|
+          return false unless dep_cache[:checksum] == lookup_checksum(dep_cache[:fname])
+        end
       end
 
       true
     end
 
-    # Store cache information about a target built by a builder
-    # @param target [String] The name of the target.
-    # @param command [Array] The command used to build the target.
+    # Store cache information about target(s) built by a builder
+    # @param targets [String, Array] The name of the target(s) built.
+    # @param command [String, Array] The command used to build the target.
     # @param deps [Array] List of dependencies for the target.
     # @param env [Environment] The Rscons::Environment.
-    def register_build(target, command, deps, env)
-      @cache[:targets][target.encode(__ENCODING__)] = {
-        command: command,
-        checksum: calculate_checksum(target),
-        deps: deps.map do |dep|
-          {
-            fname: dep.encode(__ENCODING__),
-            checksum: lookup_checksum(dep),
-          }
-        end,
-        user_deps: (env.get_user_deps(target) || []).map do |dep|
-          {
-            fname: dep.encode(__ENCODING__),
-            checksum: lookup_checksum(dep),
-          }
-        end,
-      }
+    def register_build(targets, command, deps, env)
+      Array(targets).each do |target|
+        @cache[:targets][target.encode(__ENCODING__)] = {
+          command: command,
+          checksum: calculate_checksum(target),
+          deps: deps.map do |dep|
+            {
+              fname: dep.encode(__ENCODING__),
+              checksum: lookup_checksum(dep),
+            }
+          end,
+          user_deps: (env.get_user_deps(target) || []).map do |dep|
+            {
+              fname: dep.encode(__ENCODING__),
+              checksum: lookup_checksum(dep),
+            }
+          end,
+        }
+      end
     end
 
     # Return a list of targets that have been built
