@@ -110,6 +110,29 @@ Rscons::Environment.new do |env|
 end
 ```
 
+### Example: Custom Builder That Generates Multiple Output Files
+
+```ruby
+class CModuleGenerator < Rscons::Builder
+  def run(target, sources, cache, env, vars)
+    c_fname = target
+    h_fname = target.sub(/\.c$/, ".h")
+    cmd = ["generate_c_and_h", sources.first, c_fname, h_fname]
+    unless cache.up_to_date?([c_fname, h_fname], cmd, sources, env)
+      cache.mkdir_p(File.dirname(target))
+      system(cmd)
+      cache.register_build([c_fname, h_fname], cmd, sources, env)
+    end
+    target
+  end
+end
+
+Rscons::Environment.new do |env|
+  env.add_builder(CModuleGenerator.new)
+  env.CModuleGenerator("build/foo.c", "foo_gen.cfg")
+end
+```
+
 ### Example: Custom Builder Using Builder#standard_build()
 
 The `standard_build` method from the `Rscons::Builder` base class can be used
