@@ -241,6 +241,13 @@ cloned_env["CPPPATH"] << "three"
 Documentation for the complete Rscons API can be found at
 http://rubydoc.info/github/holtrop/rscons/frames.
 
+## Release Notes
+
+### v1.1.0
+
+- Change Cache#up_to_date?() and #register_build() to accept a single target
+  file or an array of target file names
+
 ## Contributing
 
 1. Fork it
