@@ -1,6 +1,6 @@
 module Rscons
   module Builders
-    # A default RScons builder which knows how to produce an object file from
+    # A default Rscons builder which knows how to produce an object file from
     # various types of source files.
     class Object < Builder
       KNOWN_SUFFIXES = {

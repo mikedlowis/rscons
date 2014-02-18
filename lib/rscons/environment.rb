@@ -2,7 +2,7 @@ require 'set'
 require 'fileutils'
 
 module Rscons
-  # The Environment class is the main programmatic interface to RScons. It
+  # The Environment class is the main programmatic interface to Rscons. It
   # contains a collection of construction variables, options, builders, and
   # rules for building targets.
   class Environment
@@ -246,7 +246,7 @@ module Rscons
 
     # Build a list of source files into files containing one of the suffixes
     # given by suffixes.
-    # This method is used internally by RScons builders.
+    # This method is used internally by Rscons builders.
     # @param sources [Array] List of source files to build.
     # @param suffixes [Array] List of suffixes to try to convert source files into.
     # @param cache [Cache] The Cache.
@@ -294,7 +294,7 @@ module Rscons
     end
 
     # Parse dependencies for a given target from a Makefile.
-    # This method is used internally by RScons builders.
+    # This method is used internally by Rscons builders.
     # @param mf_fname [String] File name of the Makefile to read.
     # @param target [String] Name of the target to gather dependencies for.
     def self.parse_makefile_deps(mf_fname, target)
