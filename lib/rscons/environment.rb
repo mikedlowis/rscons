@@ -51,24 +51,53 @@ module Rscons
     end
 
     # Make a copy of the Environment object.
-    # The cloned environment will contain a copy of all environment options,
-    # construction variables, and builders (unless :exclude_builders => true is
-    # passed as an option). It will not contain a copy of the targets, build
-    # hooks, build directories, or the build root.  If a block is given, the
-    # Environment object is yielded to the block and when the block returns,
-    # the {#process} method is automatically called.  The possible options keys
-    # match those documented in the #initialize method.
+    #
+    # By default, a cloned environment will contain a copy of all environment
+    # options, construction variables, and builders, but not a copy of the
+    # targets, build hooks, build directories, or the build root.
+    #
+    # Exactly which items are cloned are controllable via the optional :clone
+    # parameter, which can be :none, :all, or a set or array of any of the
+    # following:
+    # - :variables to clone construction variables (on by default)
+    # - :builders to clone the builders (on by default)
+    # - :build_root to clone the build root (off by default)
+    # - :build_dirs to clone the build directories (off by default)
+    # - :build_hooks to clone the build hooks (off by default)
+    #
+    # If a block is given, the Environment object is yielded to the block and
+    # when the block returns, the {#process} method is automatically called.
+    #
+    # Any options that #initialize receives can also be specified here.
+    #
+    # @return a new {Environment} object.
     def clone(options = {})
+      clone = options[:clone] || Set[:variables, :builders]
+      clone = Set[:variables, :builders, :build_root, :build_dirs, :build_hooks] if clone == :all
+      clone = Set[] if clone == :none
+      clone = Set.new(clone) if clone.is_a?(Array)
+      clone.delete(:builders) if options[:exclude_builders]
       env = self.class.new(
         echo: options[:echo] || @echo,
         build_root: options[:build_root],
         exclude_builders: true)
-      unless options[:exclude_builders]
+      if clone.include?(:builders)
         @builders.each do |builder_name, builder|
           env.add_builder(builder)
         end
       end
-      env.append(@varset.clone)
+      env.append(@varset.clone) if clone.include?(:variables)
+      env.build_root = @build_root if clone.include?(:build_root)
+      if clone.include?(:build_dirs)
+        @build_dirs.each do |src_dir, obj_dir|
+          env.build_dir(src_dir, obj_dir)
+        end
+      end
+      if clone.include?(:build_hooks)
+        @build_hooks.each do |build_hook_block|
+          env.add_build_hook(&build_hook_block)
+        end
+      end
 
       if block_given?
         yield env

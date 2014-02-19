@@ -298,6 +298,29 @@ EOF
     ]
   end
 
+  it 'allows cloning all attributes of an Environment object' do
+    test_dir('clone_env')
+
+    env1 = Rscons::Environment.new(echo: :command) do |env|
+      env.build_dir('src', 'build')
+      env['CFLAGS'] = '-O2'
+      env.add_build_hook do |build_op|
+        build_op[:vars]['CPPFLAGS'] = '-DSTRING="Hello"'
+      end
+      env.Program('program', Dir['src/*.c'])
+    end
+
+    env2 = env1.clone(clone: :all) do |env|
+      env.Program('program2', Dir['src/*.c'])
+    end
+
+    lines.should == [
+      %q{gcc -c -o build/program.o -MMD -MF build/program.mf -DSTRING="Hello" -O2 src/program.c},
+      %q{gcc -o program build/program.o},
+      %q{gcc -o program2 build/program.o},
+    ]
+  end
+
   it 'builds a C++ program with one source file' do
     test_dir('simple_cc')
     Rscons::Environment.new do |env|
