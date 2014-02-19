@@ -15,7 +15,8 @@ module Rscons
     # String or +nil+
     attr_reader :build_root
     def build_root=(build_root)
-      @build_root = build_root.gsub('\\', '/')
+      @build_root = build_root
+      @build_root.gsub!('\\', '/') if @build_root
     end
 
     # Create an Environment object.
