@@ -243,6 +243,10 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.2.0
+- add :clone option to Environment#clone to control exactly which Environment attributes are cloned
+- allow nil to be passed in to Environment#build_root=
+
 ### v1.1.0
 
 - Change Cache#up_to_date?() and #register_build() to accept a single target
