@@ -243,7 +243,14 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.3.0
+
+- change Environment#execute() options parameter to accept the following options keys:
+  - :env to pass an environment Hash to Kernel#system
+  - :options to pass an options Hash to Kernel#system
+
 ### v1.2.0
+
 - add :clone option to Environment#clone to control exactly which Environment attributes are cloned
 - allow nil to be passed in to Environment#build_root=
 
