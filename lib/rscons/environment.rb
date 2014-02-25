@@ -224,7 +224,9 @@ module Rscons
     # @param short_desc [String] Message to print if the Environment's echo
     #   mode is set to :short
     # @param command [Array] The command to execute.
-    # @param options [Hash] Optional options to pass to Kernel#system.
+    # @param options [Hash] Optional options, possible keys:
+    #   - :env - environment Hash to pass to Kernel#system.
+    #   - :options - options Hash to pass to Kernel#system.
     def execute(short_desc, command, options = {})
       print_command = proc do
         puts command.map { |c| c =~ /\s/ ? "'#{c}'" : c }.join(' ')
@@ -234,7 +236,9 @@ module Rscons
       elsif @echo == :short
         puts short_desc
       end
-      system(*command, options).tap do |result|
+      env_args = options[:env] ? [options[:env]] : []
+      options_args = options[:options] ? [options[:options]] : []
+      system(*env_args, *command, *options_args).tap do |result|
         unless result or @echo == :command
           $stdout.write "Failed command was: "
           print_command.call
