@@ -5,6 +5,7 @@ require_relative "rscons/varset"
 require_relative "rscons/version"
 
 # default builders
+require_relative "rscons/builders/cfile"
 require_relative "rscons/builders/library"
 require_relative "rscons/builders/object"
 require_relative "rscons/builders/program"
@@ -12,6 +13,7 @@ require_relative "rscons/builders/program"
 # Namespace module for rscons classes
 module Rscons
   DEFAULT_BUILDERS = [
+    :CFile,
     :Library,
     :Object,
     :Program,
