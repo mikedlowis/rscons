@@ -259,7 +259,7 @@ module Rscons
         target = env.instance_variable_get(:@targets)["target"]
         target.should_not be_nil
         target[:builder].is_a?(Builder).should be_true
-        target[:source].should == ["src1", "src2"]
+        target[:sources].should == ["src1", "src2"]
         target[:vars].should == {var: "val"}
         target[:args].should == []
       end

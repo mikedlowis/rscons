@@ -175,14 +175,14 @@ module Rscons
       targets_processed = {}
       process_target = proc do |target|
         targets_processed[target] ||= begin
-          @targets[target][:source].each do |src|
+          @targets[target][:sources].each do |src|
             if @targets.include?(src) and not targets_processed.include?(src)
               process_target.call(src)
             end
           end
           result = run_builder(@targets[target][:builder],
                                target,
-                               @targets[target][:source],
+                               @targets[target][:sources],
                                cache,
                                @targets[target][:vars] || {})
           unless result
@@ -248,20 +248,24 @@ module Rscons
 
     def method_missing(method, *args)
       if @builders.has_key?(method.to_s)
-        target, source, vars, *rest = args
+        target, sources, vars, *rest = args
         unless vars.nil? or vars.is_a?(Hash) or vars.is_a?(VarSet)
           raise "Unexpected construction variable set: #{vars.inspect}"
         end
-        source = [source] unless source.is_a?(Array)
-        @targets[target] = {
-          builder: @builders[method.to_s],
-          source: source,
-          vars: vars,
-          args: rest,
-        }
+        sources = [sources] unless sources.is_a?(Array)
+        add_target(target, @builders[method.to_s], sources, vars, rest)
       else
         super
       end
+    end
+
+    def add_target(target, builder, sources, vars, args)
+      @targets[target] = {
+        builder: builder,
+        sources: sources,
+        vars: vars,
+        args: args,
+      }
     end
 
     # Manually record a given target as depending on the specified
