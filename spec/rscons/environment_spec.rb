@@ -249,8 +249,7 @@ module Rscons
     describe "#method_missing" do
       it "calls the original method missing when the target method is not a known builder" do
         env = Environment.new
-        env.should_receive(:orig_method_missing).with(:foobar)
-        env.foobar
+        expect {env.foobar}.to raise_error /undefined method .foobar./
       end
 
       it "records the target when the target method is a known builder" do

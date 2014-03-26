@@ -246,7 +246,6 @@ module Rscons
       end
     end
 
-    alias_method :orig_method_missing, :method_missing
     def method_missing(method, *args)
       if @builders.has_key?(method.to_s)
         target, source, vars, *rest = args
@@ -261,7 +260,7 @@ module Rscons
           args: rest,
         }
       else
-        orig_method_missing(method, *args)
+        super
       end
     end
 
