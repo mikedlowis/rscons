@@ -171,6 +171,7 @@ module Rscons
     # When a block is passed to Environment.new, this method is automatically
     # called after the block returns.
     def process
+      clean_target_paths!
       cache = Cache.new
       targets_processed = {}
       process_target = proc do |target|
@@ -192,7 +193,7 @@ module Rscons
           result
         end
       end
-      @targets.each do |target, info|
+      @targets.each do |target, target_params|
         process_target.call(target)
       end
       cache.write
@@ -329,6 +330,27 @@ module Rscons
         build_hook_block.call(build_operation)
       end
       builder.run(target, sources, cache, self, vars)
+    end
+
+    private
+
+    # Expand all target paths that begin with ^/ to be relative to the
+    # Environment's build root, if present
+    def clean_target_paths!
+      if @build_root
+        expand = lambda do |path|
+          path.sub(%r{^\^(?=[\\/])}, @build_root)
+        end
+
+        new_targets = {}
+        @targets.each_pair do |target, target_params|
+          target_params[:sources].map! do |source|
+            expand[source]
+          end
+          new_targets[expand[target]] = target_params
+        end
+        @targets = new_targets
+      end
     end
 
     # Parse dependencies for a given target from a Makefile.

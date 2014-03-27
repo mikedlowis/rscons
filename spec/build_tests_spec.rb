@@ -180,6 +180,23 @@ describe Rscons do
     lines.should == ["CC build_root/src/one/one.o", "CC build_root/src/two/two.o", "LD build_dir"]
   end
 
+  it "expands target and source paths starting with ^/ to be relative to the build root" do
+    test_dir('build_dir')
+    Rscons::Environment.new(echo: :command) do |env|
+      env.append('CPPPATH' => Dir['src/**/*/'])
+      env.build_root = "build_root"
+      FileUtils.mkdir_p(env.build_root)
+      FileUtils.mv("src/one/one.c", "build_root")
+      env.Object("^/one.o", "^/one.c")
+      env.Program('build_dir', Dir['src/**/*.c'] + ["^/one.o"])
+    end
+    lines.should == [
+      %q{gcc -c -o build_root/one.o -MMD -MF build_root/one.mf -Isrc/one/ -Isrc/two/ build_root/one.c},
+      %q{gcc -c -o build_root/src/two/two.o -MMD -MF build_root/src/two/two.mf -Isrc/one/ -Isrc/two/ src/two/two.c},
+      %q{gcc -o build_dir build_root/src/two/two.o build_root/one.o},
+    ]
+  end
+
   it 'cleans built files' do
     test_dir('build_dir')
     Rscons::Environment.new do |env|
