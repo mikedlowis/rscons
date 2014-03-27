@@ -324,6 +324,7 @@ module Rscons
           target: target,
           sources: sources,
           vars: vars,
+          env: self,
         }
         build_hook_block.call(build_operation)
       end
