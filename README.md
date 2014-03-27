@@ -12,7 +12,7 @@ Add this line to your application's Gemfile:
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
 Or install it yourself as:
 
@@ -176,11 +176,14 @@ subset of build targets or source files.
 The `build_op` parameter to the build hook block is a Hash describing the
 build operation with the following keys:
 * `:builder` - `Builder` instance in use
+* `:env` - `Environment` calling the build hook; note that this may be
+  different from the Environment that the build hook was added to in the case
+  that the original Environment was cloned with build hooks!
 * `:target` - `String` name of the target file
 * `:sources` - `Array` of the source files
-* `:vars` - `Rscons::VarSet` containing the construction variables to use
-The build hook can overwrite entries in `build_op[:vars]` to alter the
-construction variables in use for this specific build operation.
+* `:vars` - `Rscons::VarSet` containing the construction variables to use.
+  The build hook can overwrite entries in `build_op[:vars]` to alter the
+  construction variables in use for this specific build operation.
 
 ### Example: Creating a static library
 
@@ -190,18 +193,62 @@ Rscons::Environment.new do |env|
 end
 ```
 
+### Example: Creating a C++ parser source from a Yacc/Bison input file
+
+```ruby
+Rscons::Environment.new do |env|
+  env.CFile("#{env.build_root}/parser.tab.cc", "parser.yy")
+end
+```
+
 ## Details
 
-### Default Builders
+### Builders
 
-Rscons ships with a number of default builders:
+Rscons ships with a number of builders:
 
+* CFile, which builds a C or C++ source file from a lex or yacc input file
 * Library, which collects object files into a static library archive file
 * Object, which compiles source files to produce an object file
 * Program, which links object files to produce an executable
 
 If you want to create an Environment that does not contain any builders,
 you can use the `exclude_builders` key to the Environment constructor.
+
+#### CFile
+
+```ruby
+env.CFile(target, source)
+```
+
+The CFile builder will generate a C or C++ source file from a lex (.l, .ll)
+or yacc (.y, .yy) input file.
+
+#### Library
+
+```ruby
+env.Library(target, sources)
+```
+
+The Library builder creates a static library archive from the given source
+files.
+
+#### Object
+
+```ruby
+env.Object(target, sources)
+```
+
+The Object builder compiles the given sources to an object file.
+
+#### Program
+
+```ruby
+env.Program(target, sources)
+```
+
+The Program builder compiles and links the given sources to an executable file.
+Object files or source files can be given as `sources`.
 
 ### Managing Environments
 
@@ -233,8 +280,7 @@ cloned_env["CPPPATH"] << "three"
 ### Construction Variable Naming
 
 * uppercase strings - the default construction variables that Rscons uses
-* lowercase symbols - Rscons options
-* lowercase strings - reserved as user-defined construction variables
+* symbols, lowercase strings - reserved as user-defined construction variables
 
 ### API documentation
 
