@@ -17,15 +17,23 @@ module Rscons
 
     # Access the value of variable as a particular type
     # @param key [String, Symbol] The variable name.
+    # @return [Object] The variable's value.
     def [](key)
       @vars[key]
     end
 
     # Assign a value to a variable.
     # @param key [String, Symbol] The variable name.
-    # @param val [Object] The value.
+    # @param val [Object] The value to set.
     def []=(key, val)
       @vars[key] = val
+    end
+
+    # Check if the VarSet contains a variable.
+    # @param key [String, Symbol] The variable name.
+    # @return [true, false] Whether the VarSet contains a variable.
+    def include?(key)
+      @vars.include?(key)
     end
 
     # Add or overwrite a set of variables

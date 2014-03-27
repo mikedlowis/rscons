@@ -1,6 +1,6 @@
 module Rscons
   describe VarSet do
-    describe '.initialize' do
+    describe '#initialize' do
       it "initializes variables from a Hash" do
         v = VarSet.new({"one" => 1, "two" => :two})
         v["one"].should == 1
@@ -20,7 +20,7 @@ module Rscons
       end
     end
 
-    describe :[] do
+    describe "#[]" do
       v = VarSet.new({"fuz" => "a string", "foo" => 42, "bar" => :baz,
                       "qax" => [3, 6], "qux" => {a: :b}})
       it "allows accessing a variable with its verbatim value if type is not specified" do
@@ -32,7 +32,7 @@ module Rscons
       end
     end
 
-    describe :[]= do
+    describe "#[]=" do
       it "allows assigning to variables" do
         v = VarSet.new("CFLAGS" => ["-Wall", "-O3"])
         v["CPPPATH"] = ["one", "two"]
@@ -41,7 +41,18 @@ module Rscons
       end
     end
 
-    describe '.append' do
+    describe "#include?" do
+      it "returns whether the variable is in the VarSet" do
+        v = VarSet.new("CFLAGS" => [], :foo => :bar)
+        expect(v.include?("CFLAGS")).to be_true
+        expect(v.include?(:CFLAGS)).to be_false
+        expect(v.include?(:foo)).to be_true
+        expect(v.include?("foo")).to be_false
+        expect(v.include?("bar")).to be_false
+      end
+    end
+
+    describe '#append' do
       it "adds values from a Hash to the VarSet" do
         v = VarSet.new("LDFLAGS" => "-lgcc")
         v.append("LIBS" => "gcc", "LIBPATH" => ["mylibs"])
@@ -56,7 +67,7 @@ module Rscons
       end
     end
 
-    describe '.merge' do
+    describe '#merge' do
       it "returns a new VarSet merged with the given Hash" do
         v = VarSet.new("foo" => "yoda")
         v2 = v.merge("baz" => "qux")
@@ -74,7 +85,7 @@ module Rscons
       end
     end
 
-    describe '.expand_varref' do
+    describe '#expand_varref' do
       v = VarSet.new("CFLAGS" => ["-Wall", "-O2"],
                      "CC" => "gcc",
                      "CPPPATH" => ["dir1", "dir2"],
