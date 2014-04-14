@@ -62,7 +62,7 @@ module Rscons
       end
 
       it "returns false when the build command has changed" do
-        _cache = {"targets" => {"target" => {"checksum" => "abc", "command" => "old command"}}}
+        _cache = {"targets" => {"target" => {"checksum" => "abc", "command" => Digest::MD5.hexdigest("old command".inspect)}}}
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
@@ -71,7 +71,7 @@ module Rscons
 
       it "returns false when there is a new dependency" do
         _cache = {"targets" => {"target" => {"checksum" => "abc",
-                                         "command" => "command",
+                                         "command" => Digest::MD5.hexdigest("command".inspect),
                                          "deps" => [{"fname" => "dep.1"}]}}}
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
@@ -81,7 +81,7 @@ module Rscons
 
       it "returns false when a dependency's checksum has changed" do
         _cache = {"targets" => {"target" => {"checksum" => "abc",
-                                         "command" => "command",
+                                         "command" => Digest::MD5.hexdigest("command".inspect),
                                          "deps" => [{"fname" => "dep.1",
                                                  "checksum" => "dep.1.chk"},
                                                 {"fname" => "dep.2",
@@ -99,7 +99,7 @@ module Rscons
 
       it "returns false with strict_deps=true when cache has an extra dependency" do
         _cache = {"targets" => {"target" => {"checksum" => "abc",
-                                         "command" => "command",
+                                         "command" => Digest::MD5.hexdigest("command".inspect),
                                          "deps" => [{"fname" => "dep.1",
                                                  "checksum" => "dep.1.chk"},
                                                 {"fname" => "dep.2",
@@ -115,7 +115,7 @@ module Rscons
 
       it "returns false when there is a new user dependency" do
         _cache = {"targets" => {"target" => {"checksum" => "abc",
-                                         "command" => "command",
+                                         "command" => Digest::MD5.hexdigest("command".inspect),
                                          "deps" => [{"fname" => "dep.1"}],
                                          "user_deps" => []}}}
         cache = build_from(_cache)
@@ -128,7 +128,7 @@ module Rscons
 
       it "returns false when a user dependency checksum has changed" do
         _cache = {"targets" => {"target" => {"checksum" => "abc",
-                                         "command" => "command",
+                                         "command" => Digest::MD5.hexdigest("command".inspect),
                                          "deps" => [{"fname" => "dep.1",
                                                  "checksum" => "dep.1.chk"},
                                                 {"fname" => "dep.2",
@@ -151,7 +151,7 @@ module Rscons
 
       it "returns true when no condition for false is met" do
         _cache = {"targets" => {"target" => {"checksum" => "abc",
-                                         "command" => "command",
+                                         "command" => Digest::MD5.hexdigest("command".inspect),
                                          "deps" => [{"fname" => "dep.1",
                                                  "checksum" => "dep.1.chk"},
                                                 {"fname" => "dep.2",
@@ -182,7 +182,7 @@ module Rscons
         cache.register_build("the target", "the command", ["dep 1", "dep 2"], env)
         cached_target = cache.instance_variable_get(:@cache)["targets"]["the target"]
         cached_target.should_not be_nil
-        cached_target["command"].should == "the command"
+        cached_target["command"].should == Digest::MD5.hexdigest("the command".inspect)
         cached_target["checksum"].should == "the checksum"
         cached_target["deps"].should == [
           {"fname" => "dep 1", "checksum" => "dep 1 checksum"},

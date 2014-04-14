@@ -13,7 +13,7 @@ module Rscons
   #     "targets" => {
   #       "program" => {
   #         "checksum" => "A1B2C3D4",
-  #         "command" => ["gcc", "-o", "program", "program.o"],
+  #         "command" => "13543518FE",
   #         "deps" => [
   #           {
   #             "fname" => "program.o",
@@ -29,7 +29,7 @@ module Rscons
   #       },
   #       "program.o" => {
   #         "checksum" => "87654321",
-  #         "command" => ["gcc", "-c", "-o", "program.o", "program.c"],
+  #         "command" => "98765ABCD",
   #         "deps" => [
   #           {
   #             "fname" => "program.c",
@@ -118,7 +118,7 @@ module Rscons
         return false unless @cache["targets"][target]["checksum"] == lookup_checksum(target)
 
         # command used to build target must be identical
-        return false unless @cache["targets"][target]["command"] == command
+        return false unless @cache["targets"][target]["command"] == Digest::MD5.hexdigest(command.inspect)
 
         cached_deps = @cache["targets"][target]["deps"] || []
         cached_deps_fnames = cached_deps.map { |dc| dc["fname"] }
@@ -153,7 +153,7 @@ module Rscons
     def register_build(targets, command, deps, env)
       Array(targets).each do |target|
         @cache["targets"][target.encode(__ENCODING__)] = {
-          "command" => command,
+          "command" => Digest::MD5.hexdigest(command.inspect),
           "checksum" => calculate_checksum(target),
           "deps" => deps.map do |dep|
             {
