@@ -1,5 +1,14 @@
 require 'fileutils'
 
+class Dir
+  class << self
+    alias_method :orig_bracket, :[]
+  end
+  def self.[](*args)
+    orig_bracket(*args).sort
+  end
+end
+
 describe Rscons do
   BUILD_TEST_RUN_DIR = "build_test_run"
 
