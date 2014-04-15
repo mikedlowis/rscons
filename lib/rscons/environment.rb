@@ -164,7 +164,7 @@ module Rscons
     # Add a set of construction variables or environment options.
     # @see VarSet#append
     def append(*args)
-      @varset.send(:append, *args)
+      @varset.append(*args)
     end
 
     # Build all target specified in the Environment.
