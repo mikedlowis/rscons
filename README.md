@@ -208,8 +208,10 @@ end
 Rscons ships with a number of builders:
 
 * CFile, which builds a C or C++ source file from a lex or yacc input file
+* Disassemble, which disassembles an object file to a disassembly listing
 * Library, which collects object files into a static library archive file
 * Object, which compiles source files to produce an object file
+* Preprocess, which invokes the C/C++ preprocessor on a source file
 * Program, which links object files to produce an executable
 
 If you want to create an Environment that does not contain any builders,
@@ -219,15 +221,30 @@ you can use the `exclude_builders` key to the Environment constructor.
 
 ```ruby
 env.CFile(target, source)
+# Example
+env.CFile("parser.c", "parser.y")
 ```
 
 The CFile builder will generate a C or C++ source file from a lex (.l, .ll)
 or yacc (.y, .yy) input file.
 
+#### Disassemble
+
+```ruby
+env.Disassemble(target, source)
+# Example
+env.Disassemble("module.dis", "module.o")
+```
+
+The Disassemble builder generates a disassembly listing using objdump from
+and object file.
+
 #### Library
 
 ```ruby
 env.Library(target, sources)
+# Example
+env.Library("lib.a", Dir["src/**/*.c"])
 ```
 
 The Library builder creates a static library archive from the given source
@@ -237,14 +254,30 @@ files.
 
 ```ruby
 env.Object(target, sources)
+# Example
+env.Object("module.o", "module.c")
 ```
 
 The Object builder compiles the given sources to an object file.
+
+#### Preprocess
+
+```ruby
+env.Preprocess(target, source)
+# Example
+env.Preprocess("module-preprocessed.cc", "module.cc")
+```
+
+The Preprocess builder invokes either ${CC} or ${CXX} (depending on if the
+source contains an extension in ${CXXSUFFIX} or not) and writes the
+preprocessed output to the target file.
 
 #### Program
 
 ```ruby
 env.Program(target, sources)
+# Example
+env.Program("myprog", Dir["src/**/*.cc"])
 ```
 
 The Program builder compiles and links the given sources to an executable file.
