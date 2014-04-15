@@ -176,6 +176,21 @@ module Rscons
 
         expect { env.process }.to raise_error BuildError, /Failed.to.build.main.o/
       end
+
+      it "writes the cache when the Builder raises an exception" do
+        env = Environment.new
+        env.Object("module.o", "module.c")
+
+        cache = "cache"
+        Cache.should_receive(:instance).and_return(cache)
+        cache.should_receive(:clear_checksum_cache!)
+        env.stub(:run_builder) do |builder, target, sources, cache, vars|
+          raise "Ruby exception thrown by builder"
+        end
+        cache.should_receive(:write)
+
+        expect { env.process }.to raise_error RuntimeError, /Ruby exception thrown by builder/
+      end
     end
 
     describe "#clear_targets" do

@@ -176,29 +176,31 @@ module Rscons
       cache.clear_checksum_cache!
       targets_processed = {}
       unless @targets.empty?
-        process_target = proc do |target|
-          targets_processed[target] ||= begin
-            @targets[target][:sources].each do |src|
-              if @targets.include?(src) and not targets_processed.include?(src)
-                process_target.call(src)
+        begin
+          process_target = proc do |target|
+            targets_processed[target] ||= begin
+              @targets[target][:sources].each do |src|
+                if @targets.include?(src) and not targets_processed.include?(src)
+                  process_target.call(src)
+                end
               end
+              result = run_builder(@targets[target][:builder],
+                                   target,
+                                   @targets[target][:sources],
+                                   cache,
+                                   @targets[target][:vars] || {})
+              unless result
+                raise BuildError.new("Failed to build #{target}")
+              end
+              result
             end
-            result = run_builder(@targets[target][:builder],
-                                 target,
-                                 @targets[target][:sources],
-                                 cache,
-                                 @targets[target][:vars] || {})
-            unless result
-              cache.write
-              raise BuildError.new("Failed to build #{target}")
-            end
-            result
           end
+          @targets.each do |target, target_params|
+            process_target.call(target)
+          end
+        ensure
+          cache.write
         end
-        @targets.each do |target, target_params|
-          process_target.call(target)
-        end
-        cache.write
       end
     end
 
