@@ -329,6 +329,22 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.4.0
+
+- add CFile builder
+- add Disassemble builder
+- add Preprocess builder
+- pass the Environment object to build hooks in the :env key of the build_op parameter
+- expand target/source paths beginning with "^/" to be relative to the Environment's build root
+- many performance improvements, including:
+  - use JSON instead of YAML for the cache to improve loading speed (Issue #7)
+  - store a hash of the build command instead of the full command contents in the cache
+  - implement copy-on-write semantics for construction variables when cloning Environments
+  - only load the cache once instead of on each Environment#process
+  - only write the cache when something has changed
+- fix Cache#mkdir_p to handle relative paths (Issue #5)
+- flush the cache to disk if a builder raises an exception (Issue #4)
+
 ### v1.3.0
 
 - change Environment#execute() options parameter to accept the following options keys:
