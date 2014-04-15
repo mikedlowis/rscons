@@ -1,53 +1,73 @@
 module Rscons
   # This class represents a collection of variables which can be accessed
-  # as certain types
+  # as certain types.
+  # Only nil, strings, arrays, and hashes should be stored in a VarSet.
   class VarSet
-    # The underlying hash
-    attr_reader :vars
-
-    # Create a VarSet
+    # Create a VarSet.
     # @param vars [Hash] Optional initial variables.
     def initialize(vars = {})
-      if vars.is_a?(VarSet)
-        @vars = vars.clone.vars
-      else
-        @vars = vars
-      end
+      @my_vars = {}
+      @coa_vars = []
+      append(vars)
     end
 
     # Access the value of variable as a particular type
     # @param key [String, Symbol] The variable name.
     # @return [Object] The variable's value.
     def [](key)
-      @vars[key]
+      if @my_vars.include?(key)
+        @my_vars[key]
+      else
+        @coa_vars.each do |coa_vars|
+          if coa_vars.include?(key)
+            @my_vars[key] = deep_dup(coa_vars[key])
+            return @my_vars[key]
+          end
+        end
+        nil
+      end
     end
 
     # Assign a value to a variable.
     # @param key [String, Symbol] The variable name.
     # @param val [Object] The value to set.
     def []=(key, val)
-      @vars[key] = val
+      @my_vars[key] = val
     end
 
     # Check if the VarSet contains a variable.
     # @param key [String, Symbol] The variable name.
     # @return [true, false] Whether the VarSet contains a variable.
     def include?(key)
-      @vars.include?(key)
+      if @my_vars.include?(key)
+        true
+      else
+        @coa_vars.find do |coa_vars|
+          coa_vars.include?(key)
+        end
+      end
     end
 
     # Add or overwrite a set of variables
     # @param values [VarSet, Hash] New set of variables.
     def append(values)
-      values = values.vars if values.is_a?(VarSet)
-      @vars.merge!(deep_dup(values))
+      coa!
+      if values.is_a?(VarSet)
+        values.send(:coa!)
+        @coa_vars = values.instance_variable_get(:@coa_vars) + @coa_vars
+      else
+        @my_vars = deep_dup(values)
+      end
       self
     end
 
     # Create a new VarSet object based on the first merged with other.
     # @param other [VarSet, Hash] Other variables to add or overwrite.
     def merge(other = {})
-      VarSet.new(deep_dup(@vars)).append(other)
+      coa!
+      varset = self.class.new
+      varset.instance_variable_set(:@coa_vars, @coa_vars.dup)
+      varset.append(other)
     end
     alias_method :clone, :merge
 
@@ -62,13 +82,13 @@ module Rscons
       else
         if varref =~ /^(.*)\$\{([^}]+)\}(.*)$/
           prefix, varname, suffix = $1, $2, $3
-          varval = expand_varref(@vars[varname])
+          varval = expand_varref(self[varname])
           if varval.is_a?(String)
             expand_varref("#{prefix}#{varval}#{suffix}")
           elsif varval.is_a?(Array)
             varval.map {|vv| expand_varref("#{prefix}#{vv}#{suffix}")}.flatten
           else
-            raise "I do not know how to expand a variable reference to a #{varval.class.name} (from #{varname.inspect} => #{@vars[varname].inspect})"
+            raise "I do not know how to expand a variable reference to a #{varval.class.name} (from #{varname.inspect} => #{self[varname].inspect})"
           end
         else
           varref
@@ -78,9 +98,17 @@ module Rscons
 
     private
 
-    # Create a deep copy of a Hash or Array.
-    # @param obj [Hash, Array] Hash or Array to deep copy.
-    # @return [Hash, Array] Deep copied value.
+    # Move all VarSet variables into the copy-on-access list.
+    def coa!
+      unless @my_vars.empty?
+        @coa_vars.unshift(@my_vars)
+        @my_vars = {}
+      end
+    end
+
+    # Create a deep copy of an object.
+    # @param obj [nil, String, Array, Hash] Object to deep copy.
+    # @return [nil, String, Array, Hash] Deep copied value.
     def deep_dup(obj)
       obj_class = obj.class
       if obj_class == Hash
