@@ -40,14 +40,14 @@ module Rscons
     # @param values [VarSet, Hash] New set of variables.
     def append(values)
       values = values.vars if values.is_a?(VarSet)
-      @vars.merge!(Marshal.load(Marshal.dump(values)))
+      @vars.merge!(deep_dup(values))
       self
     end
 
     # Create a new VarSet object based on the first merged with other.
     # @param other [VarSet, Hash] Other variables to add or overwrite.
     def merge(other = {})
-      VarSet.new(Marshal.load(Marshal.dump(@vars))).append(other)
+      VarSet.new(deep_dup(@vars)).append(other)
     end
     alias_method :clone, :merge
 
@@ -73,6 +73,26 @@ module Rscons
         else
           varref
         end
+      end
+    end
+
+    private
+
+    # Create a deep copy of a Hash or Array.
+    # @param obj [Hash, Array] Hash or Array to deep copy.
+    # @return [Hash, Array] Deep copied value.
+    def deep_dup(obj)
+      if obj.is_a?(Hash)
+        obj.reduce({}) do |result, (k, v)|
+          result[k] = deep_dup(v)
+          result
+        end
+      elsif obj.is_a?(Array)
+        obj.map { |v| deep_dup(v) }
+      elsif obj.is_a?(String)
+        obj.dup
+      else
+        obj
       end
     end
   end
