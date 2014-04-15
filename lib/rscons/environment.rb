@@ -86,7 +86,7 @@ module Rscons
           env.add_builder(builder)
         end
       end
-      env.append(@varset.clone) if clone.include?(:variables)
+      env.append(@varset) if clone.include?(:variables)
       env.build_root = @build_root if clone.include?(:build_root)
       if clone.include?(:build_dirs)
         @build_dirs.each do |src_dir, obj_dir|
