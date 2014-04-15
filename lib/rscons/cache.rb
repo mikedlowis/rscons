@@ -152,18 +152,18 @@ module Rscons
     # @param env [Environment] The {Rscons::Environment}.
     def register_build(targets, command, deps, env)
       Array(targets).each do |target|
-        @cache["targets"][target.encode(__ENCODING__)] = {
+        @cache["targets"][target] = {
           "command" => Digest::MD5.hexdigest(command.inspect),
           "checksum" => calculate_checksum(target),
           "deps" => deps.map do |dep|
             {
-              "fname" => dep.encode(__ENCODING__),
+              "fname" => dep,
               "checksum" => lookup_checksum(dep),
             }
           end,
           "user_deps" => (env.get_user_deps(target) || []).map do |dep|
             {
-              "fname" => dep.encode(__ENCODING__),
+              "fname" => dep,
               "checksum" => lookup_checksum(dep),
             }
           end,
@@ -181,7 +181,7 @@ module Rscons
     def mkdir_p(path)
       parts = path.split(/[\\\/]/)
       parts.each_index do |i|
-        subpath = File.join(*parts[0, i + 1]).encode(__ENCODING__)
+        subpath = File.join(*parts[0, i + 1])
         unless File.exists?(subpath)
           FileUtils.mkdir(subpath)
           @cache["directories"][subpath] = true
@@ -207,7 +207,7 @@ module Rscons
     # Calculate and return a file's checksum
     # @param file [String] The file name.
     def calculate_checksum(file)
-      @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file, mode: "rb")).encode(__ENCODING__) rescue ""
+      @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file, mode: "rb")) rescue ""
     end
   end
 end
