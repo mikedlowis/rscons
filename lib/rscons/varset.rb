@@ -82,14 +82,15 @@ module Rscons
     # @param obj [Hash, Array] Hash or Array to deep copy.
     # @return [Hash, Array] Deep copied value.
     def deep_dup(obj)
-      if obj.is_a?(Hash)
+      obj_class = obj.class
+      if obj_class == Hash
         obj.reduce({}) do |result, (k, v)|
           result[k] = deep_dup(v)
           result
         end
-      elsif obj.is_a?(Array)
+      elsif obj_class == Array
         obj.map { |v| deep_dup(v) }
-      elsif obj.is_a?(String)
+      elsif obj_class == String
         obj.dup
       else
         obj
