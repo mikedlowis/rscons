@@ -225,6 +225,16 @@ module Rscons
         cache.mkdir_p("one\\two\\four")
         cache.directories.should == ["one/two", "one/two/three", "one/two/four"]
       end
+
+      it "handles absolute paths" do
+        _cache = {}
+        cache = build_from(_cache)
+        File.should_receive(:exists?).with("/one").and_return(true)
+        File.should_receive(:exists?).with("/one/two").and_return(false)
+        FileUtils.should_receive(:mkdir).with("/one/two")
+        cache.mkdir_p("/one/two")
+        cache.directories.should == ["/one/two"]
+      end
     end
 
     describe "#directories" do
