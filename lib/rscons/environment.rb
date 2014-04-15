@@ -171,30 +171,30 @@ module Rscons
     # When a block is passed to Environment.new, this method is automatically
     # called after the block returns.
     def process
-      clean_target_paths!
-      cache = Cache.instance
-      cache.clear_checksum_cache!
-      targets_processed = {}
       unless @targets.empty?
-        begin
-          process_target = proc do |target|
-            targets_processed[target] ||= begin
-              @targets[target][:sources].each do |src|
-                if @targets.include?(src) and not targets_processed.include?(src)
-                  process_target.call(src)
-                end
+        clean_target_paths!
+        cache = Cache.instance
+        cache.clear_checksum_cache!
+        targets_processed = {}
+        process_target = proc do |target|
+          targets_processed[target] ||= begin
+            @targets[target][:sources].each do |src|
+              if @targets.include?(src) and not targets_processed.include?(src)
+                process_target.call(src)
               end
-              result = run_builder(@targets[target][:builder],
-                                   target,
-                                   @targets[target][:sources],
-                                   cache,
-                                   @targets[target][:vars] || {})
-              unless result
-                raise BuildError.new("Failed to build #{target}")
-              end
-              result
             end
+            result = run_builder(@targets[target][:builder],
+                                 target,
+                                 @targets[target][:sources],
+                                 cache,
+                                 @targets[target][:vars] || {})
+            unless result
+              raise BuildError.new("Failed to build #{target}")
+            end
+            result
           end
+        end
+        begin
           @targets.each do |target, target_params|
             process_target.call(target)
           end
