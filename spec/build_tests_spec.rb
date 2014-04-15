@@ -454,4 +454,34 @@ EOF
       `./hello-d`.rstrip.should == "Hello from D!"
     end
   end
+
+  it "supports disassembling object files" do
+    test_dir("simple")
+    Rscons::Environment.new do |env|
+      env.Object("simple.o", "simple.c")
+      env.Disassemble("simple.txt", "simple.o")
+    end
+    File.exists?("simple.txt").should be_true
+    File.read("simple.txt").should =~ /Disassembly of section .text:/
+  end
+
+  it "supports preprocessing C sources" do
+    test_dir("simple")
+    Rscons::Environment.new do |env|
+      env.Preprocess("simplepp.c", "simple.c")
+      env.Program("simple", "simplepp.c")
+    end
+    File.read("simplepp.c").should =~ /# \d+ "simple.c"/
+    `./simple`.should == "This is a simple C program\n"
+  end
+
+  it "supports preprocessing C++ sources" do
+    test_dir("simple_cc")
+    Rscons::Environment.new do |env|
+      env.Preprocess("simplepp.cc", "simple.cc")
+      env.Program("simple", "simplepp.cc")
+    end
+    File.read("simplepp.cc").should =~ /# \d+ "simple.cc"/
+    `./simple`.should == "This is a simple C++ program\n"
+  end
 end

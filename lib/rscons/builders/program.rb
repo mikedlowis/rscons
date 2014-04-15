@@ -2,7 +2,7 @@ module Rscons
   module Builders
     # A default Rscons builder that knows how to link object files into an
     # executable program.
-    class Rscons::Builders::Program < Rscons::Builder
+    class Program < Builder
       def default_variables(env)
         {
           'LD' => nil,

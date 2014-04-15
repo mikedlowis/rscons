@@ -6,16 +6,20 @@ require_relative "rscons/version"
 
 # default builders
 require_relative "rscons/builders/cfile"
+require_relative "rscons/builders/disassemble"
 require_relative "rscons/builders/library"
 require_relative "rscons/builders/object"
+require_relative "rscons/builders/preprocess"
 require_relative "rscons/builders/program"
 
 # Namespace module for rscons classes
 module Rscons
   DEFAULT_BUILDERS = [
     :CFile,
+    :Disassemble,
     :Library,
     :Object,
+    :Preprocess,
     :Program,
   ]
 

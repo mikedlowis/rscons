@@ -1,7 +1,7 @@
 module Rscons
   module Builders
     # A default Rscons builder that produces a static library archive.
-    class Rscons::Builders::Library < Rscons::Builder
+    class Library < Builder
       def default_variables(env)
         {
           'AR' => 'ar',
