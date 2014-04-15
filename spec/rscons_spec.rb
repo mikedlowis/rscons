@@ -2,7 +2,7 @@ describe Rscons do
   describe ".clean" do
     it "removes all build targets and created directories" do
       cache = "cache"
-      Rscons::Cache.should_receive(:new).and_return(cache)
+      Rscons::Cache.should_receive(:instance).and_return(cache)
       cache.should_receive(:targets).and_return(["build/a.out", "build/main.o"])
       FileUtils.should_receive(:rm_f).with("build/a.out")
       FileUtils.should_receive(:rm_f).with("build/main.o")
@@ -18,7 +18,7 @@ describe Rscons do
       Dir.should_receive(:rmdir).with("build")
       File.should_receive(:directory?).with("other").and_return(true)
       Dir.should_receive(:entries).with("other").and_return([".", "..", "other.file"])
-      Rscons::Cache.should_receive(:clear)
+      cache.should_receive(:clear)
 
       Rscons.clean
     end

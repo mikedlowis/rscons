@@ -172,7 +172,8 @@ module Rscons
     # called after the block returns.
     def process
       clean_target_paths!
-      cache = Cache.new
+      cache = Cache.instance
+      cache.clear_checksum_cache!
       targets_processed = {}
       process_target = proc do |target|
         targets_processed[target] ||= begin

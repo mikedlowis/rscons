@@ -23,7 +23,7 @@ module Rscons
 
   # Remove all generated files
   def self.clean
-    cache = Cache.new
+    cache = Cache.instance
     # remove all built files
     cache.targets.each do |target|
       FileUtils.rm_f(target)
@@ -35,7 +35,7 @@ module Rscons
         Dir.rmdir(directory) rescue nil
       end
     end
-    Cache.clear
+    cache.clear
   end
 
   # Return whether the given path is an absolute filesystem path or not

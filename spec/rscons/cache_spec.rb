@@ -5,14 +5,11 @@ module Rscons
     end
 
     def build_from(cache)
-      JSON.should_receive(:load).and_return(cache)
-      Cache.new
-    end
-
-    describe ".clear" do
-      it "removes the cache file" do
-        FileUtils.should_receive(:rm_f).with(Cache::CACHE_FILE)
-        Cache.clear
+      JSON.stub(:load) do
+        cache
+      end
+      Cache.instance.tap do |cache|
+        cache.send(:initialize!)
       end
     end
 
@@ -21,8 +18,18 @@ module Rscons
         it "prints a warning and defaults to an empty hash" do
           JSON.should_receive(:load).and_return("string")
           $stderr.should_receive(:puts).with(/Warning:.*was.corrupt/)
-          Cache.new.instance_variable_get(:@cache).is_a?(Hash).should be_true
+          c = Cache.instance
+          c.send(:initialize!)
+          c.instance_variable_get(:@cache).is_a?(Hash).should be_true
         end
+      end
+    end
+
+    describe "#clear" do
+      it "removes the cache file" do
+        FileUtils.should_receive(:rm_f).with(Cache::CACHE_FILE)
+        JSON.stub(:load) {{}}
+        Cache.instance.clear
       end
     end
 

@@ -2,6 +2,7 @@ require "digest/md5"
 require "fileutils"
 require "json"
 require "set"
+require "singleton"
 require "rscons/version"
 
 module Rscons
@@ -50,30 +51,25 @@ module Rscons
   #     },
   #   }
   class Cache
-    #### Constants
+    include Singleton
 
     # Name of the file to store cache information in
     CACHE_FILE = ".rsconscache"
 
-    #### Class Methods
-
-    # Remove the cache file
-    def self.clear
-      FileUtils.rm_f(CACHE_FILE)
-    end
-
-    #### Instance Methods
-
     # Create a Cache object and load in the previous contents from the cache
     # file.
     def initialize
-      @cache = JSON.load(File.read(CACHE_FILE)) rescue {}
-      unless @cache.is_a?(Hash)
-        $stderr.puts "Warning: #{CACHE_FILE} was corrupt. Contents:\n#{@cache.inspect}"
-        @cache = {}
-      end
-      @cache["targets"] ||= {}
-      @cache["directories"] ||= {}
+      initialize!
+    end
+
+    # Remove the cache file.
+    def clear
+      FileUtils.rm_f(CACHE_FILE)
+      initialize!
+    end
+
+    # Clear the cached file checksums.
+    def clear_checksum_cache!
       @lookup_checksums = {}
     end
 
@@ -194,8 +190,20 @@ module Rscons
       @cache["directories"].keys
     end
 
-    # Private Instance Methods
     private
+
+    # Create a Cache object and load in the previous contents from the cache
+    # file.
+    def initialize!
+      @cache = JSON.load(File.read(CACHE_FILE)) rescue {}
+      unless @cache.is_a?(Hash)
+        $stderr.puts "Warning: #{CACHE_FILE} was corrupt. Contents:\n#{@cache.inspect}"
+        @cache = {}
+      end
+      @cache["targets"] ||= {}
+      @cache["directories"] ||= {}
+      @lookup_checksums = {}
+    end
 
     # Return a file's checksum, or the previously calculated checksum for
     # the same file

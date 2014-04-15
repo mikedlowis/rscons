@@ -140,7 +140,8 @@ module Rscons
         env.Program("a.out", "main.c")
 
         cache = "cache"
-        Cache.should_receive(:new).and_return(cache)
+        Cache.should_receive(:instance).and_return(cache)
+        cache.should_receive(:clear_checksum_cache!)
         env.should_receive(:run_builder).with(anything, "a.out", ["main.c"], cache, {}).and_return(true)
         cache.should_receive(:write)
 
@@ -153,7 +154,8 @@ module Rscons
         env.Object("main.o", "other.cc")
 
         cache = "cache"
-        Cache.should_receive(:new).and_return(cache)
+        Cache.should_receive(:instance).and_return(cache)
+        cache.should_receive(:clear_checksum_cache!)
         env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return("main.o")
         env.should_receive(:run_builder).with(anything, "a.out", ["main.o"], cache, {}).and_return("a.out")
         cache.should_receive(:write)
@@ -167,7 +169,8 @@ module Rscons
         env.Object("main.o", "other.cc")
 
         cache = "cache"
-        Cache.should_receive(:new).and_return(cache)
+        Cache.should_receive(:instance).and_return(cache)
+        cache.should_receive(:clear_checksum_cache!)
         env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return(false)
         cache.should_receive(:write)
 
