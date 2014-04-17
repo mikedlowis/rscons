@@ -258,7 +258,7 @@ module Rscons
         unless vars.nil? or vars.is_a?(Hash) or vars.is_a?(VarSet)
           raise "Unexpected construction variable set: #{vars.inspect}"
         end
-        sources = [sources] unless sources.is_a?(Array)
+        sources = Array(sources)
         add_target(target, @builders[method.to_s], sources, vars, rest)
       else
         super

@@ -484,4 +484,18 @@ EOF
     File.read("simplepp.cc").should =~ /# \d+ "simple.cc"/
     `./simple`.should == "This is a simple C++ program\n"
   end
+
+  it "supports invoking builders with no sources and a build_root defined" do
+    class TestBuilder < Rscons::Builder
+      def run(target, sources, cache, env, vars)
+        target
+      end
+    end
+    test_dir("simple")
+    Rscons::Environment.new do |env|
+      env.build_root = "build"
+      env.add_builder(TestBuilder.new)
+      env.TestBuilder("file")
+    end
+  end
 end
