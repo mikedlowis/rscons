@@ -337,22 +337,30 @@ module Rscons
       builder.run(target, sources, cache, self, vars)
     end
 
+    # Expand a path to be relative to the Environment's build root.
+    #
+    # Paths beginning with "^/" are expanded by replacing "^" with the
+    # Environment's build root.
+    #
+    # @param path [String] The path to expand.
+    #
+    # @return [String] The expanded path.
+    def expand_path(path)
+      path.sub(%r{^\^(?=[\\/])}, @build_root)
+    end
+
     private
 
     # Expand all target paths that begin with ^/ to be relative to the
     # Environment's build root, if present
     def clean_target_paths!
       if @build_root
-        expand = lambda do |path|
-          path.sub(%r{^\^(?=[\\/])}, @build_root)
-        end
-
         new_targets = {}
         @targets.each_pair do |target, target_params|
           target_params[:sources].map! do |source|
-            expand[source]
+            expand_path(source)
           end
-          new_targets[expand[target]] = target_params
+          new_targets[expand_path(target)] = target_params
         end
         @targets = new_targets
       end
