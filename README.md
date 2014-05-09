@@ -329,6 +329,15 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.4.2
+
+- add Environment#expand_path
+- expand construction variable references in builder targets and sources before invoking builder
+
+### v1.4.1
+
+- fix invoking a builder with no sources while a build root defined
+
 ### v1.4.0
 
 - add CFile builder
