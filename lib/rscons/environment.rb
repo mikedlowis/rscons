@@ -351,18 +351,21 @@ module Rscons
 
     private
 
-    # Expand certain paths that begin with ^/ to be relative to the
-    # Environment's build root, if present
+    # Expand target and source paths before invoking builders.
+    #
+    # This method expand construction variable references in the target and
+    # source file names before passing them to the builder. It also expands
+    # "^/" prefixes to the Environment's build root if a build root is defined.
     def expand_paths!
-      if @build_root
-        new_targets = {}
-        @targets.each_pair do |target, target_params|
-          target_params[:sources].map! do |source|
-            expand_path(source)
-          end
-          new_targets[expand_path(target)] = target_params
+      @targets = @targets.reduce({}) do |result, (target, target_params)|
+        sources = target_params[:sources].map do |source|
+          source = expand_path(source) if @build_root
+          expand_varref(source)
         end
-        @targets = new_targets
+        target = expand_path(target) if @build_root
+        target = expand_varref(target)
+        result[target] = target_params.merge(sources: sources)
+        result
       end
     end
 

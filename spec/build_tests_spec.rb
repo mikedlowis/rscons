@@ -498,4 +498,30 @@ EOF
       env.TestBuilder("file")
     end
   end
+
+  it "expands construction variables in builder target and sources before invoking the builder" do
+    test_dir('custom_builder')
+    class MySource < Rscons::Builder
+      def run(target, sources, cache, env, vars)
+        File.open(target, 'w') do |fh|
+          fh.puts <<EOF
+    #define THE_VALUE 678
+EOF
+        end
+        target
+      end
+    end
+
+    Rscons::Environment.new do |env|
+      env["hdr"] = "inc.h"
+      env["src"] = "program.c"
+      env.add_builder(MySource.new)
+      env.MySource('${hdr}')
+      env.Program('program', "${src}")
+    end
+
+    lines.should == ['CC program.o', 'LD program']
+    File.exists?('inc.h').should be_true
+    `./program`.should == "The value is 678\n"
+  end
 end
