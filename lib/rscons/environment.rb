@@ -172,7 +172,7 @@ module Rscons
     # called after the block returns.
     def process
       unless @targets.empty?
-        clean_target_paths!
+        expand_paths!
         cache = Cache.instance
         cache.clear_checksum_cache!
         targets_processed = {}
@@ -351,9 +351,9 @@ module Rscons
 
     private
 
-    # Expand all target paths that begin with ^/ to be relative to the
+    # Expand certain paths that begin with ^/ to be relative to the
     # Environment's build root, if present
-    def clean_target_paths!
+    def expand_paths!
       if @build_root
         new_targets = {}
         @targets.each_pair do |target, target_params|
