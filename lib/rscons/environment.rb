@@ -209,22 +209,22 @@ module Rscons
       @targets = {}
     end
 
-    # Build a command line from the given template, resolving references to
-    # variables using the Environment's construction variables and any extra
-    # variables specified.
-    # @param command_template [Array] template for the command with variable
-    #   references
-    # @param extra_vars [Hash, VarSet] extra variables to use in addition to
-    #   (or replace) the Environment's construction variables when building
-    #   the command
-    def build_command(command_template, extra_vars)
-      @varset.merge(extra_vars).expand_varref(command_template)
+    # Expand a construction variable reference.
+    #
+    # @param varref [Array, String] Variable reference to expand.
+    # @param extra_vars [Hash, VarSet]
+    #   Extra variables to use in addition to (or replace) the Environment's
+    #   construction variables when expanding the variable reference.
+    #
+    # @return [Array, String] Expansion of the variable reference.
+    def expand_varref(varref, extra_vars = nil)
+      if extra_vars.nil?
+        @varset
+      else
+        @varset.merge(extra_vars)
+      end.expand_varref(varref)
     end
-
-    # Expand a construction variable reference (String or Array)
-    def expand_varref(varref)
-      @varset.expand_varref(varref)
-    end
+    alias_method :build_command, :expand_varref
 
     # Execute a builder command
     # @param short_desc [String] Message to print if the Environment's echo
