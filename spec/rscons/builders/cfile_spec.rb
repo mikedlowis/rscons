@@ -15,6 +15,11 @@ module Rscons
         subject.run("lexer.cc", ["parser.ll"], :cache, env, {})
       end
 
+      it "supports overriding construction variables" do
+        subject.should_receive(:standard_build).with("LEX lexer.c", "lexer.c", ["hi", "parser.l"], ["parser.l"], env, :cache)
+        subject.run("lexer.c", ["parser.l"], :cache, env, "LEX_CMD" => ["hi", "${_SOURCES}"])
+      end
+
       it "raises an error when an unknown source file is specified" do
         expect {subject.run("file.c", ["foo.bar"], :cache, env, {})}.to raise_error /Unknown source file .foo.bar. for CFile builder/
       end
