@@ -329,6 +329,11 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.4.3
+
+- fix builders properly using construction variable overrides
+- expand nil construction variables to empty strings
+
 ### v1.4.2
 
 - add Environment#expand_path
