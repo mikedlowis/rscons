@@ -32,7 +32,7 @@ module Rscons
           else
             raise "Unknown source file #{sources.first.inspect} for CFile builder"
           end
-        command = env.build_command(env["#{cmd}_CMD"], vars)
+        command = env.build_command("${#{cmd}_CMD}", vars)
         standard_build("#{cmd} #{target}", target, command, sources, env, cache)
       end
     end

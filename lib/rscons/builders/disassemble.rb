@@ -12,7 +12,7 @@ module Rscons
 
       def run(target, sources, cache, env, vars)
         vars = vars.merge("_SOURCES" => sources)
-        command = env.build_command(env["DISASM_CMD"], vars)
+        command = env.build_command("${DISASM_CMD}", vars)
         unless cache.up_to_date?(target, command, sources, env)
           cache.mkdir_p(File.dirname(target))
           return false unless env.execute("Disassemble #{target}", command, options: {out: target})

@@ -125,7 +125,8 @@ module Rscons
                      "CC" => "gcc",
                      "CPPPATH" => ["dir1", "dir2"],
                      "compiler" => "${CC}",
-                     "cmd" => ["${CC}", "-c", "${CFLAGS}", "-I${CPPPATH}"])
+                     "cmd" => ["${CC}", "-c", "${CFLAGS}", "-I${CPPPATH}"],
+                     "hash" => {})
       it "expands to the string itself if the string is not a variable reference" do
         v.expand_varref("CC").should == "CC"
         v.expand_varref("CPPPATH").should == "CPPPATH"
@@ -151,8 +152,11 @@ module Rscons
           "cflag: -O2, cpppath: dir2, compiler: gcc",
         ]
       end
-      it "raises an error when a variable reference refers to a non-existent variable" do
-        expect { v.expand_varref("${not_here}") }.to raise_error /I do not know how to expand a variable reference to a NilClass/
+      it "returns an empty string when a variable reference refers to a non-existent variable" do
+        expect(v.expand_varref("${not_here}")).to eq("")
+      end
+      it "raises an error when a variable reference refers to an unhandled type" do
+        expect { v.expand_varref("${hash}") }.to raise_error /I do not know how to expand a variable reference to a Hash/
       end
     end
   end

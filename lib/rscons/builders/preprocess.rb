@@ -9,15 +9,15 @@ module Rscons
       end
 
       def run(target, sources, cache, env, vars)
-        pp_cc = if sources.find {|s| s.end_with?(*env["CXXSUFFIX"])}
-                  env["CXX"]
+        pp_cc = if sources.find {|s| s.end_with?(*env.expand_varref("${CXXSUFFIX}", vars))}
+                  "${CXX}"
                 else
-                  env["CC"]
+                  "${CC}"
                 end
         vars = vars.merge("_PREPROCESS_CC" => pp_cc,
                           "_TARGET" => target,
                           "_SOURCES" => sources)
-        command = env.build_command(env["CPP_CMD"], vars)
+        command = env.build_command("${CPP_CMD}", vars)
         standard_build("Preprocess #{target}", target, command, sources, env, cache)
       end
     end

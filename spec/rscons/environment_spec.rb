@@ -223,6 +223,7 @@ module Rscons
         env["path"] = ["dir1", "dir2"]
         env["flags"] = ["-x", "-y", "${specialflag}"]
         env["specialflag"] = "-z"
+        env["foo"] = {}
         env.expand_varref(["-p${path}", "${flags}"]).should == ["-pdir1", "-pdir2", "-x", "-y", "-z"]
         env.expand_varref("foo").should == "foo"
         expect {env.expand_varref("${foo}")}.to raise_error /expand.a.variable.reference/

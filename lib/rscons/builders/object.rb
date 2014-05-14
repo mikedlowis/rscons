@@ -58,11 +58,11 @@ module Rscons
           '_DEPFILE' => Rscons.set_suffix(target, '.mf'),
         })
         com_prefix = KNOWN_SUFFIXES.find do |compiler, suffix_var|
-          sources.first.end_with?(*env[suffix_var])
+          sources.first.end_with?(*env.expand_varref("${#{suffix_var}}"))
         end.tap do |v|
           v.nil? and raise "Error: unknown input file type: #{sources.first.inspect}"
         end.first
-        command = env.build_command(env["#{com_prefix}CMD"], vars)
+        command = env.build_command("${#{com_prefix}CMD}", vars)
         unless cache.up_to_date?(target, command, sources, env)
           cache.mkdir_p(File.dirname(target))
           FileUtils.rm_f(target)

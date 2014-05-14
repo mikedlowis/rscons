@@ -83,7 +83,7 @@ module Rscons
         if varref =~ /^(.*)\$\{([^}]+)\}(.*)$/
           prefix, varname, suffix = $1, $2, $3
           varval = expand_varref(self[varname])
-          if varval.is_a?(String)
+          if varval.is_a?(String) or varval.nil?
             expand_varref("#{prefix}#{varval}#{suffix}")
           elsif varval.is_a?(Array)
             varval.map {|vv| expand_varref("#{prefix}#{vv}#{suffix}")}.flatten
