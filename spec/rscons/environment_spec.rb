@@ -34,6 +34,27 @@ module Rscons
         env2["CPPPATH"].should == ["path1", "path2"]
       end
 
+      it "supports nil, false, true, String, Symbol, Array, Hash, and Integer variables" do
+        env = Environment.new
+        env["nil"] = nil
+        env["false"] = false
+        env["true"] = true
+        env["String"] = "String"
+        env["Symbol"] = :Symbol
+        env["Array"] = ["a", "b"]
+        env["Hash"] = {"a" => "b"}
+        env["Integer"] = 1234
+        env2 = env.clone
+        expect(env2["nil"]).to be_nil
+        expect(env2["false"].object_id).to eq(false.object_id)
+        expect(env2["true"].object_id).to eq(true.object_id)
+        expect(env2["String"]).to eq("String")
+        expect(env2["Symbol"]).to eq(:Symbol)
+        expect(env2["Array"]).to eq(["a", "b"])
+        expect(env2["Hash"]).to eq({"a" => "b"})
+        expect(env2["Integer"]).to eq(1234)
+      end
+
       context "when a block is given" do
         it "yields self and invokes #process()" do
           env = Environment.new
