@@ -18,13 +18,14 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
+  gem.add_dependency "json", "~> 1.0"
+
   gem.add_development_dependency "rspec-core"
   gem.add_development_dependency "rspec-mocks"
   gem.add_development_dependency "rspec-expectations"
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "rake"
   gem.add_development_dependency "simplecov"
-  gem.add_development_dependency "json"
   gem.add_development_dependency 'rdoc'
   gem.add_development_dependency "yard"
 end
