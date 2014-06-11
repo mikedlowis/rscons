@@ -362,13 +362,7 @@ module Rscons
     def shell(command)
       shell_cmd =
         if self["SHELL"]
-          flag = self["SHELLFLAG"] || begin
-            if self["SHELL"] == "cmd"
-              "/c"
-            else
-              "-c"
-            end
-          end
+          flag = self["SHELLFLAG"] || (self["SHELL"] == "cmd" ? "/c" : "-c")
           [self["SHELL"], flag]
         else
           Rscons.get_system_shell
