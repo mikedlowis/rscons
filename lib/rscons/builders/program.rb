@@ -10,8 +10,10 @@ module Rscons
           'LIBSUFFIX' => '.a',
           'LDFLAGS' => [],
           'LIBPATH' => [],
+          'LIBDIRPREFIX' => '-L',
+          'LIBLINKPREFIX' => '-l',
           'LIBS' => [],
-          'LDCMD' => ['${LD}', '-o', '${_TARGET}', '${LDFLAGS}', '${_SOURCES}', '-L${LIBPATH}', '-l${LIBS}']
+          'LDCMD' => ['${LD}', '-o', '${_TARGET}', '${LDFLAGS}', '${_SOURCES}', '${LIBDIRPREFIX}${LIBPATH}', '${LIBLINKPREFIX}${LIBS}']
         }
       end
 

@@ -14,34 +14,40 @@ module Rscons
         {
           'OBJSUFFIX' => '.o',
 
+          'CPPDEFPREFIX' => '-D',
+          'INCPREFIX' => '-I',
+
           'AS' => '${CC}',
           'ASFLAGS' => [],
           'ASSUFFIX' => '.S',
           'ASPPPATH' => '${CPPPATH}',
           'ASPPFLAGS' => '${CPPFLAGS}',
           'ASDEPGEN' => ['-MMD', '-MF', '${_DEPFILE}'],
-          'ASCMD' => ['${AS}', '-c', '-o', '${_TARGET}', '${ASDEPGEN}', '-I${ASPPPATH}', '${ASPPFLAGS}', '${ASFLAGS}', '${_SOURCES}'],
+          'ASCMD' => ['${AS}', '-c', '-o', '${_TARGET}', '${ASDEPGEN}', '${INCPREFIX}${ASPPPATH}', '${ASPPFLAGS}', '${ASFLAGS}', '${_SOURCES}'],
 
-          'CPPFLAGS' => [],
+          'CPPFLAGS' => ['${CPPDEFPREFIX}${CPPDEFINES}'],
+          'CPPDEFINES' => [],
           'CPPPATH' => [],
+
+          'CCFLAGS' => [],
 
           'CC' => 'gcc',
           'CFLAGS' => [],
           'CSUFFIX' => '.c',
           'CCDEPGEN' => ['-MMD', '-MF', '${_DEPFILE}'],
-          'CCCMD' => ['${CC}', '-c', '-o', '${_TARGET}', '${CCDEPGEN}', '-I${CPPPATH}', '${CPPFLAGS}', '${CFLAGS}', '${_SOURCES}'],
+          'CCCMD' => ['${CC}', '-c', '-o', '${_TARGET}', '${CCDEPGEN}', '${INCPREFIX}${CPPPATH}', '${CPPFLAGS}', '${CFLAGS}', '${CCFLAGS}', '${_SOURCES}'],
 
           'CXX' => 'g++',
           'CXXFLAGS' => [],
           'CXXSUFFIX' => '.cc',
           'CXXDEPGEN' => ['-MMD', '-MF', '${_DEPFILE}'],
-          'CXXCMD' =>['${CXX}', '-c', '-o', '${_TARGET}', '${CXXDEPGEN}', '-I${CPPPATH}', '${CPPFLAGS}', '${CXXFLAGS}', '${_SOURCES}'],
+          'CXXCMD' =>['${CXX}', '-c', '-o', '${_TARGET}', '${CXXDEPGEN}', '${INCPREFIX}${CPPPATH}', '${CPPFLAGS}', '${CXXFLAGS}', '${CCFLAGS}', '${_SOURCES}'],
 
           'DC' => 'gdc',
           'DFLAGS' => [],
           'DSUFFIX' => '.d',
           'D_IMPORT_PATH' => [],
-          'DCCMD' => ['${DC}', '-c', '-o', '${_TARGET}', '-I${D_IMPORT_PATH}', '${DFLAGS}', '${_SOURCES}'],
+          'DCCMD' => ['${DC}', '-c', '-o', '${_TARGET}', '${INCPREFIX}${D_IMPORT_PATH}', '${DFLAGS}', '${_SOURCES}'],
         }
       end
 

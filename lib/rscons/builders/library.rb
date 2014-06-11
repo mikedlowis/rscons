@@ -6,8 +6,8 @@ module Rscons
         {
           'AR' => 'ar',
           'LIBSUFFIX' => '.a',
-          'ARFLAGS' => [],
-          'ARCMD' => ['${AR}', 'rcs', '${ARFLAGS}', '${_TARGET}', '${_SOURCES}']
+          'ARFLAGS' => ['rcs'],
+          'ARCMD' => ['${AR}', '${ARFLAGS}', '${_TARGET}', '${_SOURCES}']
         }
       end
 
