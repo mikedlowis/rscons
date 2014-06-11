@@ -360,6 +360,25 @@ module Rscons
       end
     end
 
+    describe "#shell" do
+      it "executes the given shell command and returns the results" do
+        env = Environment.new
+        expect(env.shell("echo hello").strip).to eq("hello")
+      end
+      it "determines shell flag to be /c when SHELL is specified as 'cmd'" do
+        env = Environment.new
+        env["SHELL"] = "cmd"
+        IO.should_receive(:popen).with(["cmd", "/c", "my_cmd"])
+        env.shell("my_cmd")
+      end
+      it "determines shell flag to be -c when SHELL is specified as something else" do
+        env = Environment.new
+        env["SHELL"] = "my_shell"
+        IO.should_receive(:popen).with(["my_shell", "-c", "my_cmd"])
+        env.shell("my_cmd")
+      end
+    end
+
     describe ".parse_makefile_deps" do
       it 'handles dependencies on one line' do
         File.should_receive(:read).with('makefile').and_return(<<EOS)

@@ -54,4 +54,33 @@ module Rscons
   def self.set_suffix(path, suffix)
     path.sub(/\.[^.]*$/, suffix)
   end
+
+  # Return the system shell and arguments for executing a shell command.
+  # @return [Array<String>] The shell and flag.
+  def self.get_system_shell
+    @@shell ||=
+      begin
+        test_shell = lambda do |*args|
+          begin
+            "success" == IO.popen([*args, "echo success"]) do |io|
+              io.read.strip
+            end
+          rescue
+            false
+          end
+        end
+        if ENV["SHELL"] and ENV["SHELL"] != "" and test_shell[ENV["SHELL"], "-c"]
+          [ENV["SHELL"], "-c"]
+        elsif Object.const_get("RUBY_PLATFORM") =~ /mingw/
+          if test_shell["sh", "-c"]
+            # Using Rscons from MSYS should use MSYS's shell.
+            ["sh", "-c"]
+          else
+            ["cmd", "/c"]
+          end
+        else
+          ["sh", "-c"]
+        end
+      end
+  end
 end

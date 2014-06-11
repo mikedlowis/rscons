@@ -349,6 +349,35 @@ module Rscons
       path.sub(%r{^\^(?=[\\/])}, @build_root)
     end
 
+    # Execute a command using the system shell.
+    #
+    # The shell is automatically determined but can be overridden by the SHELL
+    # construction variable. If the SHELL construction variable is specified,
+    # the flag to pass to the shell is automatically dtermined but can be
+    # overridden by the SHELLFLAG construction variable.
+    #
+    # @param command [String] Command to execute.
+    #
+    # @return [String] The command's standard output.
+    def shell(command)
+      shell_cmd =
+        if self["SHELL"]
+          flag = self["SHELLFLAG"] || begin
+            if self["SHELL"] == "cmd"
+              "/c"
+            else
+              "-c"
+            end
+          end
+          [self["SHELL"], flag]
+        else
+          Rscons.get_system_shell
+        end
+      IO.popen([*shell_cmd, command]) do |io|
+        io.read
+      end
+    end
+
     private
 
     # Expand target and source paths before invoking builders.

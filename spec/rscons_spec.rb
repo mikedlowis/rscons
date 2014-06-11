@@ -23,4 +23,47 @@ describe Rscons do
       Rscons.clean
     end
   end
+
+  describe ".get_system_shell" do
+    before(:each) do
+      Rscons.class_variable_set(:@@shell, nil)
+    end
+
+    after(:each) do
+      Rscons.class_variable_set(:@@shell, nil)
+    end
+
+    it "uses the SHELL environment variable if it tests successfully" do
+      my_ENV = {"SHELL" => "my_shell"}
+      ENV.stub(:[]) {|*args| my_ENV[*args]}
+      io = StringIO.new("success\n")
+      IO.should_receive(:popen).with(["my_shell", "-c", "echo success"]).and_yield(io)
+      expect(Rscons.get_system_shell).to eq(["my_shell", "-c"])
+    end
+
+    it "uses sh -c on a mingw platform if it tests successfully" do
+      my_ENV = {"SHELL" => nil}
+      ENV.stub(:[]) {|*args| my_ENV[*args]}
+      io = StringIO.new("success\n")
+      IO.should_receive(:popen).with(["sh", "-c", "echo success"]).and_yield(io)
+      Object.should_receive(:const_get).with("RUBY_PLATFORM").and_return("x86-mingw")
+      expect(Rscons.get_system_shell).to eq(["sh", "-c"])
+    end
+
+    it "uses cmd /c on a mingw platform if sh -c does not test successfully" do
+      my_ENV = {"SHELL" => nil}
+      ENV.stub(:[]) {|*args| my_ENV[*args]}
+      io = StringIO.new("success\n")
+      IO.should_receive(:popen).with(["sh", "-c", "echo success"]).and_raise "ENOENT"
+      Object.should_receive(:const_get).with("RUBY_PLATFORM").and_return("x86-mingw")
+      expect(Rscons.get_system_shell).to eq(["cmd", "/c"])
+    end
+
+    it "uses sh -c on a non-mingw platform if SHELL is not specified" do
+      my_ENV = {"SHELL" => nil}
+      ENV.stub(:[]) {|*args| my_ENV[*args]}
+      Object.should_receive(:const_get).with("RUBY_PLATFORM").and_return("x86-linux")
+      expect(Rscons.get_system_shell).to eq(["sh", "-c"])
+    end
+  end
 end
