@@ -422,7 +422,7 @@ EOF
       end
       env.Program('build_hook.exe', Dir['src/**/*.c'])
     end
-    expect(`./build_hook`).to eq "Hello from two()\n"
+    expect(`./build_hook.exe`).to eq "Hello from two()\n"
     expect(lines).to match_array [
       'gcc -c -o build_one/one.o -MMD -MF build_one/one.mf -Isrc/one/ -Isrc/two/ -O1 src/one/one.c',
       'gcc -c -o build_two/two.o -MMD -MF build_two/two.mf -Isrc/one/ -Isrc/two/ -O2 src/two/two.c',
