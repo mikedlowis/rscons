@@ -83,6 +83,33 @@ module Rscons
         end
       end
   end
+
+  # Return an Array containing a command used to execute commands.
+  #
+  # This will normally be an empty Array, but on Windows if Rscons detects
+  # that it is running in MSYS then ["env"] will be returned.
+  #
+  # @return [Array<String>] Command used to execute commands.
+  def self.command_executer
+    @@command_executer ||=
+      if Object.const_get("RUBY_PLATFORM") =~ /mingw/
+        if ENV.keys.find {|key| key =~ /MSYS/}
+          begin
+            if IO.popen(["env", "echo", "success"]) {|io| io.read.strip} == "success"
+              ["env"]
+            end
+          rescue
+          end
+        end
+      end || []
+  end
+
+  # Set the command executer array.
+  #
+  # @param val [Array<String>] Command used to execute commands.
+  def self.command_executer=(val)
+    @@command_executer = val
+  end
 end
 
 # Unbuffer $stdout

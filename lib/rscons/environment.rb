@@ -245,7 +245,7 @@ module Rscons
       end
       env_args = options[:env] ? [options[:env]] : []
       options_args = options[:options] ? [options[:options]] : []
-      system(*env_args, *command, *options_args).tap do |result|
+      system(*env_args, *Rscons.command_executer, *command, *options_args).tap do |result|
         unless result or @echo == :command
           $stdout.write "Failed command was: "
           print_command.call

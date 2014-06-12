@@ -66,4 +66,50 @@ describe Rscons do
       expect(Rscons.get_system_shell).to eq(["sh", "-c"])
     end
   end
+
+  context "command executer" do
+    describe ".command_executer" do
+      before(:each) do
+        Rscons.class_variable_set(:@@command_executer, nil)
+      end
+
+      after(:each) do
+        Rscons.class_variable_set(:@@command_executer, nil)
+      end
+
+      it "returns ['env'] if mingw platform in MSYS and 'env' works" do
+        Object.should_receive(:const_get).and_return("x86-mingw")
+        ENV.should_receive(:keys).and_return(["MSYSCON"])
+        io = StringIO.new("success\n")
+        IO.should_receive(:popen).with(["env", "echo", "success"]).and_yield(io)
+        expect(Rscons.command_executer).to eq(["env"])
+      end
+
+      it "returns [] if mingw platform in MSYS and 'env' does not work" do
+        Object.should_receive(:const_get).and_return("x86-mingw")
+        ENV.should_receive(:keys).and_return(["MSYSCON"])
+        IO.should_receive(:popen).with(["env", "echo", "success"]).and_raise "ENOENT"
+        expect(Rscons.command_executer).to eq([])
+      end
+
+      it "returns [] if mingw platform not in MSYS" do
+        Object.should_receive(:const_get).and_return("x86-mingw")
+        ENV.should_receive(:keys).and_return(["COMSPEC"])
+        expect(Rscons.command_executer).to eq([])
+      end
+
+      it "returns [] if not mingw platform" do
+        Object.should_receive(:const_get).and_return("x86-linux")
+        expect(Rscons.command_executer).to eq([])
+      end
+    end
+
+    describe ".command_executer=" do
+      it "overrides the value of @@command_executer" do
+        Rscons.class_variable_set(:@@command_executer, ["env"])
+        Rscons.command_executer = []
+        expect(Rscons.class_variable_get(:@@command_executer)).to eq([])
+      end
+    end
+  end
 end
