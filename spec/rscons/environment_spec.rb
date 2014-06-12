@@ -3,11 +3,11 @@ module Rscons
     describe "#initialize" do
       it "adds the default builders when they are not excluded" do
         env = Environment.new
-        env.builders.size.should be > 0
+        expect(env.builders.size).to be > 0
         expect(env.builders.map {|name, builder| builder.is_a?(Builder)}.all?).to be_truthy
-        env.builders.find {|name, builder| name == "Object"}.should_not be_nil
-        env.builders.find {|name, builder| name == "Program"}.should_not be_nil
-        env.builders.find {|name, builder| name == "Library"}.should_not be_nil
+        expect(env.builders.find {|name, builder| name == "Object"}).to_not be_nil
+        expect(env.builders.find {|name, builder| name == "Program"}).to_not be_nil
+        expect(env.builders.find {|name, builder| name == "Library"}).to_not be_nil
       end
 
       it "excludes the default builders with exclude_builders: :all" do
@@ -18,14 +18,14 @@ module Rscons
       context "when a block is given" do
         it "yields self and invokes #process()" do
           env = Environment.new do |env|
-            env.should_receive(:process)
+            expect(env).to receive(:process)
           end
         end
       end
     end
 
     describe "#clone" do
-      it 'should create unique copies of each construction variable' do
+      it 'creates unique copies of each construction variable' do
         env = Environment.new
         env["CPPPATH"] << "path1"
         env2 = env.clone
@@ -59,7 +59,7 @@ module Rscons
         it "yields self and invokes #process()" do
           env = Environment.new
           env.clone do |env2|
-            env2.should_receive(:process)
+            expect(env2).to receive(:process)
           end
         end
       end
@@ -161,10 +161,10 @@ module Rscons
         env.Program("a.out", "main.c")
 
         cache = "cache"
-        Cache.should_receive(:instance).and_return(cache)
-        cache.should_receive(:clear_checksum_cache!)
-        env.should_receive(:run_builder).with(anything, "a.out", ["main.c"], cache, {}).and_return(true)
-        cache.should_receive(:write)
+        expect(Cache).to receive(:instance).and_return(cache)
+        expect(cache).to receive(:clear_checksum_cache!)
+        expect(env).to receive(:run_builder).with(anything, "a.out", ["main.c"], cache, {}).and_return(true)
+        expect(cache).to receive(:write)
 
         env.process
       end
@@ -175,11 +175,11 @@ module Rscons
         env.Object("main.o", "other.cc")
 
         cache = "cache"
-        Cache.should_receive(:instance).and_return(cache)
-        cache.should_receive(:clear_checksum_cache!)
-        env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return("main.o")
-        env.should_receive(:run_builder).with(anything, "a.out", ["main.o"], cache, {}).and_return("a.out")
-        cache.should_receive(:write)
+        expect(Cache).to receive(:instance).and_return(cache)
+        expect(cache).to receive(:clear_checksum_cache!)
+        expect(env).to receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return("main.o")
+        expect(env).to receive(:run_builder).with(anything, "a.out", ["main.o"], cache, {}).and_return("a.out")
+        expect(cache).to receive(:write)
 
         env.process
       end
@@ -190,10 +190,10 @@ module Rscons
         env.Object("main.o", "other.cc")
 
         cache = "cache"
-        Cache.should_receive(:instance).and_return(cache)
-        cache.should_receive(:clear_checksum_cache!)
-        env.should_receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return(false)
-        cache.should_receive(:write)
+        expect(Cache).to receive(:instance).and_return(cache)
+        expect(cache).to receive(:clear_checksum_cache!)
+        expect(env).to receive(:run_builder).with(anything, "main.o", ["other.cc"], cache, {}).and_return(false)
+        expect(cache).to receive(:write)
 
         expect { env.process }.to raise_error BuildError, /Failed.to.build.main.o/
       end
@@ -203,12 +203,12 @@ module Rscons
         env.Object("module.o", "module.c")
 
         cache = "cache"
-        Cache.should_receive(:instance).and_return(cache)
-        cache.should_receive(:clear_checksum_cache!)
+        expect(Cache).to receive(:instance).and_return(cache)
+        expect(cache).to receive(:clear_checksum_cache!)
         env.stub(:run_builder) do |builder, target, sources, cache, vars|
           raise "Ruby exception thrown by builder"
         end
-        cache.should_receive(:write)
+        expect(cache).to receive(:write)
 
         expect { env.process }.to raise_error RuntimeError, /Ruby exception thrown by builder/
       end
@@ -258,8 +258,8 @@ module Rscons
         context "with no errors" do
           it "prints the short description and executes the command" do
             env = Environment.new(echo: :short)
-            env.should_receive(:puts).with("short desc")
-            env.should_receive(:system).with(*Rscons.command_executer, "a", "command").and_return(true)
+            expect(env).to receive(:puts).with("short desc")
+            expect(env).to receive(:system).with(*Rscons.command_executer, "a", "command").and_return(true)
             env.execute("short desc", ["a", "command"])
           end
         end
@@ -267,10 +267,10 @@ module Rscons
         context "with errors" do
           it "prints the short description, executes the command, and prints the failed command line" do
             env = Environment.new(echo: :short)
-            env.should_receive(:puts).with("short desc")
-            env.should_receive(:system).with(*Rscons.command_executer, "a", "command").and_return(false)
-            $stdout.should_receive(:write).with("Failed command was: ")
-            env.should_receive(:puts).with("a command")
+            expect(env).to receive(:puts).with("short desc")
+            expect(env).to receive(:system).with(*Rscons.command_executer, "a", "command").and_return(false)
+            expect($stdout).to receive(:write).with("Failed command was: ")
+            expect(env).to receive(:puts).with("a command")
             env.execute("short desc", ["a", "command"])
           end
         end
@@ -279,8 +279,8 @@ module Rscons
       context "with echo: :command" do
         it "prints the command executed and executes the command" do
           env = Environment.new(echo: :command)
-          env.should_receive(:puts).with("a command '--arg=val with spaces'")
-          env.should_receive(:system).with({modified: :environment}, *Rscons.command_executer, "a", "command", "--arg=val with spaces", {opt: :val}).and_return(false)
+          expect(env).to receive(:puts).with("a command '--arg=val with spaces'")
+          expect(env).to receive(:system).with({modified: :environment}, *Rscons.command_executer, "a", "command", "--arg=val with spaces", {opt: :val}).and_return(false)
           env.execute("short desc", ["a", "command", "--arg=val with spaces"], env: {modified: :environment}, options: {opt: :val})
         end
       end
@@ -297,7 +297,7 @@ module Rscons
         expect(env.instance_variable_get(:@targets)).to eq({})
         env.Object("target.o", ["src1.c", "src2.c"], var: "val")
         target = env.instance_variable_get(:@targets)["target.o"]
-        target.should_not be_nil
+        expect(target).to_not be_nil
         expect(target[:builder].is_a?(Builder)).to be_truthy
         expect(target[:sources]).to eq ["src1.c", "src2.c"]
         expect(target[:vars]).to eq({var: "val"})
@@ -335,8 +335,8 @@ module Rscons
         cache = "cache"
         env = Environment.new
         env.add_builder(ABuilder.new)
-        env.builders["Object"].should_receive(:run).with("mod.o", ["mod.c"], cache, env, anything).and_return("mod.o")
-        env.builders["ABuilder"].should_receive(:run).with("mod2.ab_out", ["mod2.ab_in"], cache, env, anything).and_return("mod2.ab_out")
+        expect(env.builders["Object"]).to receive(:run).with("mod.o", ["mod.c"], cache, env, anything).and_return("mod.o")
+        expect(env.builders["ABuilder"]).to receive(:run).with("mod2.ab_out", ["mod2.ab_in"], cache, env, anything).and_return("mod2.ab_out")
         expect(env.build_sources(["precompiled.o", "mod.c", "mod2.ab_in"], [".o", ".ab_out"], cache, {})).to eq ["precompiled.o", "mod.o", "mod2.ab_out"]
       end
     end
@@ -368,13 +368,13 @@ module Rscons
       it "determines shell flag to be /c when SHELL is specified as 'cmd'" do
         env = Environment.new
         env["SHELL"] = "cmd"
-        IO.should_receive(:popen).with(["cmd", "/c", "my_cmd"])
+        expect(IO).to receive(:popen).with(["cmd", "/c", "my_cmd"])
         env.shell("my_cmd")
       end
       it "determines shell flag to be -c when SHELL is specified as something else" do
         env = Environment.new
         env["SHELL"] = "my_shell"
-        IO.should_receive(:popen).with(["my_shell", "-c", "my_cmd"])
+        expect(IO).to receive(:popen).with(["my_shell", "-c", "my_cmd"])
         env.shell("my_cmd")
       end
     end
@@ -383,7 +383,7 @@ module Rscons
       it "executes the shell command and parses the returned flags when the input argument begins with !" do
         env = Environment.new
         env["CFLAGS"] = ["-g"]
-        env.should_receive(:shell).with("my_command").and_return(%[-arch my_arch -Done=two -include ii -isysroot sr -Iincdir -Llibdir -lmy_lib -mno-cygwin -mwindows -pthread -std=c99 -Wa,'asm,args 1 2' -Wl,linker,"args 1 2" -Wp,cpp,args,1,2 -arbitrary +other_arbitrary some_lib /a/b/c/lib])
+        expect(env).to receive(:shell).with("my_command").and_return(%[-arch my_arch -Done=two -include ii -isysroot sr -Iincdir -Llibdir -lmy_lib -mno-cygwin -mwindows -pthread -std=c99 -Wa,'asm,args 1 2' -Wl,linker,"args 1 2" -Wp,cpp,args,1,2 -arbitrary +other_arbitrary some_lib /a/b/c/lib])
         rv = env.parse_flags("!my_command")
         expect(rv).to eq({
           "CCFLAGS" => %w[-arch my_arch -include ii -isysroot sr -mno-cygwin -pthread -arbitrary +other_arbitrary],
@@ -435,14 +435,14 @@ module Rscons
 
     describe ".parse_makefile_deps" do
       it 'handles dependencies on one line' do
-        File.should_receive(:read).with('makefile').and_return(<<EOS)
+        expect(File).to receive(:read).with('makefile').and_return(<<EOS)
 module.o: source.cc
 EOS
         expect(Environment.parse_makefile_deps('makefile', 'module.o')).to eq ['source.cc']
       end
 
       it 'handles dependencies split across many lines' do
-        File.should_receive(:read).with('makefile').and_return(<<EOS)
+        expect(File).to receive(:read).with('makefile').and_return(<<EOS)
 module.o: module.c \\
   module.h \\
   other.h
