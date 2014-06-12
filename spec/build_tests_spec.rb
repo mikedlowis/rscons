@@ -168,10 +168,10 @@ describe Rscons do
       "gcc -o simple#{env["PROGSUFFIX"]} simple.o",
     ]
     e2 = Rscons::Environment.new(echo: :command) do |env|
-      env["LIBS"] += ["c"]
+      env["LIBPATH"] += ["libdir"]
       env.Program('simple', Dir['*.c'])
     end
-    lines.should == ["gcc -o simple#{env["PROGSUFFIX"]} simple.o -lc"]
+    lines.should == ["gcc -o simple#{env["PROGSUFFIX"]} simple.o -Llibdir"]
   end
 
   it 'builds object files in a different build directory' do
