@@ -62,7 +62,7 @@ describe Rscons do
     contents.each_line do |line|
       replaced += yield(line)
     end
-    File.open(fname, 'w') do |fh|
+    File.open(fname, 'wb') do |fh|
       fh.write(replaced)
     end
   end
@@ -153,6 +153,7 @@ describe Rscons do
       'CC header.o',
       "LD header#{env["PROGSUFFIX"]}",
     ]
+    sleep 0.05
     file_sub('header.c') {|line| line}
     env.process
     lines.should == []
