@@ -470,7 +470,7 @@ EOF
         "gdc -c -o main.o main.d",
         "gdc -o hello-d.exe main.o",
       ]
-      expect(`./hello-d`.rstrip).to eq "Hello from D!"
+      expect(`./hello-d.exe`.rstrip).to eq "Hello from D!"
     end
   end
 
