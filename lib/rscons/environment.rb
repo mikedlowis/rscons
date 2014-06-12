@@ -1,5 +1,6 @@
-require 'set'
-require 'fileutils'
+require "fileutils"
+require "set"
+require "shellwords"
 
 module Rscons
   # The Environment class is the main programmatic interface to Rscons. It
@@ -369,6 +370,134 @@ module Rscons
         end
       IO.popen([*shell_cmd, command]) do |io|
         io.read
+      end
+    end
+
+    # @!method parse_flags(flags)
+    # @!method parse_flags!(flags)
+    #
+    # Parse command-line flags for compilation/linking options into separate
+    # construction variables.
+    #
+    # The parsed construction variables are returned in a Hash instead of
+    # merging them directly to the Environment. They can be merged with
+    # {#merge_flags}. The {#parse_flags!} version immediately merges the parsed
+    # flags as well.
+    #
+    # Example:
+    #   # Import FreeType build options
+    #   env.parse_flags!("!freetype-config --cflags --libs")
+    #
+    # @param flags [String]
+    #   String containing the flags to parse, or if the flags string begins
+    #   with "!", a shell command to execute using {#shell} to obtain the
+    #   flags to parse.
+    #
+    # @return [Hash] Set of construction variables to append.
+    def parse_flags(flags)
+      if flags =~ /^!(.*)$/
+        flags = shell($1)
+      end
+      rv = {}
+      words = Shellwords.split(flags)
+      skip = false
+      words.each_with_index do |word, i|
+        if skip
+          skip = false
+          next
+        end
+        append = lambda do |var, val|
+          rv[var] ||= []
+          rv[var] += val
+        end
+        handle = lambda do |var, val|
+          if val.nil? or val.empty?
+            val = words[i + 1]
+            skip = true
+          end
+          if val and not val.empty?
+            append[var, [val]]
+          end
+        end
+        if word == "-arch"
+          if val = words[i + 1]
+            append["CCFLAGS", ["-arch", val]]
+            append["LDFLAGS", ["-arch", val]]
+          end
+          skip = true
+        elsif word =~ /^#{self["CPPDEFPREFIX"]}(.*)$/
+          handle["CPPDEFINES", $1]
+        elsif word == "-include"
+          if val = words[i + 1]
+            append["CCFLAGS", ["-include", val]]
+          end
+          skip = true
+        elsif word == "-isysroot"
+          if val = words[i + 1]
+            append["CCFLAGS", ["-isysroot", val]]
+            append["LDFLAGS", ["-isysroot", val]]
+          end
+          skip = true
+        elsif word =~ /^#{self["INCPREFIX"]}(.*)$/
+          handle["CPPPATH", $1]
+        elsif word =~ /^#{self["LIBLINKPREFIX"]}(.*)$/
+          handle["LIBS", $1]
+        elsif word =~ /^#{self["LIBDIRPREFIX"]}(.*)$/
+          handle["LIBPATH", $1]
+        elsif word == "-mno-cygwin"
+          append["CCFLAGS", [word]]
+          append["LDFLAGS", [word]]
+        elsif word == "-mwindows"
+          append["LDFLAGS", [word]]
+        elsif word == "-pthread"
+          append["CCFLAGS", [word]]
+          append["LDFLAGS", [word]]
+        elsif word =~ /^-std=/
+          append["CFLAGS", [word]]
+        elsif word =~ /^-Wa,(.*)$/
+          append["ASFLAGS", $1.split(",")]
+        elsif word =~ /^-Wl,(.*)$/
+          append["LDFLAGS", $1.split(",")]
+        elsif word =~ /^-Wp,(.*)$/
+          append["CPPFLAGS", $1.split(",")]
+        elsif word.start_with?("-")
+          append["CCFLAGS", [word]]
+        elsif word.start_with?("+")
+          append["CCFLAGS", [word]]
+          append["LDFLAGS", [word]]
+        else
+          append["LIBS", [word]]
+        end
+      end
+      rv
+    end
+
+    def parse_flags!(flags)
+      flags = parse_flags(flags)
+      merge_flags(flags)
+      flags
+    end
+
+    # Merge construction variable flags into this Environment's construction
+    # variables.
+    #
+    # This method does the same thing as {#append}, except that Array values in
+    # +flags+ are appended to the end of Array construction variables instead
+    # of replacing their contents.
+    #
+    # @param flags [Hash]
+    #   Set of construction variables to merge into the current Environment.
+    #   This can be the value (or a modified version) returned by
+    #   {#parse_flags}.
+    #
+    # @return [void]
+    def merge_flags(flags)
+      flags.each_pair do |key, val|
+        if self[key].is_a?(Array) and val.is_a?(Array)
+          self[key] += val
+        else
+          self[key] = val
+        end
       end
     end
 
