@@ -143,7 +143,7 @@ describe Rscons do
     lines.should == []
   end
 
-  it "does not rebuild a C module when only the file's timestampe has changed" do
+  it "does not rebuild a C module when only the file's timestamp has changed" do
     test_dir('header')
     env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
