@@ -12,8 +12,27 @@ end
 describe Rscons do
   BUILD_TEST_RUN_DIR = "build_test_run"
 
+  def rm_rf(dir)
+    FileUtils.rm_rf(dir)
+    if File.exists?(dir)
+      sleep 0.2
+      FileUtils.rm_rf(dir)
+      if File.exists?(dir)
+        sleep 0.5
+        FileUtils.rm_rf(dir)
+        if File.exists?(dir)
+          sleep 1.0
+          FileUtils.rm_rf(dir)
+          if File.exists?(dir)
+            raise "Could not remove #{dir}"
+          end
+        end
+      end
+    end
+  end
+
   before(:all) do
-    FileUtils.rm_rf(BUILD_TEST_RUN_DIR)
+    rm_rf(BUILD_TEST_RUN_DIR)
     @owd = Dir.pwd
   end
 
@@ -29,7 +48,7 @@ describe Rscons do
 
   after(:each) do
     Dir.chdir(@owd)
-    FileUtils.rm_rf(BUILD_TEST_RUN_DIR)
+    rm_rf(BUILD_TEST_RUN_DIR)
   end
 
   def test_dir(build_test_directory)
