@@ -11,7 +11,7 @@ module Rscons
         cache.stub(:register_build) { }
         FileUtils.stub(:rm_f) { }
         File.stub(:exists?) { false }
-        env.should_receive(:execute).with("CC mod.o", ["llc", "mod.c"]).and_return(true)
+        expect(env).to receive(:execute).with("CC mod.o", ["llc", "mod.c"]).and_return(true)
         subject.run("mod.o", ["mod.c"], cache, env, "CCCMD" => ["llc", "${_SOURCES}"])
       end
 

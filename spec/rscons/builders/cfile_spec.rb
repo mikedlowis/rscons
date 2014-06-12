@@ -5,18 +5,18 @@ module Rscons
       subject {CFile.new}
 
       it "invokes bison to create a .c file from a .y file" do
-        subject.should_receive(:standard_build).with("YACC parser.c", "parser.c", ["bison", "-d", "-o", "parser.c", "parser.y"], ["parser.y"], env, :cache)
+        expect(subject).to receive(:standard_build).with("YACC parser.c", "parser.c", ["bison", "-d", "-o", "parser.c", "parser.y"], ["parser.y"], env, :cache)
         subject.run("parser.c", ["parser.y"], :cache, env, {})
       end
 
       it "invokes a custom lexer to create a .cc file from a .ll file" do
         env["LEX"] = "custom_lex"
-        subject.should_receive(:standard_build).with("LEX lexer.cc", "lexer.cc", ["custom_lex", "-o", "lexer.cc", "parser.ll"], ["parser.ll"], env, :cache)
+        expect(subject).to receive(:standard_build).with("LEX lexer.cc", "lexer.cc", ["custom_lex", "-o", "lexer.cc", "parser.ll"], ["parser.ll"], env, :cache)
         subject.run("lexer.cc", ["parser.ll"], :cache, env, {})
       end
 
       it "supports overriding construction variables" do
-        subject.should_receive(:standard_build).with("LEX lexer.c", "lexer.c", ["hi", "parser.l"], ["parser.l"], env, :cache)
+        expect(subject).to receive(:standard_build).with("LEX lexer.c", "lexer.c", ["hi", "parser.l"], ["parser.l"], env, :cache)
         subject.run("lexer.c", ["parser.l"], :cache, env, "LEX_CMD" => ["hi", "${_SOURCES}"])
       end
 

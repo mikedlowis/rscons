@@ -20,7 +20,7 @@ module Rscons
           $stderr.should_receive(:puts).with(/Warning:.*was.corrupt/)
           c = Cache.instance
           c.send(:initialize!)
-          expect(c.instance_variable_get(:@cache).is_a?(Hash)).to be_true
+          expect(c.instance_variable_get(:@cache).is_a?(Hash)).to be_truthy
         end
       end
     end
@@ -52,12 +52,12 @@ module Rscons
 
       it "returns false when target file does not exist" do
         File.should_receive(:exists?).with("target").and_return(false)
-        expect(build_from({}).up_to_date?("target", "command", [], empty_env)).to be_false
+        expect(build_from({}).up_to_date?("target", "command", [], empty_env)).to be_falsey
       end
 
       it "returns false when target is not registered in the cache" do
         File.should_receive(:exists?).with("target").and_return(true)
-        expect(build_from({}).up_to_date?("target", "command", [], empty_env)).to be_false
+        expect(build_from({}).up_to_date?("target", "command", [], empty_env)).to be_falsey
       end
 
       it "returns false when the target's checksum does not match" do
@@ -65,7 +65,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("def")
-        expect(cache.up_to_date?("target", "command", [], empty_env)).to be_false
+        expect(cache.up_to_date?("target", "command", [], empty_env)).to be_falsey
       end
 
       it "returns false when the build command has changed" do
@@ -73,7 +73,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        expect(cache.up_to_date?("target", "command", [], empty_env)).to be_false
+        expect(cache.up_to_date?("target", "command", [], empty_env)).to be_falsey
       end
 
       it "returns false when there is a new dependency" do
@@ -83,7 +83,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_falsey
       end
 
       it "returns false when a dependency's checksum has changed" do
@@ -101,7 +101,7 @@ module Rscons
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
         cache.should_receive(:calculate_checksum).with("dep.1").and_return("dep.1.chk")
         cache.should_receive(:calculate_checksum).with("dep.2").and_return("dep.2.changed")
-        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_falsey
       end
 
       it "returns false with strict_deps=true when cache has an extra dependency" do
@@ -117,7 +117,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env, strict_deps: true)).to be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env, strict_deps: true)).to be_falsey
       end
 
       it "returns false when there is a new user dependency" do
@@ -130,7 +130,7 @@ module Rscons
         env.should_receive(:get_user_deps).with("target").and_return(["file.ld"])
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        expect(cache.up_to_date?("target", "command", ["dep.1"], env)).to be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1"], env)).to be_falsey
       end
 
       it "returns false when a user dependency checksum has changed" do
@@ -153,7 +153,7 @@ module Rscons
         cache.should_receive(:calculate_checksum).with("dep.2").and_return("dep.2.chk")
         cache.should_receive(:calculate_checksum).with("extra.dep").and_return("extra.dep.chk")
         cache.should_receive(:calculate_checksum).with("user.dep").and_return("INCORRECT")
-        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], env)).to be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], env)).to be_falsey
       end
 
       it "returns true when no condition for false is met" do
@@ -172,7 +172,7 @@ module Rscons
         cache.should_receive(:calculate_checksum).with("dep.1").and_return("dep.1.chk")
         cache.should_receive(:calculate_checksum).with("dep.2").and_return("dep.2.chk")
         cache.should_receive(:calculate_checksum).with("extra.dep").and_return("extra.dep.chk")
-        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_true
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_truthy
       end
     end
 

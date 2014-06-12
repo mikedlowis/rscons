@@ -45,20 +45,20 @@ module Rscons
       it "returns whether the variable is in the VarSet" do
         v = VarSet.new("CFLAGS" => [], :foo => :bar)
 
-        expect(v.include?("CFLAGS")).to be_true
-        expect(v.include?(:CFLAGS)).to be_false
-        expect(v.include?(:foo)).to be_true
-        expect(v.include?("foo")).to be_false
-        expect(v.include?("bar")).to be_false
+        expect(v.include?("CFLAGS")).to be_truthy
+        expect(v.include?(:CFLAGS)).to be_falsey
+        expect(v.include?(:foo)).to be_truthy
+        expect(v.include?("foo")).to be_falsey
+        expect(v.include?("bar")).to be_falsey
 
         v2 = v.clone
         v2.append("bar" => [])
 
-        expect(v2.include?("CFLAGS")).to be_true
-        expect(v2.include?(:CFLAGS)).to be_false
-        expect(v2.include?(:foo)).to be_true
-        expect(v2.include?("foo")).to be_false
-        expect(v2.include?("bar")).to be_true
+        expect(v2.include?("CFLAGS")).to be_truthy
+        expect(v2.include?(:CFLAGS)).to be_falsey
+        expect(v2.include?(:foo)).to be_truthy
+        expect(v2.include?("foo")).to be_falsey
+        expect(v2.include?("bar")).to be_truthy
       end
     end
 
