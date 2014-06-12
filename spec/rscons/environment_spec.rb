@@ -259,7 +259,7 @@ module Rscons
           it "prints the short description and executes the command" do
             env = Environment.new(echo: :short)
             env.should_receive(:puts).with("short desc")
-            env.should_receive(:system).with("a", "command").and_return(true)
+            env.should_receive(:system).with(*Rscons.command_executer, "a", "command").and_return(true)
             env.execute("short desc", ["a", "command"])
           end
         end
@@ -268,7 +268,7 @@ module Rscons
           it "prints the short description, executes the command, and prints the failed command line" do
             env = Environment.new(echo: :short)
             env.should_receive(:puts).with("short desc")
-            env.should_receive(:system).with("a", "command").and_return(false)
+            env.should_receive(:system).with(*Rscons.command_executer, "a", "command").and_return(false)
             $stdout.should_receive(:write).with("Failed command was: ")
             env.should_receive(:puts).with("a command")
             env.execute("short desc", ["a", "command"])
@@ -280,7 +280,7 @@ module Rscons
         it "prints the command executed and executes the command" do
           env = Environment.new(echo: :command)
           env.should_receive(:puts).with("a command '--arg=val with spaces'")
-          env.should_receive(:system).with({modified: :environment}, "a", "command", "--arg=val with spaces", {opt: :val}).and_return(false)
+          env.should_receive(:system).with({modified: :environment}, *Rscons.command_executer, "a", "command", "--arg=val with spaces", {opt: :val}).and_return(false)
           env.execute("short desc", ["a", "command", "--arg=val with spaces"], env: {modified: :environment}, options: {opt: :val})
         end
       end
