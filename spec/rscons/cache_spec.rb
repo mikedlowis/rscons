@@ -20,7 +20,7 @@ module Rscons
           $stderr.should_receive(:puts).with(/Warning:.*was.corrupt/)
           c = Cache.instance
           c.send(:initialize!)
-          c.instance_variable_get(:@cache).is_a?(Hash).should be_true
+          expect(c.instance_variable_get(:@cache).is_a?(Hash)).to be_true
         end
       end
     end
@@ -40,7 +40,7 @@ module Rscons
         fh.should_receive(:puts)
         File.should_receive(:open).and_yield(fh)
         build_from(cache).write
-        cache["version"].should == Rscons::VERSION
+        expect(cache["version"]).to eq Rscons::VERSION
       end
     end
 
@@ -52,12 +52,12 @@ module Rscons
 
       it "returns false when target file does not exist" do
         File.should_receive(:exists?).with("target").and_return(false)
-        build_from({}).up_to_date?("target", "command", [], empty_env).should be_false
+        expect(build_from({}).up_to_date?("target", "command", [], empty_env)).to be_false
       end
 
       it "returns false when target is not registered in the cache" do
         File.should_receive(:exists?).with("target").and_return(true)
-        build_from({}).up_to_date?("target", "command", [], empty_env).should be_false
+        expect(build_from({}).up_to_date?("target", "command", [], empty_env)).to be_false
       end
 
       it "returns false when the target's checksum does not match" do
@@ -65,7 +65,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("def")
-        cache.up_to_date?("target", "command", [], empty_env).should be_false
+        expect(cache.up_to_date?("target", "command", [], empty_env)).to be_false
       end
 
       it "returns false when the build command has changed" do
@@ -73,7 +73,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        cache.up_to_date?("target", "command", [], empty_env).should be_false
+        expect(cache.up_to_date?("target", "command", [], empty_env)).to be_false
       end
 
       it "returns false when there is a new dependency" do
@@ -83,7 +83,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env).should be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_false
       end
 
       it "returns false when a dependency's checksum has changed" do
@@ -101,7 +101,7 @@ module Rscons
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
         cache.should_receive(:calculate_checksum).with("dep.1").and_return("dep.1.chk")
         cache.should_receive(:calculate_checksum).with("dep.2").and_return("dep.2.changed")
-        cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env).should be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_false
       end
 
       it "returns false with strict_deps=true when cache has an extra dependency" do
@@ -117,7 +117,7 @@ module Rscons
         cache = build_from(_cache)
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env, strict_deps: true).should be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env, strict_deps: true)).to be_false
       end
 
       it "returns false when there is a new user dependency" do
@@ -130,7 +130,7 @@ module Rscons
         env.should_receive(:get_user_deps).with("target").and_return(["file.ld"])
         File.should_receive(:exists?).with("target").and_return(true)
         cache.should_receive(:calculate_checksum).with("target").and_return("abc")
-        cache.up_to_date?("target", "command", ["dep.1"], env).should be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1"], env)).to be_false
       end
 
       it "returns false when a user dependency checksum has changed" do
@@ -153,7 +153,7 @@ module Rscons
         cache.should_receive(:calculate_checksum).with("dep.2").and_return("dep.2.chk")
         cache.should_receive(:calculate_checksum).with("extra.dep").and_return("extra.dep.chk")
         cache.should_receive(:calculate_checksum).with("user.dep").and_return("INCORRECT")
-        cache.up_to_date?("target", "command", ["dep.1", "dep.2"], env).should be_false
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], env)).to be_false
       end
 
       it "returns true when no condition for false is met" do
@@ -172,7 +172,7 @@ module Rscons
         cache.should_receive(:calculate_checksum).with("dep.1").and_return("dep.1.chk")
         cache.should_receive(:calculate_checksum).with("dep.2").and_return("dep.2.chk")
         cache.should_receive(:calculate_checksum).with("extra.dep").and_return("extra.dep.chk")
-        cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env).should be_true
+        expect(cache.up_to_date?("target", "command", ["dep.1", "dep.2"], empty_env)).to be_true
       end
     end
 
@@ -189,13 +189,13 @@ module Rscons
         cache.register_build("the target", "the command", ["dep 1", "dep 2"], env)
         cached_target = cache.instance_variable_get(:@cache)["targets"]["the target"]
         cached_target.should_not be_nil
-        cached_target["command"].should == Digest::MD5.hexdigest("the command".inspect)
-        cached_target["checksum"].should == "the checksum"
-        cached_target["deps"].should == [
+        expect(cached_target["command"]).to eq Digest::MD5.hexdigest("the command".inspect)
+        expect(cached_target["checksum"]).to eq "the checksum"
+        expect(cached_target["deps"]).to eq [
           {"fname" => "dep 1", "checksum" => "dep 1 checksum"},
           {"fname" => "dep 2", "checksum" => "dep 2 checksum"},
         ]
-        cached_target["user_deps"].should == [
+        expect(cached_target["user_deps"]).to eq [
           {"fname" => "user.dep", "checksum" => "user.dep checksum"},
         ]
       end
@@ -204,7 +204,7 @@ module Rscons
     describe "#targets" do
       it "returns a list of targets that are cached" do
         cache = {"targets" => {"t1" => {}, "t2" => {}, "t3" => {}}}
-        build_from(cache).targets.should == ["t1", "t2", "t3"]
+        expect(build_from(cache).targets).to eq ["t1", "t2", "t3"]
       end
     end
 
@@ -223,7 +223,7 @@ module Rscons
         FileUtils.should_receive(:mkdir).with("one/two/four")
         cache.mkdir_p("one/two/three")
         cache.mkdir_p("one\\two\\four")
-        cache.directories.should == ["one/two", "one/two/three", "one/two/four"]
+        expect(cache.directories).to eq ["one/two", "one/two/three", "one/two/four"]
       end
 
       it "handles absolute paths" do
@@ -233,14 +233,14 @@ module Rscons
         File.should_receive(:exists?).with("/one/two").and_return(false)
         FileUtils.should_receive(:mkdir).with("/one/two")
         cache.mkdir_p("/one/two")
-        cache.directories.should == ["/one/two"]
+        expect(cache.directories).to eq ["/one/two"]
       end
     end
 
     describe "#directories" do
       it "returns a list of directories that are cached" do
         _cache = {"directories" => {"dir1" => true, "dir2" => true}}
-        build_from(_cache).directories.should == ["dir1", "dir2"]
+        expect(build_from(_cache).directories).to eq ["dir1", "dir2"]
       end
     end
 
@@ -249,13 +249,13 @@ module Rscons
         cache = build_from({})
         cache.instance_variable_set(:@lookup_checksums, {"f1" => "f1.chk"})
         cache.should_not_receive(:calculate_checksum)
-        cache.send(:lookup_checksum, "f1").should == "f1.chk"
+        expect(cache.send(:lookup_checksum, "f1")).to eq "f1.chk"
       end
 
       it "calls calculate_checksum when the checksum is not cached" do
         cache = build_from({})
         cache.should_receive(:calculate_checksum).with("f1").and_return("ck")
-        cache.send(:lookup_checksum, "f1").should == "ck"
+        expect(cache.send(:lookup_checksum, "f1")).to eq "ck"
       end
     end
 
@@ -264,7 +264,7 @@ module Rscons
         contents = "contents"
         File.should_receive(:read).with("fname", mode: "rb").and_return(contents)
         Digest::MD5.should_receive(:hexdigest).with(contents).and_return("the_checksum")
-        build_from({}).send(:calculate_checksum, "fname").should == "the_checksum"
+        expect(build_from({}).send(:calculate_checksum, "fname")).to eq "the_checksum"
       end
     end
   end

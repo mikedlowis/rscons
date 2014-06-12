@@ -4,7 +4,7 @@ module Rscons
       it "adds the default builders when they are not excluded" do
         env = Environment.new
         env.builders.size.should be > 0
-        env.builders.map {|name, builder| builder.is_a?(Builder)}.all?.should be_true
+        expect(env.builders.map {|name, builder| builder.is_a?(Builder)}.all?).to be_true
         env.builders.find {|name, builder| name == "Object"}.should_not be_nil
         env.builders.find {|name, builder| name == "Program"}.should_not be_nil
         env.builders.find {|name, builder| name == "Library"}.should_not be_nil
@@ -12,7 +12,7 @@ module Rscons
 
       it "excludes the default builders with exclude_builders: :all" do
         env = Environment.new(exclude_builders: true)
-        env.builders.size.should == 0
+        expect(env.builders.size).to eq 0
       end
 
       context "when a block is given" do
@@ -30,8 +30,8 @@ module Rscons
         env["CPPPATH"] << "path1"
         env2 = env.clone
         env2["CPPPATH"] << "path2"
-        env["CPPPATH"].should == ["path1"]
-        env2["CPPPATH"].should == ["path1", "path2"]
+        expect(env["CPPPATH"]).to eq ["path1"]
+        expect(env2["CPPPATH"]).to eq ["path1", "path2"]
       end
 
       it "supports nil, false, true, String, Symbol, Array, Hash, and Integer variables" do
@@ -68,9 +68,9 @@ module Rscons
     describe "#add_builder" do
       it "adds the builder to the list of builders" do
         env = Environment.new(exclude_builders: true)
-        env.builders.keys.should == []
+        expect(env.builders.keys).to eq []
         env.add_builder(Rscons::Builders::Object.new)
-        env.builders.keys.should == ["Object"]
+        expect(env.builders.keys).to eq ["Object"]
       end
     end
 
@@ -78,20 +78,20 @@ module Rscons
       context "with no build directories" do
         it "returns the name of the source file with suffix changed" do
           env = Environment.new
-          env.get_build_fname("src/dir/file.c", ".o").should == "src/dir/file.o"
-          env.get_build_fname("src\\dir\\other.d", ".a").should == "src/dir/other.a"
-          env.get_build_fname("source.cc", ".o").should == "source.o"
+          expect(env.get_build_fname("src/dir/file.c", ".o")).to eq "src/dir/file.o"
+          expect(env.get_build_fname("src\\dir\\other.d", ".a")).to eq "src/dir/other.a"
+          expect(env.get_build_fname("source.cc", ".o")).to eq "source.o"
         end
 
         context "with a build_root" do
           it "uses the build_root unless the path is absolute" do
             env = Environment.new
             env.build_root = "build/proj"
-            env.get_build_fname("src/dir/file.c", ".o").should == "build/proj/src/dir/file.o"
-            env.get_build_fname("/some/lib.c", ".a").should == "/some/lib.a"
-            env.get_build_fname("C:\\abspath\\mod.cc", ".o").should == "C:/abspath/mod.o"
-            env.get_build_fname("build\\proj\\generated.c", ".o").should == "build/proj/generated.o"
-            env.get_build_fname("build/proj.XX", ".yy").should == "build/proj/build/proj.yy"
+            expect(env.get_build_fname("src/dir/file.c", ".o")).to eq "build/proj/src/dir/file.o"
+            expect(env.get_build_fname("/some/lib.c", ".a")).to eq "/some/lib.a"
+            expect(env.get_build_fname("C:\\abspath\\mod.cc", ".o")).to eq "C:/abspath/mod.o"
+            expect(env.get_build_fname("build\\proj\\generated.c", ".o")).to eq "build/proj/generated.o"
+            expect(env.get_build_fname("build/proj.XX", ".yy")).to eq "build/proj/build/proj.yy"
           end
         end
       end
@@ -101,10 +101,10 @@ module Rscons
           env = Environment.new
           env.build_dir("src", "bld")
           env.build_dir(%r{^libs/([^/]+)}, 'build/libs/\1')
-          env.get_build_fname("src/input.cc", ".o").should == "bld/input.o"
-          env.get_build_fname("libs/lib1/some/file.c", ".o").should == "build/libs/lib1/some/file.o"
-          env.get_build_fname("libs/otherlib/otherlib.cc", ".o").should == "build/libs/otherlib/otherlib.o"
-          env.get_build_fname("other_directory/o.d", ".a").should == "other_directory/o.a"
+          expect(env.get_build_fname("src/input.cc", ".o")).to eq "bld/input.o"
+          expect(env.get_build_fname("libs/lib1/some/file.c", ".o")).to eq "build/libs/lib1/some/file.o"
+          expect(env.get_build_fname("libs/otherlib/otherlib.cc", ".o")).to eq "build/libs/otherlib/otherlib.o"
+          expect(env.get_build_fname("other_directory/o.d", ".a")).to eq "other_directory/o.a"
         end
 
         context "with a build_root" do
@@ -114,11 +114,11 @@ module Rscons
             env.build_dir(%r{^libs/([^/]+)}, 'build/libs/\1')
             env.build_root = "bldit"
 
-            env.get_build_fname("src/input.cc", ".o").should == "bld/input.o"
-            env.get_build_fname("libs/lib1/some/file.c", ".o").should == "build/libs/lib1/some/file.o"
-            env.get_build_fname("libs/otherlib/otherlib.cc", ".o").should == "build/libs/otherlib/otherlib.o"
-            env.get_build_fname("other_directory/o.d", ".a").should == "bldit/other_directory/o.a"
-            env.get_build_fname("bldit/some/mod.d", ".a").should == "bldit/some/mod.a"
+            expect(env.get_build_fname("src/input.cc", ".o")).to eq "bld/input.o"
+            expect(env.get_build_fname("libs/lib1/some/file.c", ".o")).to eq "build/libs/lib1/some/file.o"
+            expect(env.get_build_fname("libs/otherlib/otherlib.cc", ".o")).to eq "build/libs/otherlib/otherlib.o"
+            expect(env.get_build_fname("other_directory/o.d", ".a")).to eq "bldit/other_directory/o.a"
+            expect(env.get_build_fname("bldit/some/mod.d", ".a")).to eq "bldit/some/mod.a"
           end
         end
       end
@@ -128,7 +128,7 @@ module Rscons
       it "allows reading construction variables" do
         env = Environment.new
         env["CFLAGS"] = ["-g", "-Wall"]
-        env["CFLAGS"].should == ["-g", "-Wall"]
+        expect(env["CFLAGS"]).to eq ["-g", "-Wall"]
       end
     end
 
@@ -138,9 +138,9 @@ module Rscons
         env["CFLAGS"] = ["-g", "-Wall"]
         env["CFLAGS"] -= ["-g"]
         env["CFLAGS"] += ["-O3"]
-        env["CFLAGS"].should == ["-Wall", "-O3"]
+        expect(env["CFLAGS"]).to eq ["-Wall", "-O3"]
         env["other_var"] = "val33"
-        env["other_var"].should == "val33"
+        expect(env["other_var"]).to eq "val33"
       end
     end
 
@@ -150,8 +150,8 @@ module Rscons
         env["CFLAGS"] = ["-g"]
         env["CPPPATH"] = ["inc"]
         env.append("CFLAGS" => ["-Wall"], "CPPPATH" => ["include"])
-        env["CFLAGS"].should == ["-Wall"]
-        env["CPPPATH"].should == ["include"]
+        expect(env["CFLAGS"]).to eq ["-Wall"]
+        expect(env["CPPPATH"]).to eq ["include"]
       end
     end
 
@@ -234,7 +234,7 @@ module Rscons
         env["specialflag"] = "-z"
         template = ["cmd", "-I${path}", "${flags}", "${_source}", "${_dest}"]
         cmd = env.build_command(template, "_source" => "infile", "_dest" => "outfile")
-        cmd.should == ["cmd", "-Idir1", "-Idir2", "-x", "-y", "-z", "infile", "outfile"]
+        expect(cmd).to eq ["cmd", "-Idir1", "-Idir2", "-x", "-y", "-z", "infile", "outfile"]
       end
     end
 
@@ -245,11 +245,11 @@ module Rscons
         env["flags"] = ["-x", "-y", "${specialflag}"]
         env["specialflag"] = "-z"
         env["foo"] = {}
-        env.expand_varref(["-p${path}", "${flags}"]).should == ["-pdir1", "-pdir2", "-x", "-y", "-z"]
-        env.expand_varref("foo").should == "foo"
+        expect(env.expand_varref(["-p${path}", "${flags}"])).to eq ["-pdir1", "-pdir2", "-x", "-y", "-z"]
+        expect(env.expand_varref("foo")).to eq "foo"
         expect {env.expand_varref("${foo}")}.to raise_error /expand.a.variable.reference/
-        env.expand_varref("${specialflag}").should == "-z"
-        env.expand_varref("${path}").should == ["dir1", "dir2"]
+        expect(env.expand_varref("${specialflag}")).to eq "-z"
+        expect(env.expand_varref("${path}")).to eq ["dir1", "dir2"]
       end
     end
 
@@ -294,14 +294,14 @@ module Rscons
 
       it "records the target when the target method is a known builder" do
         env = Environment.new
-        env.instance_variable_get(:@targets).should == {}
+        expect(env.instance_variable_get(:@targets)).to eq({})
         env.Object("target.o", ["src1.c", "src2.c"], var: "val")
         target = env.instance_variable_get(:@targets)["target.o"]
         target.should_not be_nil
-        target[:builder].is_a?(Builder).should be_true
-        target[:sources].should == ["src1.c", "src2.c"]
-        target[:vars].should == {var: "val"}
-        target[:args].should == []
+        expect(target[:builder].is_a?(Builder)).to be_true
+        expect(target[:sources]).to eq ["src1.c", "src2.c"]
+        expect(target[:vars]).to eq({var: "val"})
+        expect(target[:args]).to eq []
       end
 
       it "raises an error when vars is not a Hash" do
@@ -314,13 +314,13 @@ module Rscons
       it "records the given dependencies in @user_deps" do
         env = Environment.new
         env.depends("foo", "bar", "baz")
-        env.instance_variable_get(:@user_deps).should == {"foo" => ["bar", "baz"]}
+        expect(env.instance_variable_get(:@user_deps)).to eq({"foo" => ["bar", "baz"]})
       end
       it "records user dependencies only once" do
         env = Environment.new
         env.instance_variable_set(:@user_deps, {"foo" => ["bar"]})
         env.depends("foo", "bar", "baz")
-        env.instance_variable_get(:@user_deps).should == {"foo" => ["bar", "baz"]}
+        expect(env.instance_variable_get(:@user_deps)).to eq({"foo" => ["bar", "baz"]})
       end
     end
 
@@ -337,7 +337,7 @@ module Rscons
         env.add_builder(ABuilder.new)
         env.builders["Object"].should_receive(:run).with("mod.o", ["mod.c"], cache, env, anything).and_return("mod.o")
         env.builders["ABuilder"].should_receive(:run).with("mod2.ab_out", ["mod2.ab_in"], cache, env, anything).and_return("mod2.ab_out")
-        env.build_sources(["precompiled.o", "mod.c", "mod2.ab_in"], [".o", ".ab_out"], cache, {}).should == ["precompiled.o", "mod.o", "mod2.ab_out"]
+        expect(env.build_sources(["precompiled.o", "mod.c", "mod2.ab_in"], [".o", ".ab_out"], cache, {})).to eq ["precompiled.o", "mod.o", "mod2.ab_out"]
       end
     end
 
@@ -350,11 +350,11 @@ module Rscons
           end
         end
         env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
-          vars["CFLAGS"].should == []
+          expect(vars["CFLAGS"]).to eq []
         end
         env.run_builder(env.builders["Object"], "build/normal/module.o", ["src/normal/module.c"], "cache", {})
         env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
-          vars["CFLAGS"].should == ["-O3", "-DSPECIAL"]
+          expect(vars["CFLAGS"]).to eq ["-O3", "-DSPECIAL"]
         end
         env.run_builder(env.builders["Object"], "build/special/module.o", ["src/special/module.c"], "cache", {})
       end
@@ -438,7 +438,7 @@ module Rscons
         File.should_receive(:read).with('makefile').and_return(<<EOS)
 module.o: source.cc
 EOS
-        Environment.parse_makefile_deps('makefile', 'module.o').should == ['source.cc']
+        expect(Environment.parse_makefile_deps('makefile', 'module.o')).to eq ['source.cc']
       end
 
       it 'handles dependencies split across many lines' do
@@ -447,7 +447,7 @@ module.o: module.c \\
   module.h \\
   other.h
 EOS
-        Environment.parse_makefile_deps('makefile', 'module.o').should == [
+        expect(Environment.parse_makefile_deps('makefile', 'module.o')).to eq [
           'module.c', 'module.h', 'other.h']
       end
     end

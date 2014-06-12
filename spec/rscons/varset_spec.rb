@@ -3,20 +3,20 @@ module Rscons
     describe '#initialize' do
       it "initializes variables from a Hash" do
         v = VarSet.new({"one" => 1, "two" => :two})
-        v["one"].should == 1
-        v["two"].should == :two
+        expect(v["one"]).to eq(1)
+        expect(v["two"]).to eq(:two)
       end
       it "initializes variables from another VarSet" do
         v = VarSet.new({"one" => 1})
         v2 = VarSet.new(v)
-        v2["one"].should == 1
+        expect(v2["one"]).to eq 1
       end
       it "makes a deep copy of the given VarSet" do
         v = VarSet.new({"array" => [1, 2, 3]})
         v2 = VarSet.new(v)
         v["array"] << 4
-        v["array"].should == [1, 2, 3, 4]
-        v2["array"].should == [1, 2, 3]
+        expect(v["array"]).to eq([1, 2, 3, 4])
+        expect(v2["array"]).to eq([1, 2, 3])
       end
     end
 
@@ -24,11 +24,11 @@ module Rscons
       it "allows accessing a variable with its verbatim value if type is not specified" do
         v = VarSet.new({"fuz" => "a string", "foo" => 42, "bar" => :baz,
                         "qax" => [3, 6], "qux" => {a: :b}})
-        v["fuz"].should == "a string"
-        v["foo"].should == 42
-        v["bar"].should == :baz
-        v["qax"].should == [3, 6]
-        v["qux"].should == {a: :b}
+        expect(v["fuz"]).to eq("a string")
+        expect(v["foo"]).to eq(42)
+        expect(v["bar"]).to eq(:baz)
+        expect(v["qax"]).to eq([3, 6])
+        expect(v["qux"]).to eq({a: :b})
       end
     end
 
@@ -36,8 +36,8 @@ module Rscons
       it "allows assigning to variables" do
         v = VarSet.new("CFLAGS" => ["-Wall", "-O3"])
         v["CPPPATH"] = ["one", "two"]
-        v["CFLAGS"].should == ["-Wall", "-O3"]
-        v["CPPPATH"].should == ["one", "two"]
+        expect(v["CFLAGS"]).to eq(["-Wall", "-O3"])
+        expect(v["CPPPATH"]).to eq(["one", "two"])
       end
     end
 
@@ -128,29 +128,29 @@ module Rscons
                      "cmd" => ["${CC}", "-c", "${CFLAGS}", "-I${CPPPATH}"],
                      "hash" => {})
       it "expands to the string itself if the string is not a variable reference" do
-        v.expand_varref("CC").should == "CC"
-        v.expand_varref("CPPPATH").should == "CPPPATH"
-        v.expand_varref("str").should == "str"
+        expect(v.expand_varref("CC")).to eq("CC")
+        expect(v.expand_varref("CPPPATH")).to eq("CPPPATH")
+        expect(v.expand_varref("str")).to eq("str")
       end
       it "expands a single variable reference beginning with a '$'" do
-        v.expand_varref("${CC}").should == "gcc"
-        v.expand_varref("${CPPPATH}").should == ["dir1", "dir2"]
+        expect(v.expand_varref("${CC}")).to eq("gcc")
+        expect(v.expand_varref("${CPPPATH}")).to eq(["dir1", "dir2"])
       end
       it "expands a single variable reference in ${arr} notation" do
-        v.expand_varref("prefix${CFLAGS}suffix").should == ["prefix-Wallsuffix", "prefix-O2suffix"]
-        v.expand_varref(v["cmd"]).should == ["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"]
+        expect(v.expand_varref("prefix${CFLAGS}suffix")).to eq(["prefix-Wallsuffix", "prefix-O2suffix"])
+        expect(v.expand_varref(v["cmd"])).to eq(["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"])
       end
       it "expands a variable reference recursively" do
-        v.expand_varref("${compiler}").should == "gcc"
-        v.expand_varref("${cmd}").should == ["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"]
+        expect(v.expand_varref("${compiler}")).to eq("gcc")
+        expect(v.expand_varref("${cmd}")).to eq(["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"])
       end
       it "resolves multiple variable references in one element by enumerating all combinations" do
-        v.expand_varref("cflag: ${CFLAGS}, cpppath: ${CPPPATH}, compiler: ${compiler}").should == [
+        expect(v.expand_varref("cflag: ${CFLAGS}, cpppath: ${CPPPATH}, compiler: ${compiler}")).to eq([
           "cflag: -Wall, cpppath: dir1, compiler: gcc",
           "cflag: -O2, cpppath: dir1, compiler: gcc",
           "cflag: -Wall, cpppath: dir2, compiler: gcc",
           "cflag: -O2, cpppath: dir2, compiler: gcc",
-        ]
+        ])
       end
       it "returns an empty string when a variable reference refers to a non-existent variable" do
         expect(v.expand_varref("${not_here}")).to eq("")

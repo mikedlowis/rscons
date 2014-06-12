@@ -82,8 +82,8 @@ describe Rscons do
     Rscons::Environment.new do |env|
       env.Program('simple', Dir['*.c'])
     end
-    File.exists?('simple.o').should be_true
-    `./simple`.should == "This is a simple C program\n"
+    expect(File.exists?('simple.o')).to be_true
+    expect(`./simple`).to eq "This is a simple C program\n"
   end
 
   it 'prints commands as they are executed' do
@@ -92,7 +92,7 @@ describe Rscons do
       env["LD"] = "gcc"
       env.Program('simple', Dir['*.c'])
     end
-    lines.should == [
+    expect(lines).to eq [
       'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
       "gcc -o simple#{env["PROGSUFFIX"]} simple.o",
     ]
@@ -103,7 +103,7 @@ describe Rscons do
     env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
-    lines.should == [
+    expect(lines).to eq [
       'CC header.o',
       "LD header#{env["PROGSUFFIX"]}",
     ]
@@ -114,8 +114,8 @@ describe Rscons do
     Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
-    File.exists?('header.o').should be_true
-    `./header`.should == "The value is 2\n"
+    expect(File.exists?('header.o')).to be_true
+    expect(`./header`).to eq "The value is 2\n"
   end
 
   it 'rebuilds a C module when a header it depends on changes' do
@@ -123,10 +123,10 @@ describe Rscons do
     env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
-    `./header`.should == "The value is 2\n"
+    expect(`./header`).to eq "The value is 2\n"
     file_sub('header.h') {|line| line.sub(/2/, '5')}
     env.process
-    `./header`.should == "The value is 5\n"
+    expect(`./header`).to eq "The value is 5\n"
   end
 
   it 'does not rebuild a C module when its dependencies have not changed' do
@@ -134,13 +134,13 @@ describe Rscons do
     env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
-    `./header`.should == "The value is 2\n"
-    lines.should == [
+    expect(`./header`).to eq "The value is 2\n"
+    expect(lines).to eq [
       'CC header.o',
       "LD header#{env["PROGSUFFIX"]}",
     ]
     env.process
-    lines.should == []
+    expect(lines).to eq []
   end
 
   it "does not rebuild a C module when only the file's timestamp has changed" do
@@ -148,15 +148,15 @@ describe Rscons do
     env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
-    `./header`.should == "The value is 2\n"
-    lines.should == [
+    expect(`./header`).to eq "The value is 2\n"
+    expect(lines).to eq [
       'CC header.o',
       "LD header#{env["PROGSUFFIX"]}",
     ]
     sleep 0.05
     file_sub('header.c') {|line| line}
     env.process
-    lines.should == []
+    expect(lines).to eq []
   end
 
   it 're-links a program when the link flags have changed' do
@@ -164,7 +164,7 @@ describe Rscons do
     env = Rscons::Environment.new(echo: :command) do |env|
       env.Program('simple', Dir['*.c'])
     end
-    lines.should == [
+    expect(lines).to eq [
       'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
       "gcc -o simple#{env["PROGSUFFIX"]} simple.o",
     ]
@@ -172,7 +172,7 @@ describe Rscons do
       env["LIBPATH"] += ["libdir"]
       env.Program('simple', Dir['*.c'])
     end
-    lines.should == ["gcc -o simple#{env["PROGSUFFIX"]} simple.o -Llibdir"]
+    expect(lines).to eq ["gcc -o simple#{env["PROGSUFFIX"]} simple.o -Llibdir"]
   end
 
   it 'builds object files in a different build directory' do
@@ -182,9 +182,9 @@ describe Rscons do
       env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
       env.Program('build_dir', Dir['src/**/*.c'])
     end
-    `./build_dir`.should == "Hello from two()\n"
-    File.exists?('build_one/one.o').should be_true
-    File.exists?('build_two/two.o').should be_true
+    expect(`./build_dir`).to eq "Hello from two()\n"
+    expect(File.exists?('build_one/one.o')).to be_true
+    expect(File.exists?('build_two/two.o')).to be_true
   end
 
   it 'uses build directories before build root' do
@@ -195,7 +195,7 @@ describe Rscons do
       env.build_root = "build_root"
       env.Program('build_dir', Dir['src/**/*.c'])
     end
-    lines.should == ["CC build/one/one.o", "CC build/two/two.o", "LD build_dir#{env["PROGSUFFIX"]}"]
+    expect(lines).to eq ["CC build/one/one.o", "CC build/two/two.o", "LD build_dir#{env["PROGSUFFIX"]}"]
   end
 
   it 'uses build_root if no build directories match' do
@@ -206,7 +206,7 @@ describe Rscons do
       env.build_root = "build_root"
       env.Program('build_dir.exe', Dir['src/**/*.c'])
     end
-    lines.should == ["CC build_root/src/one/one.o", "CC build_root/src/two/two.o", "LD build_dir.exe"]
+    expect(lines).to eq ["CC build_root/src/one/one.o", "CC build_root/src/two/two.o", "LD build_dir.exe"]
   end
 
   it "expands target and source paths starting with ^/ to be relative to the build root" do
@@ -219,7 +219,7 @@ describe Rscons do
       env.Object("^/one.o", "^/one.c")
       env.Program('build_dir', Dir['src/**/*.c'] + ["^/one.o"])
     end
-    lines.should == [
+    expect(lines).to eq [
       %q{gcc -c -o build_root/one.o -MMD -MF build_root/one.mf -Isrc/one/ -Isrc/two/ build_root/one.c},
       %q{gcc -c -o build_root/src/two/two.o -MMD -MF build_root/src/two/two.mf -Isrc/one/ -Isrc/two/ src/two/two.c},
       %Q{gcc -o build_dir#{env["PROGSUFFIX"]} build_root/src/two/two.o build_root/one.o},
@@ -233,15 +233,15 @@ describe Rscons do
       env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
       env.Program('build_dir', Dir['src/**/*.c'])
     end
-    `./build_dir`.should == "Hello from two()\n"
-    File.exists?('build_one/one.o').should be_true
-    File.exists?('build_two/two.o').should be_true
+    expect(`./build_dir`).to eq "Hello from two()\n"
+    expect(File.exists?('build_one/one.o')).to be_true
+    expect(File.exists?('build_two/two.o')).to be_true
     Rscons.clean
-    File.exists?('build_one/one.o').should be_false
-    File.exists?('build_two/two.o').should be_false
-    File.exists?('build_one').should be_false
-    File.exists?('build_two').should be_false
-    File.exists?('src/one/one.c').should be_true
+    expect(File.exists?('build_one/one.o')).to be_false
+    expect(File.exists?('build_two/two.o')).to be_false
+    expect(File.exists?('build_one')).to be_false
+    expect(File.exists?('build_two')).to be_false
+    expect(File.exists?('src/one/one.c')).to be_true
   end
 
   it 'does not clean created directories if other non-rscons-generated files reside there' do
@@ -251,16 +251,16 @@ describe Rscons do
       env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
       env.Program('build_dir', Dir['src/**/*.c'])
     end
-    `./build_dir`.should == "Hello from two()\n"
-    File.exists?('build_one/one.o').should be_true
-    File.exists?('build_two/two.o').should be_true
+    expect(`./build_dir`).to eq "Hello from two()\n"
+    expect(File.exists?('build_one/one.o')).to be_true
+    expect(File.exists?('build_two/two.o')).to be_true
     File.open('build_two/tmp', 'w') { |fh| fh.puts "dum" }
     Rscons.clean
-    File.exists?('build_one/one.o').should be_false
-    File.exists?('build_two/two.o').should be_false
-    File.exists?('build_one').should be_false
-    File.exists?('build_two').should be_true
-    File.exists?('src/one/one.c').should be_true
+    expect(File.exists?('build_one/one.o')).to be_false
+    expect(File.exists?('build_two/two.o')).to be_false
+    expect(File.exists?('build_one')).to be_false
+    expect(File.exists?('build_two')).to be_true
+    expect(File.exists?('src/one/one.c')).to be_true
   end
 
   it 'allows Ruby classes as custom builders to be used to construct files' do
@@ -282,9 +282,9 @@ EOF
       env.Program('program', Dir['*.c'])
     end
 
-    lines.should == ["CC program.o", "LD program#{env["PROGSUFFIX"]}"]
-    File.exists?('inc.h').should be_true
-    `./program`.should == "The value is 5678\n"
+    expect(lines).to eq ["CC program.o", "LD program#{env["PROGSUFFIX"]}"]
+    expect(File.exists?('inc.h')).to be_true
+    expect(`./program`).to eq "The value is 5678\n"
   end
 
   it 'supports custom builders with multiple targets' do
@@ -309,15 +309,15 @@ EOF
       env.Program("program", Dir["*.c"] + ["inc.c"])
     end
 
-    lines.should == ["CHGen inc.c", "CC program.o", "CC inc.o", "LD program#{env["PROGSUFFIX"]}"]
-    File.exists?("inc.c").should be_true
-    File.exists?("inc.h").should be_true
-    `./program`.should == "The value is 42\n"
+    expect(lines).to eq ["CHGen inc.c", "CC program.o", "CC inc.o", "LD program#{env["PROGSUFFIX"]}"]
+    expect(File.exists?("inc.c")).to be_true
+    expect(File.exists?("inc.h")).to be_true
+    expect(`./program`).to eq "The value is 42\n"
 
     File.open("inc.c", "w") {|fh| fh.puts "int THE_VALUE = 33;"}
     env.process
-    lines.should == ["CHGen inc.c"]
-    `./program`.should == "The value is 42\n"
+    expect(lines).to eq ["CHGen inc.c"]
+    expect(`./program`).to eq "The value is 42\n"
   end
 
   it 'allows cloning Environment objects' do
@@ -336,7 +336,7 @@ EOF
       env.Program('program-release', Dir['src/*.c'])
     end
 
-    lines.should == [
+    expect(lines).to eq [
       %q{gcc -c -o debug/program.o -MMD -MF debug/program.mf '-DSTRING="Debug Version"' -O2 src/program.c},
       %Q{gcc -o program-debug#{debug["PROGSUFFIX"]} debug/program.o},
       %q{gcc -c -o release/program.o -MMD -MF release/program.mf '-DSTRING="Release Version"' -O2 src/program.c},
@@ -360,7 +360,7 @@ EOF
       env.Program('program2', Dir['src/*.c'])
     end
 
-    lines.should == [
+    expect(lines).to eq [
       %q{gcc -c -o build/program.o -MMD -MF build/program.mf -DSTRING="Hello" -O2 src/program.c},
       %Q{gcc -o program#{env1["PROGSUFFIX"]} build/program.o},
       %Q{gcc -o program2#{env2["PROGSUFFIX"]} build/program.o},
@@ -372,8 +372,8 @@ EOF
     Rscons::Environment.new do |env|
       env.Program('simple', Dir['*.cc'])
     end
-    File.exists?('simple.o').should be_true
-    `./simple`.should == "This is a simple C++ program\n"
+    expect(File.exists?('simple.o')).to be_true
+    expect(`./simple`).to eq "This is a simple C++ program\n"
   end
 
   it 'allows overriding construction variables for individual builder calls' do
@@ -382,13 +382,13 @@ EOF
       env.Object("one.o", "one.c", 'CPPFLAGS' => ['-DONE'])
       env.Program('two_sources', ['one.o', 'two.c'])
     end
-    lines.should == [
+    expect(lines).to eq [
       'gcc -c -o one.o -MMD -MF one.mf -DONE one.c',
       'gcc -c -o two.o -MMD -MF two.mf two.c',
       "gcc -o two_sources#{env["PROGSUFFIX"]} one.o two.o",
     ]
-    File.exists?("two_sources#{env["PROGSUFFIX"]}").should be_true
-    `./two_sources`.should == "This is a C program with two sources.\n"
+    expect(File.exists?("two_sources#{env["PROGSUFFIX"]}")).to be_true
+    expect(`./two_sources`).to eq "This is a C program with two sources.\n"
   end
 
   it 'builds a static library archive' do
@@ -397,15 +397,15 @@ EOF
       env.Program('library', ['lib.a', 'three.c'])
       env.Library("lib.a", ['one.c', 'two.c'], 'CPPFLAGS' => ['-Dmake_lib'])
     end
-    lines.should == [
+    expect(lines).to eq [
       'gcc -c -o one.o -MMD -MF one.mf -Dmake_lib one.c',
       'gcc -c -o two.o -MMD -MF two.mf -Dmake_lib two.c',
       'ar rcs lib.a one.o two.o',
       'gcc -c -o three.o -MMD -MF three.mf three.c',
       "gcc -o library#{env["PROGSUFFIX"]} lib.a three.o",
     ]
-    File.exists?("library#{env["PROGSUFFIX"]}").should be_true
-    `ar t lib.a`.should == "one.o\ntwo.o\n"
+    expect(File.exists?("library#{env["PROGSUFFIX"]}")).to be_true
+    expect(`ar t lib.a`).to eq "one.o\ntwo.o\n"
   end
 
   it 'supports build hooks to override construction variables' do
@@ -422,7 +422,7 @@ EOF
       end
       env.Program('build_hook.exe', Dir['src/**/*.c'])
     end
-    `./build_hook`.should == "Hello from two()\n"
+    expect(`./build_hook`).to eq "Hello from two()\n"
     lines.should =~ [
       'gcc -c -o build_one/one.o -MMD -MF build_one/one.mf -Isrc/one/ -Isrc/two/ -O1 src/one/one.c',
       'gcc -c -o build_two/two.o -MMD -MF build_two/two.mf -Isrc/one/ -Isrc/two/ -O2 src/two/two.c',
@@ -438,9 +438,9 @@ EOF
         fh.puts("foo")
       end
     end
-    lines.should == ["CC simple.o", "LD simple.exe"]
-    File.exists?('simple.o').should be_true
-    `./simple.exe`.should == "This is a simple C program\n"
+    expect(lines).to eq ["CC simple.o", "LD simple.exe"]
+    expect(File.exists?('simple.o')).to be_true
+    expect(`./simple.exe`).to eq "This is a simple C program\n"
     e2 = Rscons::Environment.new do |env|
       program = env.Program('simple.exe', Dir['*.c'])
       env.depends(program, "file.ld")
@@ -448,16 +448,16 @@ EOF
         fh.puts("bar")
       end
     end
-    lines.should == ["LD simple.exe"]
+    expect(lines).to eq ["LD simple.exe"]
     e3 = Rscons::Environment.new do |env|
       env.Program('simple.exe', Dir['*.c'])
       File.unlink("file.ld")
     end
-    lines.should == ["LD simple.exe"]
+    expect(lines).to eq ["LD simple.exe"]
     Rscons::Environment.new do |env|
       env.Program('simple.exe', Dir['*.c'])
     end
-    lines.should == []
+    expect(lines).to eq []
   end
 
   unless ENV["omit_gdc_tests"]
@@ -466,11 +466,11 @@ EOF
       Rscons::Environment.new(echo: :command) do |env|
         env.Program("hello-d.exe", Dir["*.d"])
       end
-      lines.should == [
+      expect(lines).to eq [
         "gdc -c -o main.o main.d",
         "gdc -o hello-d.exe main.o",
       ]
-      `./hello-d`.rstrip.should == "Hello from D!"
+      expect(`./hello-d`.rstrip).to eq "Hello from D!"
     end
   end
 
@@ -480,7 +480,7 @@ EOF
       env.Object("simple.o", "simple.c")
       env.Disassemble("simple.txt", "simple.o")
     end
-    File.exists?("simple.txt").should be_true
+    expect(File.exists?("simple.txt")).to be_true
     File.read("simple.txt").should =~ /Disassembly of section .text:/
   end
 
@@ -491,7 +491,7 @@ EOF
       env.Program("simple", "simplepp.c")
     end
     File.read("simplepp.c").should =~ /# \d+ "simple.c"/
-    `./simple`.should == "This is a simple C program\n"
+    expect(`./simple`).to eq "This is a simple C program\n"
   end
 
   it "supports preprocessing C++ sources" do
@@ -501,7 +501,7 @@ EOF
       env.Program("simple", "simplepp.cc")
     end
     File.read("simplepp.cc").should =~ /# \d+ "simple.cc"/
-    `./simple`.should == "This is a simple C++ program\n"
+    expect(`./simple`).to eq "This is a simple C++ program\n"
   end
 
   it "supports invoking builders with no sources and a build_root defined" do
@@ -539,8 +539,8 @@ EOF
       env.Program('program', "${src}")
     end
 
-    lines.should == ["CC program.o", "LD program#{env["PROGSUFFIX"]}"]
-    File.exists?('inc.h').should be_true
-    `./program`.should == "The value is 678\n"
+    expect(lines).to eq ["CC program.o", "LD program#{env["PROGSUFFIX"]}"]
+    expect(File.exists?('inc.h')).to be_true
+    expect(`./program`).to eq "The value is 678\n"
   end
 end
