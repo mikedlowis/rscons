@@ -84,3 +84,6 @@ module Rscons
       end
   end
 end
+
+# Unbuffer $stdout
+$stdout.sync = true
