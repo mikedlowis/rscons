@@ -1,11 +1,11 @@
 module Rscons
   describe Cache do
     before do
-      File.stub(:read) { nil }
+      allow(File).to receive(:read) { nil }
     end
 
     def build_from(cache)
-      JSON.stub(:load) do
+      allow(JSON).to receive(:load) do
         cache
       end
       Cache.instance.tap do |cache|
@@ -28,7 +28,7 @@ module Rscons
     describe "#clear" do
       it "removes the cache file" do
         expect(FileUtils).to receive(:rm_f).with(Cache::CACHE_FILE)
-        JSON.stub(:load) {{}}
+        allow(JSON).to receive(:load) {{}}
         Cache.instance.clear
       end
     end
@@ -47,7 +47,7 @@ module Rscons
     describe "#up_to_date?" do
       empty_env = "env"
       before do
-        empty_env.stub(:get_user_deps) { nil }
+        allow(empty_env).to receive(:get_user_deps) { nil }
       end
 
       it "returns false when target file does not exist" do

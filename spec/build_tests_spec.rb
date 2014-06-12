@@ -37,16 +37,15 @@ describe Rscons do
   end
 
   before(:each) do
-    @output = ""
-    $stdout.stub(:write) do |content|
-      @output += content
-    end
-    $stderr.stub(:write) do |content|
-      @output += content
-    end
+    @saved_stdout = $stdout
+    $stdout = StringIO.new
+    @saved_stderr = $stderr
+    $stderr = StringIO.new
   end
 
   after(:each) do
+    $stdout = @saved_stdout
+    $stderr = @saved_stderr
     Dir.chdir(@owd)
     rm_rf(BUILD_TEST_RUN_DIR)
   end
@@ -68,9 +67,10 @@ describe Rscons do
   end
 
   def lines
-    @output.lines.map(&:rstrip).tap do |v|
-      @output = ""
-    end
+    rv = ($stdout.string + $stderr.string).lines.map(&:rstrip)
+    $stdout.string = ""
+    $stderr.string = ""
+    rv
   end
 
   ###########################################################################

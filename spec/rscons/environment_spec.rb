@@ -205,7 +205,7 @@ module Rscons
         cache = "cache"
         expect(Cache).to receive(:instance).and_return(cache)
         expect(cache).to receive(:clear_checksum_cache!)
-        env.stub(:run_builder) do |builder, target, sources, cache, vars|
+        allow(env).to receive(:run_builder) do |builder, target, sources, cache, vars|
           raise "Ruby exception thrown by builder"
         end
         expect(cache).to receive(:write)
@@ -349,11 +349,11 @@ module Rscons
             build_op[:vars]["CFLAGS"] += ["-O3", "-DSPECIAL"]
           end
         end
-        env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
+        allow(env.builders["Object"]).to receive(:run) do |target, sources, cache, env, vars|
           expect(vars["CFLAGS"]).to eq []
         end
         env.run_builder(env.builders["Object"], "build/normal/module.o", ["src/normal/module.c"], "cache", {})
-        env.builders["Object"].stub(:run) do |target, sources, cache, env, vars|
+        allow(env.builders["Object"]).to receive(:run) do |target, sources, cache, env, vars|
           expect(vars["CFLAGS"]).to eq ["-O3", "-DSPECIAL"]
         end
         env.run_builder(env.builders["Object"], "build/special/module.o", ["src/special/module.c"], "cache", {})

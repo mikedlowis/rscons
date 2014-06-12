@@ -6,11 +6,11 @@ module Rscons
 
       it "supports overriding CCCMD construction variable" do
         cache = "cache"
-        cache.stub(:up_to_date?) { false }
-        cache.stub(:mkdir_p) { }
-        cache.stub(:register_build) { }
-        FileUtils.stub(:rm_f) { }
-        File.stub(:exists?) { false }
+        allow(cache).to receive(:up_to_date?) { false }
+        allow(cache).to receive(:mkdir_p) { }
+        allow(cache).to receive(:register_build) { }
+        allow(FileUtils).to receive(:rm_f) { }
+        allow(File).to receive(:exists?) { false }
         expect(env).to receive(:execute).with("CC mod.o", ["llc", "mod.c"]).and_return(true)
         subject.run("mod.o", ["mod.c"], cache, env, "CCCMD" => ["llc", "${_SOURCES}"])
       end
