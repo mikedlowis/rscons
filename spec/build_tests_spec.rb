@@ -88,24 +88,24 @@ describe Rscons do
 
   it 'prints commands as they are executed' do
     test_dir('simple')
-    Rscons::Environment.new(echo: :command) do |env|
+    env = Rscons::Environment.new(echo: :command) do |env|
       env["LD"] = "gcc"
       env.Program('simple', Dir['*.c'])
     end
     lines.should == [
       'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
-      'gcc -o simple simple.o',
+      "gcc -o simple#{env["PROGSUFFIX"]} simple.o",
     ]
   end
 
   it 'prints short representations of the commands being executed' do
     test_dir('header')
-    Rscons::Environment.new do |env|
+    env = Rscons::Environment.new do |env|
       env.Program('header', Dir['*.c'])
     end
     lines.should == [
       'CC header.o',
-      'LD header',
+      "LD header#{env["PROGSUFFIX"]}",
     ]
   end
 
@@ -137,7 +137,7 @@ describe Rscons do
     `./header`.should == "The value is 2\n"
     lines.should == [
       'CC header.o',
-      'LD header',
+      "LD header#{env["PROGSUFFIX"]}",
     ]
     env.process
     lines.should == []
@@ -151,7 +151,7 @@ describe Rscons do
     `./header`.should == "The value is 2\n"
     lines.should == [
       'CC header.o',
-      'LD header',
+      "LD header#{env["PROGSUFFIX"]}",
     ]
     file_sub('header.c') {|line| line}
     env.process
@@ -160,18 +160,18 @@ describe Rscons do
 
   it 're-links a program when the link flags have changed' do
     test_dir('simple')
-    Rscons::Environment.new(echo: :command) do |env|
+    env = Rscons::Environment.new(echo: :command) do |env|
       env.Program('simple', Dir['*.c'])
     end
     lines.should == [
       'gcc -c -o simple.o -MMD -MF simple.mf simple.c',
-      'gcc -o simple simple.o',
+      "gcc -o simple#{env["PROGSUFFIX"]} simple.o",
     ]
-    Rscons::Environment.new(echo: :command) do |env|
+    e2 = Rscons::Environment.new(echo: :command) do |env|
       env["LIBS"] += ["c"]
       env.Program('simple', Dir['*.c'])
     end
-    lines.should == ['gcc -o simple simple.o -lc']
+    lines.should == ["gcc -o simple#{env["PROGSUFFIX"]} simple.o -lc"]
   end
 
   it 'builds object files in a different build directory' do
@@ -188,13 +188,13 @@ describe Rscons do
 
   it 'uses build directories before build root' do
     test_dir('build_dir')
-    Rscons::Environment.new do |env|
+    env = Rscons::Environment.new do |env|
       env.append('CPPPATH' => Dir['src/**/*/'])
       env.build_dir("src", "build")
       env.build_root = "build_root"
       env.Program('build_dir', Dir['src/**/*.c'])
     end
-    lines.should == ["CC build/one/one.o", "CC build/two/two.o", "LD build_dir"]
+    lines.should == ["CC build/one/one.o", "CC build/two/two.o", "LD build_dir#{env["PROGSUFFIX"]}"]
   end
 
   it 'uses build_root if no build directories match' do
@@ -203,14 +203,14 @@ describe Rscons do
       env.append('CPPPATH' => Dir['src/**/*/'])
       env.build_dir("src2", "build")
       env.build_root = "build_root"
-      env.Program('build_dir', Dir['src/**/*.c'])
+      env.Program('build_dir.exe', Dir['src/**/*.c'])
     end
-    lines.should == ["CC build_root/src/one/one.o", "CC build_root/src/two/two.o", "LD build_dir"]
+    lines.should == ["CC build_root/src/one/one.o", "CC build_root/src/two/two.o", "LD build_dir.exe"]
   end
 
   it "expands target and source paths starting with ^/ to be relative to the build root" do
     test_dir('build_dir')
-    Rscons::Environment.new(echo: :command) do |env|
+    env = Rscons::Environment.new(echo: :command) do |env|
       env.append('CPPPATH' => Dir['src/**/*/'])
       env.build_root = "build_root"
       FileUtils.mkdir_p(env.build_root)
@@ -221,7 +221,7 @@ describe Rscons do
     lines.should == [
       %q{gcc -c -o build_root/one.o -MMD -MF build_root/one.mf -Isrc/one/ -Isrc/two/ build_root/one.c},
       %q{gcc -c -o build_root/src/two/two.o -MMD -MF build_root/src/two/two.mf -Isrc/one/ -Isrc/two/ src/two/two.c},
-      %q{gcc -o build_dir build_root/src/two/two.o build_root/one.o},
+      %Q{gcc -o build_dir#{env["PROGSUFFIX"]} build_root/src/two/two.o build_root/one.o},
     ]
   end
 
@@ -275,13 +275,13 @@ EOF
       end
     end
 
-    Rscons::Environment.new do |env|
+    env = Rscons::Environment.new do |env|
       env.add_builder(MySource.new)
       env.MySource('inc.h', [])
       env.Program('program', Dir['*.c'])
     end
 
-    lines.should == ['CC program.o', 'LD program']
+    lines.should == ["CC program.o", "LD program#{env["PROGSUFFIX"]}"]
     File.exists?('inc.h').should be_true
     `./program`.should == "The value is 5678\n"
   end
@@ -308,7 +308,7 @@ EOF
       env.Program("program", Dir["*.c"] + ["inc.c"])
     end
 
-    lines.should == ["CHGen inc.c", "CC program.o", "CC inc.o", "LD program"]
+    lines.should == ["CHGen inc.c", "CC program.o", "CC inc.o", "LD program#{env["PROGSUFFIX"]}"]
     File.exists?("inc.c").should be_true
     File.exists?("inc.h").should be_true
     `./program`.should == "The value is 42\n"
@@ -337,9 +337,9 @@ EOF
 
     lines.should == [
       %q{gcc -c -o debug/program.o -MMD -MF debug/program.mf '-DSTRING="Debug Version"' -O2 src/program.c},
-      %q{gcc -o program-debug debug/program.o},
+      %Q{gcc -o program-debug#{debug["PROGSUFFIX"]} debug/program.o},
       %q{gcc -c -o release/program.o -MMD -MF release/program.mf '-DSTRING="Release Version"' -O2 src/program.c},
-      %q{gcc -o program-release release/program.o},
+      %Q{gcc -o program-release#{debug["PROGSUFFIX"]} release/program.o},
     ]
   end
 
@@ -361,8 +361,8 @@ EOF
 
     lines.should == [
       %q{gcc -c -o build/program.o -MMD -MF build/program.mf -DSTRING="Hello" -O2 src/program.c},
-      %q{gcc -o program build/program.o},
-      %q{gcc -o program2 build/program.o},
+      %Q{gcc -o program#{env1["PROGSUFFIX"]} build/program.o},
+      %Q{gcc -o program2#{env2["PROGSUFFIX"]} build/program.o},
     ]
   end
 
@@ -377,22 +377,22 @@ EOF
 
   it 'allows overriding construction variables for individual builder calls' do
     test_dir('two_sources')
-    Rscons::Environment.new(echo: :command) do |env|
+    env = Rscons::Environment.new(echo: :command) do |env|
       env.Object("one.o", "one.c", 'CPPFLAGS' => ['-DONE'])
       env.Program('two_sources', ['one.o', 'two.c'])
     end
     lines.should == [
       'gcc -c -o one.o -MMD -MF one.mf -DONE one.c',
       'gcc -c -o two.o -MMD -MF two.mf two.c',
-      'gcc -o two_sources one.o two.o',
+      "gcc -o two_sources#{env["PROGSUFFIX"]} one.o two.o",
     ]
-    File.exists?('two_sources').should be_true
+    File.exists?("two_sources#{env["PROGSUFFIX"]}").should be_true
     `./two_sources`.should == "This is a C program with two sources.\n"
   end
 
   it 'builds a static library archive' do
     test_dir('library')
-    Rscons::Environment.new(echo: :command) do |env|
+    env = Rscons::Environment.new(echo: :command) do |env|
       env.Program('library', ['lib.a', 'three.c'])
       env.Library("lib.a", ['one.c', 'two.c'], 'CPPFLAGS' => ['-Dmake_lib'])
     end
@@ -401,15 +401,15 @@ EOF
       'gcc -c -o two.o -MMD -MF two.mf -Dmake_lib two.c',
       'ar rcs lib.a one.o two.o',
       'gcc -c -o three.o -MMD -MF three.mf three.c',
-      'gcc -o library lib.a three.o',
+      "gcc -o library#{env["PROGSUFFIX"]} lib.a three.o",
     ]
-    File.exists?('library').should be_true
+    File.exists?("library#{env["PROGSUFFIX"]}").should be_true
     `ar t lib.a`.should == "one.o\ntwo.o\n"
   end
 
   it 'supports build hooks to override construction variables' do
     test_dir("build_dir")
-    Rscons::Environment.new(echo: :command) do |env|
+    env = Rscons::Environment.new(echo: :command) do |env|
       env.append('CPPPATH' => Dir['src/**/*/'])
       env.build_dir(%r{^src/([^/]+)/}, 'build_\\1/')
       env.add_build_hook do |build_op|
@@ -419,43 +419,43 @@ EOF
           build_op[:vars]["CFLAGS"] << "-O2"
         end
       end
-      env.Program('build_hook', Dir['src/**/*.c'])
+      env.Program('build_hook.exe', Dir['src/**/*.c'])
     end
     `./build_hook`.should == "Hello from two()\n"
     lines.should =~ [
       'gcc -c -o build_one/one.o -MMD -MF build_one/one.mf -Isrc/one/ -Isrc/two/ -O1 src/one/one.c',
       'gcc -c -o build_two/two.o -MMD -MF build_two/two.mf -Isrc/one/ -Isrc/two/ -O2 src/two/two.c',
-      'gcc -o build_hook build_one/one.o build_two/two.o',
+      'gcc -o build_hook.exe build_one/one.o build_two/two.o',
     ]
   end
 
   it 'rebuilds when user-specified dependencies change' do
     test_dir('simple')
-    Rscons::Environment.new do |env|
-      env.Program('simple', Dir['*.c'])
+    env = Rscons::Environment.new do |env|
+      env.Program('simple.exe', Dir['*.c'])
       File.open("file.ld", "w") do |fh|
         fh.puts("foo")
       end
-      env.depends('simple', 'file.ld')
+      env.depends('simple.exe', 'file.ld')
     end
-    lines.should == ["CC simple.o", "LD simple"]
+    lines.should == ["CC simple.o", "LD simple.exe"]
     File.exists?('simple.o').should be_true
-    `./simple`.should == "This is a simple C program\n"
-    Rscons::Environment.new do |env|
-      env.Program('simple', Dir['*.c'])
+    `./simple.exe`.should == "This is a simple C program\n"
+    e2 = Rscons::Environment.new do |env|
+      env.Program('simple.exe', Dir['*.c'])
       File.open("file.ld", "w") do |fh|
         fh.puts("bar")
       end
-      env.depends('simple', 'file.ld')
+      env.depends('simple.exe', 'file.ld')
     end
-    lines.should == ["LD simple"]
-    Rscons::Environment.new do |env|
-      env.Program('simple', Dir['*.c'])
+    lines.should == ["LD simple.exe"]
+    e3 = Rscons::Environment.new do |env|
+      env.Program('simple.exe', Dir['*.c'])
       File.unlink("file.ld")
     end
-    lines.should == ["LD simple"]
+    lines.should == ["LD simple.exe"]
     Rscons::Environment.new do |env|
-      env.Program('simple', Dir['*.c'])
+      env.Program('simple.exe', Dir['*.c'])
     end
     lines.should == []
   end
@@ -464,11 +464,11 @@ EOF
     it "supports building D sources" do
       test_dir("d")
       Rscons::Environment.new(echo: :command) do |env|
-        env.Program("hello-d", Dir["*.d"])
+        env.Program("hello-d.exe", Dir["*.d"])
       end
       lines.should == [
         "gdc -c -o main.o main.d",
-        "gdc -o hello-d main.o",
+        "gdc -o hello-d.exe main.o",
       ]
       `./hello-d`.rstrip.should == "Hello from D!"
     end
@@ -531,7 +531,7 @@ EOF
       end
     end
 
-    Rscons::Environment.new do |env|
+    env = Rscons::Environment.new do |env|
       env["hdr"] = "inc.h"
       env["src"] = "program.c"
       env.add_builder(MySource.new)
@@ -539,7 +539,7 @@ EOF
       env.Program('program', "${src}")
     end
 
-    lines.should == ['CC program.o', 'LD program']
+    lines.should == ["CC program.o", "LD program#{env["PROGSUFFIX"]}"]
     File.exists?('inc.h').should be_true
     `./program`.should == "The value is 678\n"
   end

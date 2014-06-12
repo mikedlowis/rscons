@@ -5,8 +5,9 @@ module Rscons
     class Program < Builder
       def default_variables(env)
         {
-          'LD' => nil,
           'OBJSUFFIX' => '.o',
+          'PROGSUFFIX' => (Object.const_get("RUBY_PLATFORM") =~ /mingw|cygwin/ ? ".exe" : ""),
+          'LD' => nil,
           'LIBSUFFIX' => '.a',
           'LDFLAGS' => [],
           'LIBPATH' => [],
@@ -31,6 +32,9 @@ module Rscons
              else
                "${CC}"
              end
+        unless target =~ /\./
+          target += env.expand_varref("${PROGSUFFIX}", vars)
+        end
         vars = vars.merge({
           '_TARGET' => target,
           '_SOURCES' => objects,
