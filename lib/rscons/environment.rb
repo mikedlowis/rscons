@@ -260,7 +260,10 @@ module Rscons
           raise "Unexpected construction variable set: #{vars.inspect}"
         end
         sources = Array(sources)
-        add_target(target, @builders[method.to_s], sources, vars, rest)
+        builder = @builders[method.to_s]
+        build_target = builder.create_build_target(self, target)
+        add_target(build_target.to_s, builder, sources, vars, rest)
+        build_target
       else
         super
       end
@@ -275,9 +278,14 @@ module Rscons
       }
     end
 
-    # Manually record a given target as depending on the specified
-    # dependency files.
+    # Manually record a given target as depending on the specified files.
+    #
+    # @param target [String,BuildTarget] Target file.
+    # @param user_deps [Array<String>] Dependency files.
+    #
+    # @return [void]
     def depends(target, *user_deps)
+      target = target.to_s
       @user_deps[target] ||= []
       @user_deps[target] = (@user_deps[target] + user_deps).uniq
     end

@@ -19,6 +19,19 @@ module Rscons
       {}
     end
 
+    # Create a BuildTarget object for this build target.
+    #
+    # Builder sub-classes can override this method to manipulate parameters
+    # (for example, add a suffix to the user-given target file name).
+    #
+    # @param env [Environment] The Environment.
+    # @param target [String] The user-supplied target name.
+    #
+    # @return [BuildTarget]
+    def create_build_target(env, target)
+      BuildTarget.new(env, target)
+    end
+
     # Return whether this builder object is capable of producing a given target
     # file name from a given source file name.
     # @param target [String] The target file name.

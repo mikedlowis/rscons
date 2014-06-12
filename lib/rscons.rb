@@ -1,3 +1,4 @@
+require_relative "rscons/build_target"
 require_relative "rscons/builder"
 require_relative "rscons/cache"
 require_relative "rscons/environment"

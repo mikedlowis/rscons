@@ -18,6 +18,13 @@ module Rscons
         }
       end
 
+      def create_build_target(env, target)
+        unless target =~ /\./
+          target += env.expand_varref("${PROGSUFFIX}")
+        end
+        super(env, target)
+      end
+
       def run(target, sources, cache, env, vars)
         # build sources to linkable objects
         objects = env.build_sources(sources, env.expand_varref(["${OBJSUFFIX}", "${LIBSUFFIX}"], vars).flatten, cache, vars)
@@ -32,9 +39,6 @@ module Rscons
              else
                "${CC}"
              end
-        unless target =~ /\./
-          target += env.expand_varref("${PROGSUFFIX}", vars)
-        end
         vars = vars.merge({
           '_TARGET' => target,
           '_SOURCES' => objects,

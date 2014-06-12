@@ -432,21 +432,20 @@ EOF
   it 'rebuilds when user-specified dependencies change' do
     test_dir('simple')
     env = Rscons::Environment.new do |env|
-      env.Program('simple.exe', Dir['*.c'])
+      env.Program('simple.exe', Dir['*.c']).depends("file.ld")
       File.open("file.ld", "w") do |fh|
         fh.puts("foo")
       end
-      env.depends('simple.exe', 'file.ld')
     end
     lines.should == ["CC simple.o", "LD simple.exe"]
     File.exists?('simple.o').should be_true
     `./simple.exe`.should == "This is a simple C program\n"
     e2 = Rscons::Environment.new do |env|
-      env.Program('simple.exe', Dir['*.c'])
+      program = env.Program('simple.exe', Dir['*.c'])
+      env.depends(program, "file.ld")
       File.open("file.ld", "w") do |fh|
         fh.puts("bar")
       end
-      env.depends('simple.exe', 'file.ld')
     end
     lines.should == ["LD simple.exe"]
     e3 = Rscons::Environment.new do |env|

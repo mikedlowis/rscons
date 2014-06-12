@@ -295,11 +295,11 @@ module Rscons
       it "records the target when the target method is a known builder" do
         env = Environment.new
         env.instance_variable_get(:@targets).should == {}
-        env.Program("target", ["src1", "src2"], var: "val")
-        target = env.instance_variable_get(:@targets)["target"]
+        env.Object("target.o", ["src1.c", "src2.c"], var: "val")
+        target = env.instance_variable_get(:@targets)["target.o"]
         target.should_not be_nil
         target[:builder].is_a?(Builder).should be_true
-        target[:sources].should == ["src1", "src2"]
+        target[:sources].should == ["src1.c", "src2.c"]
         target[:vars].should == {var: "val"}
         target[:args].should == []
       end
