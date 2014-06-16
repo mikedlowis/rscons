@@ -18,11 +18,12 @@ module Rscons
         }
       end
 
-      def create_build_target(env, target)
-        unless target =~ /\./
-          target += env.expand_varref("${PROGSUFFIX}")
+      def create_build_target(options)
+        my_options = options.dup
+        unless my_options[:target] =~ /\./
+          my_options[:target] += options[:env].expand_varref("${PROGSUFFIX}")
         end
-        super(env, target)
+        super(my_options)
       end
 
       def run(target, sources, cache, env, vars)

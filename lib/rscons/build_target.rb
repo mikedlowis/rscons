@@ -3,11 +3,16 @@ module Rscons
   class BuildTarget
     # Create a BuildTarget object.
     #
-    # @param env [Environment] The Environment.
-    # @param target [String] Name of the target file.
-    def initialize(env, target)
-      @env = env
-      @target = target
+    # @param options [Hash] Options to create the BuildTarget with.
+    # @option options [Environment] :env
+    #   The Environment.
+    # @option options [String] :target
+    #   The user-supplied target name.
+    # @option options [Array<String>] :sources
+    #   The user-supplied source file name(s).
+    def initialize(options)
+      @env = options[:env]
+      @target = options[:target]
     end
 
     # Manually record a given target as depending on the specified files.

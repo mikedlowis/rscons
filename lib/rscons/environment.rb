@@ -261,7 +261,7 @@ module Rscons
         end
         sources = Array(sources)
         builder = @builders[method.to_s]
-        build_target = builder.create_build_target(self, target)
+        build_target = builder.create_build_target(env: self, target: target, sources: sources)
         add_target(build_target.to_s, builder, sources, vars, rest)
         build_target
       else

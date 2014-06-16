@@ -24,12 +24,17 @@ module Rscons
     # Builder sub-classes can override this method to manipulate parameters
     # (for example, add a suffix to the user-given target file name).
     #
-    # @param env [Environment] The Environment.
-    # @param target [String] The user-supplied target name.
+    # @param options [Hash] Options to create the BuildTarget with.
+    # @option options [Environment] :env
+    #   The Environment.
+    # @option options [String] :target
+    #   The user-supplied target name.
+    # @option options [Array<String>] :sources
+    #   The user-supplied source file name(s).
     #
     # @return [BuildTarget]
-    def create_build_target(env, target)
-      BuildTarget.new(env, target)
+    def create_build_target(options)
+      BuildTarget.new(options)
     end
 
     # Return whether this builder object is capable of producing a given target
