@@ -268,8 +268,8 @@ env.Preprocess(target, source)
 env.Preprocess("module-preprocessed.cc", "module.cc")
 ```
 
-The Preprocess builder invokes either ${CC} or ${CXX} (depending on if the
-source contains an extension in ${CXXSUFFIX} or not) and writes the
+The Preprocess builder invokes either `${CC}` or `${CXX}` (depending on if the
+source contains an extension in `${CXXSUFFIX}` or not) and writes the
 preprocessed output to the target file.
 
 #### Program

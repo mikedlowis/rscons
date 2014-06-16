@@ -7,6 +7,11 @@ module Rscons
     #   env.CFile("parser.tab.cc", "parser.yy")
     #   env.CFile("lex.yy.cc", "parser.ll")
     class CFile < Builder
+      # Return default construction variables for the builder.
+      #
+      # @param env [Environment] The Environment using the builder.
+      #
+      # @return [Hash] Default construction variables for the builder.
       def default_variables(env)
         {
           "YACC" => "bison",
@@ -18,6 +23,16 @@ module Rscons
         }
       end
 
+      # Run the builder to produce a build target.
+      #
+      # @param target [String] Target file name.
+      # @param sources [Array<String>] Source file name(s).
+      # @param cache [Cache] The Cache object.
+      # @param env [Environment] The Environment executing the builder.
+      # @param vars [Hash,VarSet] Extra construction variables.
+      #
+      # @return [String,false]
+      #   Name of the target file on success or false on failure.
       def run(target, sources, cache, env, vars)
         vars = vars.merge({
           "_TARGET" => target,

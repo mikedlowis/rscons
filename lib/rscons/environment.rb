@@ -7,25 +7,33 @@ module Rscons
   # contains a collection of construction variables, options, builders, and
   # rules for building targets.
   class Environment
-    # Hash of +{"builder_name" => builder_object}+ pairs.
+    # @return [Hash] Set of \{"builder_name" => builder_object} pairs.
     attr_reader :builders
 
     # :command, :short, or :off
     attr_accessor :echo
 
-    # String or +nil+
+    # @return [String, nil] The build root.
     attr_reader :build_root
+
+    # Set the build root.
+    #
+    # @param build_root [String] The build root.
     def build_root=(build_root)
       @build_root = build_root
       @build_root.gsub!('\\', '/') if @build_root
     end
 
     # Create an Environment object.
+    #
     # @param options [Hash]
-    # Possible options keys:
-    #   :echo => :command, :short, or :off (default :short)
-    #   :build_root => String specifying build root directory (default nil)
-    #   :exclude_builders => true to omit adding default builders (default false)
+    # @option options [Symbol] :echo
+    #   :command, :short, or :off (default :short)
+    # @option options [String] :build_root
+    #   Build root directory (default nil)
+    # @option options [Boolean] :exclude_builders
+    #   Whether to omit adding default builders (default false)
+    #
     # If a block is given, the Environment object is yielded to the block and
     # when the block returns, the {#process} method is automatically called.
     def initialize(options = {})
@@ -108,6 +116,10 @@ module Rscons
     end
 
     # Add a {Builder} object to the Environment.
+    #
+    # @param builder [Builder] The {Builder} object to add.
+    #
+    # @return [void]
     def add_builder(builder)
       @builders[builder.name] = builder
       var_defs = builder.default_variables(self)
@@ -119,19 +131,45 @@ module Rscons
     end
 
     # Add a build hook to the Environment.
+    #
+    # @yield [build_op]
+    #   Invoke the given block with the current build operation.
+    # @yieldparam build_op [Hash]
+    #   Hash with keys:
+    #   - :builder - The builder object in use.
+    #   - :target - Target file name.
+    #   - :sources - List of source file(s).
+    #   - :vars - Set of construction variable values in use.
+    #   - :env - The Environment invoking the builder.
+    #
+    # @return [void]
     def add_build_hook(&block)
       @build_hooks << block
     end
 
     # Specify a build directory for this Environment.
+    #
     # Source files from src_dir will produce object files under obj_dir.
+    #
+    # @param src_dir [String] Path to the source directory.
+    # @param obj_dir [String] Path to the object directory.
+    #
+    # @return [void]
     def build_dir(src_dir, obj_dir)
       src_dir = src_dir.gsub('\\', '/') if src_dir.is_a?(String)
       @build_dirs << [src_dir, obj_dir]
     end
 
-    # Return the file name to be built from source_fname with suffix suffix.
+    # Return the file name to be built from +source_fname+ with suffix
+    # +suffix+.
+    #
     # This method takes into account the Environment's build directories.
+    #
+    # @param source_fname [String] Source file name.
+    # @param suffix [String] Suffix, including "." if desired.
+    #
+    # @return [String]
+    #   The file name to be built from +source_fname+ with suffix +suffix+.
     def get_build_fname(source_fname, suffix)
       build_fname = Rscons.set_suffix(source_fname, suffix).gsub('\\', '/')
       found_match = @build_dirs.find do |src_dir, obj_dir|
@@ -151,26 +189,32 @@ module Rscons
     end
 
     # Access a construction variable or environment option.
+    #
     # @see VarSet#[]
     def [](*args)
       @varset.send(:[], *args)
     end
 
     # Set a construction variable or environment option.
+    #
     # @see VarSet#[]=
     def []=(*args)
       @varset.send(:[]=, *args)
     end
 
     # Add a set of construction variables or environment options.
+    #
     # @see VarSet#append
     def append(*args)
       @varset.append(*args)
     end
 
-    # Build all target specified in the Environment.
+    # Build all build targets specified in the Environment.
+    #
     # When a block is passed to Environment.new, this method is automatically
     # called after the block returns.
+    #
+    # @return [void]
     def process
       unless @targets.empty?
         expand_paths!
@@ -227,13 +271,16 @@ module Rscons
     end
     alias_method :build_command, :expand_varref
 
-    # Execute a builder command
+    # Execute a builder command.
+    #
     # @param short_desc [String] Message to print if the Environment's echo
     #   mode is set to :short
     # @param command [Array] The command to execute.
     # @param options [Hash] Optional options, possible keys:
     #   - :env - environment Hash to pass to Kernel#system.
     #   - :options - options Hash to pass to Kernel#system.
+    #
+    # @return [true,false,nil] Return value from Kernel.system().
     def execute(short_desc, command, options = {})
       print_command = proc do
         puts command.map { |c| c =~ /\s/ ? "'#{c}'" : c }.join(' ')
@@ -253,6 +300,14 @@ module Rscons
       end
     end
 
+    # Define a build target.
+    #
+    # @param method [Symbol] Method name.
+    # @param args [Array] Method arguments.
+    #
+    # @return [BuildTarget]
+    #   The {BuildTarget} object registered, if the method called is a
+    #   {Builder}.
     def method_missing(method, *args)
       if @builders.has_key?(method.to_s)
         target, sources, vars, *rest = args
@@ -269,6 +324,15 @@ module Rscons
       end
     end
 
+    # Add a build target.
+    #
+    # @param target [String] Build target file name.
+    # @param builder [Builder] The {Builder} to use to build the target.
+    # @param sources [Array<String>] Source file name(s).
+    # @param vars [Hash] Construction variable overrides.
+    # @param args [Object] Any extra arguments passed to the {Builder}.
+    #
+    # @return [void]
     def add_target(target, builder, sources, vars, args)
       @targets[target] = {
         builder: builder,
@@ -290,20 +354,28 @@ module Rscons
       @user_deps[target] = (@user_deps[target] + user_deps).uniq
     end
 
-    # Return the list of user dependencies for a given target, or +nil+ for
-    # none.
+    # Return the list of user dependencies for a given target.
+    #
+    # @param target [String] Target file name.
+    #
+    # @return [Array<String>,nil]
+    #   List of user-specified dependencies for the target, or nil if none were
+    #   specified.
     def get_user_deps(target)
       @user_deps[target]
     end
 
     # Build a list of source files into files containing one of the suffixes
     # given by suffixes.
+    #
     # This method is used internally by Rscons builders.
+    #
     # @param sources [Array] List of source files to build.
     # @param suffixes [Array] List of suffixes to try to convert source files into.
     # @param cache [Cache] The Cache.
     # @param vars [Hash] Extra variables to pass to the builder.
-    # Return a list of the converted file names.
+    #
+    # @return [Array<String>] List of the converted file name(s).
     def build_sources(sources, suffixes, cache, vars)
       sources.map do |source|
         if source.end_with?(*suffixes)
@@ -325,12 +397,14 @@ module Rscons
     end
 
     # Invoke a builder to build the given target based on the given sources.
+    #
     # @param builder [Builder] The Builder to use.
     # @param target [String] The target output file.
     # @param sources [Array] List of source files.
     # @param cache [Cache] The Cache.
     # @param vars [Hash] Extra variables to pass to the builder.
-    # Return the result of the builder's run() method.
+    #
+    # @return [String,false] Return value from the {Builder}'s +run+ method.
     def run_builder(builder, target, sources, cache, vars)
       vars = @varset.merge(vars)
       @build_hooks.each do |build_hook_block|
@@ -516,6 +590,8 @@ module Rscons
     # This method expand construction variable references in the target and
     # source file names before passing them to the builder. It also expands
     # "^/" prefixes to the Environment's build root if a build root is defined.
+    #
+    # @return [void]
     def expand_paths!
       @targets = @targets.reduce({}) do |result, (target, target_params)|
         sources = target_params[:sources].map do |source|
@@ -530,9 +606,13 @@ module Rscons
     end
 
     # Parse dependencies for a given target from a Makefile.
+    #
     # This method is used internally by Rscons builders.
+    #
     # @param mf_fname [String] File name of the Makefile to read.
     # @param target [String] Name of the target to gather dependencies for.
+    #
+    # @return [Array<String>] Paths of dependency files.
     def self.parse_makefile_deps(mf_fname, target)
       deps = []
       buildup = ''

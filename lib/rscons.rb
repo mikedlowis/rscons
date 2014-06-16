@@ -15,6 +15,8 @@ require_relative "rscons/builders/program"
 
 # Namespace module for rscons classes
 module Rscons
+  # Names of the default builders which will be added to all newly created
+  # {Environment} objects.
   DEFAULT_BUILDERS = [
     :CFile,
     :Disassemble,
@@ -24,9 +26,10 @@ module Rscons
     :Program,
   ]
 
+  # Class to represent a fatal error while building a target.
   class BuildError < RuntimeError; end
 
-  # Remove all generated files
+  # Remove all generated files.
   def self.clean
     cache = Cache.instance
     # remove all built files
@@ -43,20 +46,27 @@ module Rscons
     cache.clear
   end
 
-  # Return whether the given path is an absolute filesystem path or not
-  # @param path [String] the path to examine
+  # Return whether the given path is an absolute filesystem path.
+  #
+  # @param path [String] the path to examine.
+  #
+  # @return [Boolean] Whether the given path is an absolute filesystem path.
   def self.absolute_path?(path)
     path =~ %r{^(/|\w:[\\/])}
   end
 
   # Return a new path by changing the suffix in path to suffix.
-  # @param path [String] the path to alter
-  # @param suffix [String] the new filename suffix
+  #
+  # @param path [String] The path to alter.
+  # @param suffix [String] The new filename suffix, e.g. ".exe".
+  #
+  # @return [String] New path.
   def self.set_suffix(path, suffix)
     path.sub(/\.[^.]*$/, suffix)
   end
 
   # Return the system shell and arguments for executing a shell command.
+  #
   # @return [Array<String>] The shell and flag.
   def self.get_system_shell
     @@shell ||=

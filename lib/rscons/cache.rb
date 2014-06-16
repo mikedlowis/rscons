@@ -84,7 +84,8 @@ module Rscons
       @dirty = false
     end
 
-    # Check if target(s) are up to date
+    # Check if target(s) are up to date.
+    #
     # @param targets [String, Array] The name(s) of the target file(s).
     # @param command [String, Array] The command used to build the target.
     # @param deps [Array] List of the target's dependency files.
@@ -93,6 +94,7 @@ module Rscons
     # @option options [Boolean] :strict_deps
     #   Only consider a target up to date if its list of dependencies is
     #   exactly equal (including order) to the cached list of dependencies
+    #
     # @return [Boolean]
     #   True value if the targets are all up to date, meaning that,
     #   for each target:
@@ -144,11 +146,14 @@ module Rscons
       true
     end
 
-    # Store cache information about target(s) built by a builder
+    # Store cache information about target(s) built by a builder.
+    #
     # @param targets [String, Array] The name of the target(s) built.
     # @param command [String, Array] The command used to build the target.
     # @param deps [Array] List of dependencies for the target.
     # @param env [Environment] The {Rscons::Environment}.
+    #
+    # @return [void]
     def register_build(targets, command, deps, env)
       Array(targets).each do |target|
         @cache["targets"][target] = {
@@ -171,13 +176,19 @@ module Rscons
       end
     end
 
-    # Return a list of targets that have been built
+    # Return a list of targets that have been built.
+    #
+    # @return [Array<String>] List of targets that have been built.
     def targets
       @cache["targets"].keys
     end
 
     # Make any needed directories and record the ones that are created for
     # removal upon a "clean" operation.
+    #
+    # @param path [String] Directory to create.
+    #
+    # @return [void]
     def mkdir_p(path)
       parts = path.split(/[\\\/]/)
       parts.each_index do |i|
@@ -191,7 +202,10 @@ module Rscons
       end
     end
 
-    # Return a list of directories which were created as a part of the build
+    # Return a list of directories which were created as a part of the build.
+    #
+    # @return [Array<String>]
+    #   List of directories which were created as a part of the build.
     def directories
       @cache["directories"].keys
     end
@@ -213,14 +227,20 @@ module Rscons
     end
 
     # Return a file's checksum, or the previously calculated checksum for
-    # the same file
+    # the same file.
+    #
     # @param file [String] The file name.
+    #
+    # @return [String] The file's checksum.
     def lookup_checksum(file)
       @lookup_checksums[file] || calculate_checksum(file)
     end
 
-    # Calculate and return a file's checksum
+    # Calculate and return a file's checksum.
+    #
     # @param file [String] The file name.
+    #
+    # @return [String] The file's checksum.
     def calculate_checksum(file)
       @lookup_checksums[file] = Digest::MD5.hexdigest(File.read(file, mode: "rb")) rescue ""
     end

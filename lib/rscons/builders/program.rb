@@ -3,6 +3,11 @@ module Rscons
     # A default Rscons builder that knows how to link object files into an
     # executable program.
     class Program < Builder
+      # Return default construction variables for the builder.
+      #
+      # @param env [Environment] The Environment using the builder.
+      #
+      # @return [Hash] Default construction variables for the builder.
       def default_variables(env)
         {
           'OBJSUFFIX' => '.o',
@@ -18,6 +23,20 @@ module Rscons
         }
       end
 
+      # Create a BuildTarget object for this build target.
+      #
+      # The build target filename is given a ".exe" suffix if Rscons is
+      # executing on a Windows platform and no other suffix is given.
+      #
+      # @param options [Hash] Options to create the BuildTarget with.
+      # @option options [Environment] :env
+      #   The Environment.
+      # @option options [String] :target
+      #   The user-supplied target name.
+      # @option options [Array<String>] :sources
+      #   The user-supplied source file name(s).
+      #
+      # @return [BuildTarget]
       def create_build_target(options)
         my_options = options.dup
         unless my_options[:target] =~ /\./
@@ -26,6 +45,16 @@ module Rscons
         super(my_options)
       end
 
+      # Run the builder to produce a build target.
+      #
+      # @param target [String] Target file name.
+      # @param sources [Array<String>] Source file name(s).
+      # @param cache [Cache] The Cache object.
+      # @param env [Environment] The Environment executing the builder.
+      # @param vars [Hash,VarSet] Extra construction variables.
+      #
+      # @return [String,false]
+      #   Name of the target file on success or false on failure.
       def run(target, sources, cache, env, vars)
         # build sources to linkable objects
         objects = env.build_sources(sources, env.expand_varref(["${OBJSUFFIX}", "${LIBSUFFIX}"], vars).flatten, cache, vars)

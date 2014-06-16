@@ -1,9 +1,9 @@
 module Rscons
-  # This class represents a collection of variables which can be accessed
-  # as certain types.
-  # Only nil, strings, arrays, and hashes should be stored in a VarSet.
+  # This class represents a collection of variables which supports efficient
+  # deep cloning.
   class VarSet
     # Create a VarSet.
+    #
     # @param vars [Hash] Optional initial variables.
     def initialize(vars = {})
       @my_vars = {}
@@ -11,8 +11,10 @@ module Rscons
       append(vars)
     end
 
-    # Access the value of variable as a particular type
+    # Access the value of variable.
+    #
     # @param key [String, Symbol] The variable name.
+    #
     # @return [Object] The variable's value.
     def [](key)
       if @my_vars.include?(key)
@@ -29,15 +31,19 @@ module Rscons
     end
 
     # Assign a value to a variable.
+    #
     # @param key [String, Symbol] The variable name.
+    #
     # @param val [Object] The value to set.
     def []=(key, val)
       @my_vars[key] = val
     end
 
     # Check if the VarSet contains a variable.
+    #
     # @param key [String, Symbol] The variable name.
-    # @return [true, false] Whether the VarSet contains a variable.
+    #
+    # @return [Boolean] Whether the VarSet contains the variable.
     def include?(key)
       if @my_vars.include?(key)
         true
@@ -48,8 +54,11 @@ module Rscons
       end
     end
 
-    # Add or overwrite a set of variables
+    # Add or overwrite a set of variables.
+    #
     # @param values [VarSet, Hash] New set of variables.
+    #
+    # @return [self]
     def append(values)
       coa!
       if values.is_a?(VarSet)
@@ -62,7 +71,10 @@ module Rscons
     end
 
     # Create a new VarSet object based on the first merged with other.
+    #
     # @param other [VarSet, Hash] Other variables to add or overwrite.
+    #
+    # @return [VarSet] The newly created VarSet.
     def merge(other = {})
       coa!
       varset = self.class.new
@@ -71,9 +83,13 @@ module Rscons
     end
     alias_method :clone, :merge
 
-    # Replace "$" variable references in varref with the variables values,
-    # recursively.
+    # Replace "$\{var}" variable references in varref with the expanded
+    # variables' values, recursively.
+    #
     # @param varref [String, Array] Value containing references to variables.
+    #
+    # @return [String, Array]
+    #   Expanded value with "$\{var}" variable references replaced.
     def expand_varref(varref)
       if varref.is_a?(Array)
         varref.map do |ent|
@@ -99,6 +115,8 @@ module Rscons
     private
 
     # Move all VarSet variables into the copy-on-access list.
+    #
+    # @return [void]
     def coa!
       unless @my_vars.empty?
         @coa_vars.unshift(@my_vars)
@@ -107,8 +125,13 @@ module Rscons
     end
 
     # Create a deep copy of an object.
-    # @param obj [nil, String, Array, Hash] Object to deep copy.
-    # @return [nil, String, Array, Hash] Deep copied value.
+    #
+    # Only objects which are of type String, Array, or Hash are deep copied.
+    # Any other object just has its referenced copied.
+    #
+    # @param obj [Object] Object to deep copy.
+    #
+    # @return [Object] Deep copied value.
     def deep_dup(obj)
       obj_class = obj.class
       if obj_class == Hash

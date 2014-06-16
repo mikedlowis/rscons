@@ -3,6 +3,7 @@ module Rscons
     # A default Rscons builder which knows how to produce an object file from
     # various types of source files.
     class Object < Builder
+      # Mapping of known sources from which to build object files.
       KNOWN_SUFFIXES = {
         "AS" => "ASSUFFIX",
         "CC" => "CSUFFIX",
@@ -10,6 +11,11 @@ module Rscons
         "DC" => "DSUFFIX",
       }
 
+      # Return default construction variables for the builder.
+      #
+      # @param env [Environment] The Environment using the builder.
+      #
+      # @return [Hash] Default construction variables for the builder.
       def default_variables(env)
         {
           'OBJSUFFIX' => '.o',
@@ -51,12 +57,32 @@ module Rscons
         }
       end
 
+      # Return whether this builder object is capable of producing a given target
+      # file name from a given source file name.
+      #
+      # @param target [String] The target file name.
+      # @param source [String, Array] The source file name(s).
+      # @param env [Environment] The Environment.
+      #
+      # @return [Boolean]
+      #   Whether this builder object is capable of producing a given target
+      #   file name from a given source file name.
       def produces?(target, source, env)
         target.end_with?(*env['OBJSUFFIX']) and KNOWN_SUFFIXES.find do |compiler, suffix_var|
           source.end_with?(*env[suffix_var])
         end
       end
 
+      # Run the builder to produce a build target.
+      #
+      # @param target [String] Target file name.
+      # @param sources [Array<String>] Source file name(s).
+      # @param cache [Cache] The Cache object.
+      # @param env [Environment] The Environment executing the builder.
+      # @param vars [Hash,VarSet] Extra construction variables.
+      #
+      # @return [String,false]
+      #   Name of the target file on success or false on failure.
       def run(target, sources, cache, env, vars)
         vars = vars.merge({
           '_TARGET' => target,

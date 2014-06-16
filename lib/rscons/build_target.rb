@@ -18,6 +18,8 @@ module Rscons
     # Manually record a given target as depending on the specified files.
     #
     # @param user_deps [Array<String>] Dependency files.
+    #
+    # @return [void]
     def depends(*user_deps)
       @env.depends(@target, *user_deps)
     end
