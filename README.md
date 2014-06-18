@@ -329,6 +329,19 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.5.0
+
+- add "json" as a runtime dependency
+- update construction variables to match SCons more closely
+  - add CPPDEFPREFIX, INCPREFIX, CPPDEFINES, CCFLAGS, LIBDIRPREFIX, and LIBLINKPREFIX
+- add Environment#shell
+- add Environment#parse_flags, #parse_flags!, #merge_flags
+- unbuffer $stdout by default
+- add PROGSUFFIX construction variable (defaults to .exe on MinGW/Cygwin)
+- add Rscons::BuildTarget and Builder#create_build_target
+- update specs to RSpec 3.x and fix to run on MinGW/Cygwin/Linux
+- add YARD documentation to get to 100% coverage
+
 ### v1.4.3
 
 - fix builders properly using construction variable overrides
