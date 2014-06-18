@@ -543,4 +543,23 @@ EOF
     expect(File.exists?('inc.h')).to be_truthy
     expect(`./program`).to eq "The value is 678\n"
   end
+
+  it "supports lambdas as construction variable values" do
+    env = Rscons::Environment.new do |env|
+      env["prefix"] = "-H"
+      env["suffix"] = "xyz"
+      env[:cfg] = {val: 44}
+      env["computed"] = lambda do |args|
+        "#{args[:env]['prefix']}#{args[:env][:cfg][:val]}#{args[:env]['suffix']}"
+      end
+      env["lambda_recurse"] = lambda do |args|
+        "${prefix}ello"
+      end
+    end
+    e2 = env.clone
+    e2[:cfg][:val] = 38
+    expect(env.expand_varref("${computed}")).to eq("-H44xyz")
+    expect(e2.expand_varref("${computed}")).to eq("-H38xyz")
+    expect(env.expand_varref("${lambda_recurse}")).to eq("-Hello")
+  end
 end

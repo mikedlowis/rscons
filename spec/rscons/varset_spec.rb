@@ -126,26 +126,26 @@ module Rscons
                      "CPPPATH" => ["dir1", "dir2"],
                      "compiler" => "${CC}",
                      "cmd" => ["${CC}", "-c", "${CFLAGS}", "-I${CPPPATH}"],
-                     "hash" => {})
+                     "lambda" => lambda {|args| "#{args[:v]}--12"})
       it "expands to the string itself if the string is not a variable reference" do
-        expect(v.expand_varref("CC")).to eq("CC")
-        expect(v.expand_varref("CPPPATH")).to eq("CPPPATH")
-        expect(v.expand_varref("str")).to eq("str")
+        expect(v.expand_varref("CC", :lambda_args)).to eq("CC")
+        expect(v.expand_varref("CPPPATH", :lambda_args)).to eq("CPPPATH")
+        expect(v.expand_varref("str", :lambda_args)).to eq("str")
       end
       it "expands a single variable reference beginning with a '$'" do
-        expect(v.expand_varref("${CC}")).to eq("gcc")
-        expect(v.expand_varref("${CPPPATH}")).to eq(["dir1", "dir2"])
+        expect(v.expand_varref("${CC}", :lambda_args)).to eq("gcc")
+        expect(v.expand_varref("${CPPPATH}", :lambda_args)).to eq(["dir1", "dir2"])
       end
       it "expands a single variable reference in ${arr} notation" do
-        expect(v.expand_varref("prefix${CFLAGS}suffix")).to eq(["prefix-Wallsuffix", "prefix-O2suffix"])
-        expect(v.expand_varref(v["cmd"])).to eq(["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"])
+        expect(v.expand_varref("prefix${CFLAGS}suffix", :lambda_args)).to eq(["prefix-Wallsuffix", "prefix-O2suffix"])
+        expect(v.expand_varref(v["cmd"], :lambda_args)).to eq(["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"])
       end
       it "expands a variable reference recursively" do
-        expect(v.expand_varref("${compiler}")).to eq("gcc")
-        expect(v.expand_varref("${cmd}")).to eq(["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"])
+        expect(v.expand_varref("${compiler}", :lambda_args)).to eq("gcc")
+        expect(v.expand_varref("${cmd}", :lambda_args)).to eq(["gcc", "-c", "-Wall", "-O2", "-Idir1", "-Idir2"])
       end
       it "resolves multiple variable references in one element by enumerating all combinations" do
-        expect(v.expand_varref("cflag: ${CFLAGS}, cpppath: ${CPPPATH}, compiler: ${compiler}")).to eq([
+        expect(v.expand_varref("cflag: ${CFLAGS}, cpppath: ${CPPPATH}, compiler: ${compiler}", :lambda_args)).to eq([
           "cflag: -Wall, cpppath: dir1, compiler: gcc",
           "cflag: -O2, cpppath: dir1, compiler: gcc",
           "cflag: -Wall, cpppath: dir2, compiler: gcc",
@@ -153,10 +153,19 @@ module Rscons
         ])
       end
       it "returns an empty string when a variable reference refers to a non-existent variable" do
-        expect(v.expand_varref("${not_here}")).to eq("")
+        expect(v.expand_varref("${not_here}", :lambda_args)).to eq("")
       end
-      it "raises an error when a variable reference refers to an unhandled type" do
-        expect { v.expand_varref("${hash}") }.to raise_error /I do not know how to expand a variable reference to a Hash/
+      it "calls a lambda with the given lambda arguments" do
+        expect(v.expand_varref("${lambda}", [v: "fez"])).to eq("fez--12")
+      end
+      it "raises an error when given an invalid argument" do
+        expect { v.expand_varref({a: :b}, :lambda_args) }.to raise_error /Unknown varref type: Hash/
+      end
+      it "raises an error when an expanded variable is an unexpected type" do
+        expect(v).to receive(:[]).at_least(1).times.with("bad").and_return("bad_val")
+        expect(v).to receive(:expand_varref).with("bad_val", :lambda_args).and_return({a: :b})
+        expect(v).to receive(:expand_varref).and_call_original
+        expect { v.expand_varref("${bad}", :lambda_args) }.to raise_error /I do not know how to expand a variable reference to a Hash/
       end
     end
   end

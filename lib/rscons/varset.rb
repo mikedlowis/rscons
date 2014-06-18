@@ -86,29 +86,38 @@ module Rscons
     # Replace "$\{var}" variable references in varref with the expanded
     # variables' values, recursively.
     #
-    # @param varref [String, Array] Value containing references to variables.
+    # @param varref [nil, String, Array, Proc]
+    #   Value containing references to variables.
+    # @param lambda_args [Array]
+    #   Arguments to pass to any lambda variable values to be expanded.
     #
-    # @return [String, Array]
+    # @return [nil, String, Array]
     #   Expanded value with "$\{var}" variable references replaced.
-    def expand_varref(varref)
-      if varref.is_a?(Array)
-        varref.map do |ent|
-          expand_varref(ent)
-        end.flatten
-      else
+    def expand_varref(varref, lambda_args)
+      if varref.is_a?(String)
         if varref =~ /^(.*)\$\{([^}]+)\}(.*)$/
           prefix, varname, suffix = $1, $2, $3
-          varval = expand_varref(self[varname])
+          varval = expand_varref(self[varname], lambda_args)
           if varval.is_a?(String) or varval.nil?
-            expand_varref("#{prefix}#{varval}#{suffix}")
+            expand_varref("#{prefix}#{varval}#{suffix}", lambda_args)
           elsif varval.is_a?(Array)
-            varval.map {|vv| expand_varref("#{prefix}#{vv}#{suffix}")}.flatten
+            varval.map {|vv| expand_varref("#{prefix}#{vv}#{suffix}", lambda_args)}.flatten
           else
             raise "I do not know how to expand a variable reference to a #{varval.class.name} (from #{varname.inspect} => #{self[varname].inspect})"
           end
         else
           varref
         end
+      elsif varref.is_a?(Array)
+        varref.map do |ent|
+          expand_varref(ent, lambda_args)
+        end.flatten
+      elsif varref.is_a?(Proc)
+        expand_varref(varref[*lambda_args], lambda_args)
+      elsif varref.nil?
+        nil
+      else
+        raise "Unknown varref type: #{varref.class} (#{varref.inspect})"
       end
     end
 

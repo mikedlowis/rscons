@@ -263,11 +263,13 @@ module Rscons
     #
     # @return [Array, String] Expansion of the variable reference.
     def expand_varref(varref, extra_vars = nil)
-      if extra_vars.nil?
-        @varset
-      else
-        @varset.merge(extra_vars)
-      end.expand_varref(varref)
+      vars = if extra_vars.nil?
+               @varset
+             else
+               @varset.merge(extra_vars)
+             end
+      lambda_args = [env: self, vars: vars]
+      vars.expand_varref(varref, lambda_args)
     end
     alias_method :build_command, :expand_varref
 
