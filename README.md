@@ -329,6 +329,10 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.6.0
+
+- support lambdas as construction variable values
+
 ### v1.5.0
 
 - add "json" as a runtime dependency
