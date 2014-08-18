@@ -322,6 +322,13 @@ module Rscons
         env.depends("foo", "bar", "baz")
         expect(env.instance_variable_get(:@user_deps)).to eq({"foo" => ["bar", "baz"]})
       end
+      it "expands arguments for construction variable references" do
+        env = Environment.new
+        env["foo"] = "foo.exe"
+        env["bar"] = "bar.c"
+        env.depends("${foo}", "${bar}", "a.h")
+        expect(env.instance_variable_get(:@user_deps)).to eq({"foo.exe" => ["bar.c", "a.h"]})
+      end
     end
 
     describe "#build_sources" do

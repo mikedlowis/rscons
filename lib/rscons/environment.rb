@@ -351,7 +351,8 @@ module Rscons
     #
     # @return [void]
     def depends(target, *user_deps)
-      target = target.to_s
+      target = expand_varref(target.to_s)
+      user_deps = user_deps.map {|ud| expand_varref(ud)}
       @user_deps[target] ||= []
       @user_deps[target] = (@user_deps[target] + user_deps).uniq
     end
