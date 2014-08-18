@@ -19,6 +19,7 @@ module Rscons
       def default_variables(env)
         {
           'OBJSUFFIX' => '.o',
+          'DEPFILESUFFIX' => '.mf',
 
           'CPPDEFPREFIX' => '-D',
           'INCPREFIX' => '-I',
@@ -87,7 +88,7 @@ module Rscons
         vars = vars.merge({
           '_TARGET' => target,
           '_SOURCES' => sources,
-          '_DEPFILE' => Rscons.set_suffix(target, '.mf'),
+          '_DEPFILE' => Rscons.set_suffix(target, env.expand_varref("${DEPFILESUFFIX}", vars)),
         })
         com_prefix = KNOWN_SUFFIXES.find do |compiler, suffix_var|
           sources.first.end_with?(*env.expand_varref("${#{suffix_var}}"))
