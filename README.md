@@ -329,6 +329,11 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.6.1
+
+- add DEPFILESUFFIX construction variable to override dependency file suffix
+- fix Environment#depends to expand its arguments for construction variables
+
 ### v1.6.0
 
 - support lambdas as construction variable values
