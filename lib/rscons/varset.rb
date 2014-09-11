@@ -83,7 +83,7 @@ module Rscons
     end
     alias_method :clone, :merge
 
-    # Replace "$\{var}" variable references in varref with the expanded
+    # Replace "$!{var}" variable references in varref with the expanded
     # variables' values, recursively.
     #
     # @param varref [nil, String, Array, Proc]
@@ -92,7 +92,7 @@ module Rscons
     #   Arguments to pass to any lambda variable values to be expanded.
     #
     # @return [nil, String, Array]
-    #   Expanded value with "$\{var}" variable references replaced.
+    #   Expanded value with "$!{var}" variable references replaced.
     def expand_varref(varref, lambda_args)
       if varref.is_a?(String)
         if varref =~ /^(.*)\$\{([^}]+)\}(.*)$/

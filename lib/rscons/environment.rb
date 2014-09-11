@@ -7,7 +7,7 @@ module Rscons
   # contains a collection of construction variables, options, builders, and
   # rules for building targets.
   class Environment
-    # @return [Hash] Set of \{"builder_name" => builder_object} pairs.
+    # @return [Hash] Set of !{"builder_name" => builder_object} pairs.
     attr_reader :builders
 
     # :command, :short, or :off
