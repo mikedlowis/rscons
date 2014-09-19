@@ -216,23 +216,25 @@ module Rscons
     #
     # @return [void]
     def process
-      unless @targets.empty?
-        expand_paths!
+      expand_paths!
+      while @targets.size > 0
+        targets = @targets
+        @targets = {}
         cache = Cache.instance
         cache.clear_checksum_cache!
         targets_processed = {}
         process_target = proc do |target|
           targets_processed[target] ||= begin
-            @targets[target][:sources].each do |src|
-              if @targets.include?(src) and not targets_processed.include?(src)
+            targets[target][:sources].each do |src|
+              if targets.include?(src) and not targets_processed.include?(src)
                 process_target.call(src)
               end
             end
-            result = run_builder(@targets[target][:builder],
+            result = run_builder(targets[target][:builder],
                                  target,
-                                 @targets[target][:sources],
+                                 targets[target][:sources],
                                  cache,
-                                 @targets[target][:vars] || {})
+                                 targets[target][:vars] || {})
             unless result
               raise BuildError.new("Failed to build #{target}")
             end
@@ -240,14 +242,13 @@ module Rscons
           end
         end
         begin
-          @targets.each do |target, target_params|
+          targets.each do |target, target_params|
             process_target.call(target)
           end
         ensure
           cache.write
         end
       end
-      clear_targets
     end
 
     # Clear all targets registered for the Environment.

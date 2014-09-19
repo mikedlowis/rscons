@@ -10,6 +10,7 @@ class Dir
 end
 
 describe Rscons do
+
   BUILD_TEST_RUN_DIR = "build_test_run"
 
   def rm_rf(dir)
@@ -574,4 +575,20 @@ EOF
     expect(e2.expand_varref("${computed}")).to eq("-H38xyz")
     expect(env.expand_varref("${lambda_recurse}")).to eq("-Hello")
   end
+
+  it "supports registering build targets from within a build hook" do
+    test_dir("simple")
+    Rscons::Environment.new do |env|
+      env.Program("simple", Dir["*.c"])
+      env.add_build_hook do |build_op|
+        if build_op[:target].end_with?(".o")
+          env.Disassemble("#{build_op[:target]}.txt", build_op[:target])
+        end
+      end
+    end
+    expect(File.exists?("simple.o")).to be_truthy
+    expect(File.exists?("simple.o.txt")).to be_truthy
+    expect(`./simple`).to eq "This is a simple C program\n"
+  end
+
 end
