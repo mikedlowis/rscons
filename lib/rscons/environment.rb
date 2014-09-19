@@ -247,6 +247,7 @@ module Rscons
           cache.write
         end
       end
+      clear_targets
     end
 
     # Clear all targets registered for the Environment.

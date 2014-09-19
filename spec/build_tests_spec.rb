@@ -120,34 +120,43 @@ describe Rscons do
 
   it 'rebuilds a C module when a header it depends on changes' do
     test_dir('header')
-    env = Rscons::Environment.new do |env|
-      env.Program('header', Dir['*.c'])
+    make_env = lambda do
+      Rscons::Environment.new do |env|
+        env.Program('header', Dir['*.c'])
+      end
     end
+    make_env[]
     expect(`./header`).to eq "The value is 2\n"
     file_sub('header.h') {|line| line.sub(/2/, '5')}
-    env.process
+    make_env[]
     expect(`./header`).to eq "The value is 5\n"
   end
 
   it 'does not rebuild a C module when its dependencies have not changed' do
     test_dir('header')
-    env = Rscons::Environment.new do |env|
-      env.Program('header', Dir['*.c'])
+    make_env = lambda do
+      Rscons::Environment.new do |env|
+        env.Program('header', Dir['*.c'])
+      end
     end
+    env = make_env[]
     expect(`./header`).to eq "The value is 2\n"
     expect(lines).to eq [
       'CC header.o',
       "LD header#{env["PROGSUFFIX"]}",
     ]
-    env.process
+    make_env[]
     expect(lines).to eq []
   end
 
   it "does not rebuild a C module when only the file's timestamp has changed" do
     test_dir('header')
-    env = Rscons::Environment.new do |env|
-      env.Program('header', Dir['*.c'])
+    make_env = lambda do
+      Rscons::Environment.new do |env|
+        env.Program('header', Dir['*.c'])
+      end
     end
+    env = make_env[]
     expect(`./header`).to eq "The value is 2\n"
     expect(lines).to eq [
       'CC header.o',
@@ -155,7 +164,7 @@ describe Rscons do
     ]
     sleep 0.05
     file_sub('header.c') {|line| line}
-    env.process
+    make_env[]
     expect(lines).to eq []
   end
 
@@ -303,11 +312,14 @@ EOF
       end
     end
 
-    env = Rscons::Environment.new do |env|
-      env.add_builder(CHGen.new)
-      env.CHGen("inc.c", ["program.c"])
-      env.Program("program", Dir["*.c"] + ["inc.c"])
+    make_env = lambda do
+      Rscons::Environment.new do |env|
+        env.add_builder(CHGen.new)
+        env.CHGen("inc.c", ["program.c"])
+        env.Program("program", %w[program.c inc.c])
+      end
     end
+    env = make_env[]
 
     expect(lines).to eq ["CHGen inc.c", "CC program.o", "CC inc.o", "LD program#{env["PROGSUFFIX"]}"]
     expect(File.exists?("inc.c")).to be_truthy
@@ -315,7 +327,7 @@ EOF
     expect(`./program`).to eq "The value is 42\n"
 
     File.open("inc.c", "w") {|fh| fh.puts "int THE_VALUE = 33;"}
-    env.process
+    make_env[]
     expect(lines).to eq ["CHGen inc.c"]
     expect(`./program`).to eq "The value is 42\n"
   end
