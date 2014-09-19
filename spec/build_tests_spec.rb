@@ -591,4 +591,19 @@ EOF
     expect(`./simple`).to eq "This is a simple C program\n"
   end
 
+  it "supports post-build hooks" do
+    test_dir("simple")
+    built_targets = []
+    env = Rscons::Environment.new do |env|
+      env.Program("simple", Dir["*.c"])
+      env.add_post_build_hook do |build_op|
+        built_targets << build_op[:target]
+        expect(File.exists?(build_op[:target])).to be_truthy
+      end
+    end
+    expect(File.exists?("simple.o")).to be_truthy
+    expect(`./simple`).to eq "This is a simple C program\n"
+    expect(built_targets).to eq ["simple.o", "simple#{env["PROGSUFFIX"]}"]
+  end
+
 end

@@ -42,7 +42,7 @@ module Rscons
       @user_deps = {}
       @builders = {}
       @build_dirs = []
-      @build_hooks = []
+      @build_hooks = {pre: [], post: []}
       unless options[:exclude_builders]
         DEFAULT_BUILDERS.each do |builder_class_name|
           builder_class = Builders.const_get(builder_class_name)
@@ -103,8 +103,11 @@ module Rscons
         end
       end
       if clone.include?(:build_hooks)
-        @build_hooks.each do |build_hook_block|
+        @build_hooks[:pre].each do |build_hook_block|
           env.add_build_hook(&build_hook_block)
+        end
+        @build_hooks[:post].each do |build_hook_block|
+          env.add_post_build_hook(&build_hook_block)
         end
       end
 
@@ -132,6 +135,12 @@ module Rscons
 
     # Add a build hook to the Environment.
     #
+    # Build hooks are Ruby blocks which are invoked immediately before a
+    # build operation takes place. Build hooks have an opportunity to modify
+    # the construction variables in use for the build operation based on the
+    # builder in use, target file name, or sources. Build hooks can also
+    # register new build targets.
+    #
     # @yield [build_op]
     #   Invoke the given block with the current build operation.
     # @yieldparam build_op [Hash]
@@ -144,7 +153,29 @@ module Rscons
     #
     # @return [void]
     def add_build_hook(&block)
-      @build_hooks << block
+      @build_hooks[:pre] << block
+    end
+
+    # Add a post build hook to the Environment.
+    #
+    # Post-build hooks are Ruby blocks which are invoked immediately after a
+    # build operation takes place. Post-build hooks are only invoked if the
+    # build operation succeeded. Post-build hooks can register new build
+    # targets.
+    #
+    # @yield [build_op]
+    #   Invoke the given block with the current build operation.
+    # @yieldparam build_op [Hash]
+    #   Hash with keys:
+    #   - :builder - The builder object in use.
+    #   - :target - Target file name.
+    #   - :sources - List of source file(s).
+    #   - :vars - Set of construction variable values in use.
+    #   - :env - The Environment invoking the builder.
+    #
+    # @return [void]
+    def add_post_build_hook(&block)
+      @build_hooks[:post] << block
     end
 
     # Specify a build directory for this Environment.
@@ -412,17 +443,22 @@ module Rscons
     # @return [String,false] Return value from the {Builder}'s +run+ method.
     def run_builder(builder, target, sources, cache, vars)
       vars = @varset.merge(vars)
-      @build_hooks.each do |build_hook_block|
-        build_operation = {
-          builder: builder,
-          target: target,
-          sources: sources,
-          vars: vars,
-          env: self,
-        }
-        build_hook_block.call(build_operation)
+      call_build_hooks = lambda do |sec|
+        @build_hooks[sec].each do |build_hook_block|
+          build_operation = {
+            builder: builder,
+            target: target,
+            sources: sources,
+            vars: vars,
+            env: self,
+          }
+          build_hook_block.call(build_operation)
+        end
       end
-      builder.run(target, sources, cache, self, vars)
+      call_build_hooks[:pre]
+      rv = builder.run(target, sources, cache, self, vars)
+      call_build_hooks[:post] if rv
+      rv
     end
 
     # Expand a path to be relative to the Environment's build root.
