@@ -173,6 +173,9 @@ Each build hook block will be invoked for every build operation, so the block
 should test the target or sources if its action should only apply to some
 subset of build targets or source files.
 
+Build hooks can alter construction variable values for a particular build
+operation. Build hooks can also register new build targets.
+
 The `build_op` parameter to the build hook block is a Hash describing the
 build operation with the following keys:
 * `:builder` - `Builder` instance in use
@@ -316,6 +319,19 @@ cloned_env["CPPPATH"] << "three"
 ```
 
 `base_env["CPPPATH"]` will not include "three".
+
+#### Build Hooks
+
+Environments can have build hooks which are added with `env.add_build_hook()`.
+Build hooks are invoked immediately before a builder executes.
+Build hooks can modify the construction variables in use for the build
+operation.
+They can also register new build targets.
+
+Environments can also have post-build hooks added with `env.add_post_build_hook()`.
+Post-build hooks are only invoked if the build operation was a success.
+Post-build hooks can invoke commands using the newly-built files, or register
+new build targets.
 
 ### Construction Variable Naming
 
