@@ -360,11 +360,15 @@ EOF
   it 'allows cloning all attributes of an Environment object' do
     test_dir('clone_env')
 
+    built_targets = []
     env1 = Rscons::Environment.new(echo: :command) do |env|
       env.build_dir('src', 'build')
       env['CFLAGS'] = '-O2'
       env.add_build_hook do |build_op|
         build_op[:vars]['CPPFLAGS'] = '-DSTRING="Hello"'
+      end
+      env.add_post_build_hook do |build_op|
+        built_targets << build_op[:target]
       end
       env.Program('program', Dir['src/*.c'])
     end
@@ -378,6 +382,12 @@ EOF
       %Q{gcc -o program#{env1["PROGSUFFIX"]} build/program.o},
       %Q{gcc -o program2#{env2["PROGSUFFIX"]} build/program.o},
     ]
+    expect(built_targets).to eq([
+      "build/program.o",
+      "program#{env1['PROGSUFFIX']}",
+      "build/program.o",
+      "program2#{env1['PROGSUFFIX']}",
+    ])
   end
 
   it 'builds a C++ program with one source file' do
