@@ -629,4 +629,75 @@ EOF
     expect(built_targets).to eq ["simple.o", "simple#{env["PROGSUFFIX"]}"]
   end
 
+  it "supports multiple values for CXXSUFFIX" do
+    test_dir("simple_cc")
+    File.open("other.cccc", "w") {|fh| fh.puts}
+    Rscons::Environment.new do |env|
+      env["CXXSUFFIX"] = %w[.cccc .cc]
+      env["CXXFLAGS"] += %w[-x c++]
+      env.Program("simple", Dir["*.cc"] + ["other.cccc"])
+    end
+    expect(File.exists?("simple.o")).to be_truthy
+    expect(File.exists?("other.o")).to be_truthy
+    expect(`./simple`).to eq "This is a simple C++ program\n"
+  end
+
+  it "supports multiple values for CSUFFIX" do
+    test_dir("build_dir")
+    FileUtils.mv("src/one/one.c", "src/one/one.yargh")
+    Rscons::Environment.new do |env|
+      env["CSUFFIX"] = %w[.yargh .c]
+      env["CFLAGS"] += %w[-x c]
+      env["CPPPATH"] += Dir["src/**/"]
+      env.Program("build_dir", Dir["src/**/*.{c,yargh}"])
+    end
+    expect(File.exists?("src/one/one.o")).to be_truthy
+    expect(File.exists?("src/two/two.o")).to be_truthy
+    expect(`./build_dir`).to eq "Hello from two()\n"
+  end
+
+  it "supports multiple values for OBJSUFFIX" do
+    test_dir("two_sources")
+    env = Rscons::Environment.new() do |env|
+      env["OBJSUFFIX"] = %w[.oooo .ooo]
+      env.Object("one.oooo", "one.c", "CPPFLAGS" => ["-DONE"])
+      env.Object("two.ooo", "two.c")
+      env.Program("two_sources", %w[one.oooo two.ooo])
+    end
+    expect(File.exists?("two_sources#{env["PROGSUFFIX"]}")).to be_truthy
+    expect(`./two_sources`).to eq "This is a C program with two sources.\n"
+  end
+
+  it "supports multiple values for LIBSUFFIX" do
+    test_dir("two_sources")
+    env = Rscons::Environment.new() do |env|
+      env["LIBSUFFIX"] = %w[.aaaa .aaa]
+      env.Library("one.aaaa", "one.c", "CPPFLAGS" => ["-DONE"])
+      env.Library("two.aaa", "two.c")
+      env.Program("two_sources", %w[one.aaaa two.aaa])
+    end
+    expect(File.exists?("two_sources#{env["PROGSUFFIX"]}")).to be_truthy
+    expect(`./two_sources`).to eq "This is a C program with two sources.\n"
+  end
+
+  it "supports multiple values for ASSUFFIX" do
+    test_dir("two_sources")
+    env = Rscons::Environment.new() do |env|
+      env["ASSUFFIX"] = %w[.ssss .sss]
+      env["CFLAGS"] += %w[-S]
+      env.Object("one.ssss", "one.c", "CPPFLAGS" => ["-DONE"])
+      env.Object("two.sss", "two.c")
+      env.Program("two_sources", %w[one.ssss two.sss], "ASFLAGS" => env["ASFLAGS"] + %w[-x assembler])
+    end
+    expect(lines).to eq([
+      "CC one.ssss",
+      "CC two.sss",
+      "AS one.o",
+      "AS two.o",
+      "LD two_sources#{env["PROGSUFFIX"]}",
+    ])
+    expect(File.exists?("two_sources#{env["PROGSUFFIX"]}")).to be_truthy
+    expect(`./two_sources`).to eq "This is a C program with two sources.\n"
+  end
+
 end
