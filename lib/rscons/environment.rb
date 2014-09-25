@@ -163,6 +163,8 @@ module Rscons
     # build operation succeeded. Post-build hooks can register new build
     # targets.
     #
+    # @since 1.7.0
+    #
     # @yield [build_op]
     #   Invoke the given block with the current build operation.
     # @yieldparam build_op [Hash]
