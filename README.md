@@ -345,6 +345,13 @@ http://rubydoc.info/github/holtrop/rscons/frames.
 
 ## Release Notes
 
+### v1.7.0
+
+- allow build hooks to register new build targets
+- add post-build hooks (register with Environment#add_post_build_hook)
+- clear all build targets after processing an Environment
+- allow trailing slashes in arguments to Environment#build_dir
+
 ### v1.6.1
 
 - add DEPFILESUFFIX construction variable to override dependency file suffix
