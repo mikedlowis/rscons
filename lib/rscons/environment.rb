@@ -182,7 +182,7 @@ module Rscons
     #
     # Source files from src_dir will produce object files under obj_dir.
     #
-    # @param src_dir [String] Path to the source directory.
+    # @param src_dir [String, Regexp] Path to the source directory.
     # @param obj_dir [String] Path to the object directory.
     #
     # @return [void]
