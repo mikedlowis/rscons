@@ -187,7 +187,9 @@ module Rscons
     #
     # @return [void]
     def build_dir(src_dir, obj_dir)
-      src_dir = src_dir.gsub('\\', '/') if src_dir.is_a?(String)
+      if src_dir.is_a?(String)
+        src_dir = src_dir.gsub("\\", "/").sub(%r{/*$}, "")
+      end
       @build_dirs << [src_dir, obj_dir]
     end
 

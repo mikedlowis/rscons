@@ -197,6 +197,19 @@ describe Rscons do
     expect(File.exists?('build_two/two.o')).to be_truthy
   end
 
+  it "supports trailing slashes at the end of build_dir sources and destinations" do
+    test_dir("build_dir")
+    Rscons::Environment.new do |env|
+      env.append("CPPPATH" => Dir["src/**/*/"])
+      env.build_dir("src/one/", "build_one/")
+      env.build_dir("src/two", "build_two")
+      env.Program("build_dir", Dir["src/**/*.c"])
+    end
+    expect(`./build_dir`).to eq "Hello from two()\n"
+    expect(File.exists?("build_one/one.o")).to be_truthy
+    expect(File.exists?("build_two/two.o")).to be_truthy
+  end
+
   it 'uses build directories before build root' do
     test_dir('build_dir')
     env = Rscons::Environment.new do |env|
