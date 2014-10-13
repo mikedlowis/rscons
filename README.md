@@ -210,6 +210,7 @@ end
 
 Rscons ships with a number of builders:
 
+* Command, which executes a user-defined command to produce the target
 * CFile, which builds a C or C++ source file from a lex or yacc input file
 * Disassemble, which disassembles an object file to a disassembly listing
 * Library, which collects object files into a static library archive file
@@ -219,6 +220,18 @@ Rscons ships with a number of builders:
 
 If you want to create an Environment that does not contain any builders,
 you can use the `exclude_builders` key to the Environment constructor.
+
+#### Command
+
+```ruby
+env.Command(target, sources, 'CMD' => command)
+# Example
+env.Command("docs.html", "docs.md",
+    CMD => ['pandoc', '-fmarkdown', '-thtml', '-o${_TARGET}', '${_SOURCES}'])
+```
+
+The command builder executes a user-defined command in order to produce the
+desired target file based on the provided source files.
 
 #### CFile
 

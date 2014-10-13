@@ -6,6 +6,7 @@ require_relative "rscons/varset"
 require_relative "rscons/version"
 
 # default builders
+require_relative "rscons/builders/command"
 require_relative "rscons/builders/cfile"
 require_relative "rscons/builders/disassemble"
 require_relative "rscons/builders/library"
@@ -18,6 +19,7 @@ module Rscons
   # Names of the default builders which will be added to all newly created
   # {Environment} objects.
   DEFAULT_BUILDERS = [
+    :Command,
     :CFile,
     :Disassemble,
     :Library,
