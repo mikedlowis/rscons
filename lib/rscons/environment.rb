@@ -1,6 +1,7 @@
 require "fileutils"
 require "set"
 require "shellwords"
+require_relative "builders/simple_builder"
 
 module Rscons
   # The Environment class is the main programmatic interface to Rscons. It
@@ -120,10 +121,16 @@ module Rscons
 
     # Add a {Builder} object to the Environment.
     #
-    # @param builder [Builder] The {Builder} object to add.
+    # @param builder [Builder,String,Symbol]
+    #   The {Builder} object to add or the name of the builder to add.
+    #
+    # @param action [Block]
     #
     # @return [void]
-    def add_builder(builder)
+    def add_builder(builder, &action)
+      if not builder.is_a? Rscons::Builder
+        builder = Rscons::Builders::SimpleBuilder.new(builder, &action)
+      end
       @builders[builder.name] = builder
       var_defs = builder.default_variables(self)
       if var_defs
