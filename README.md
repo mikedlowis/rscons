@@ -164,7 +164,7 @@ will be registered with the environment with the given name. When this builder
 is used it will call the provided block in order to build the target.
 
 ```ruby
-Rscons::Environment.new do |end|
+Rscons::Environment.new do |env|
   env.add_builder(:JsonToYaml) do |target, sources, cache, env, vars|
     unless cache.up_to_date?(target, :JsonToYaml, sources, env)
       cache.mkdir_p(File.dirname(target))
