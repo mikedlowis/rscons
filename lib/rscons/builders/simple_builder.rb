@@ -1,14 +1,14 @@
 module Rscons
   module Builders
-    # Build a C or C++ source file given a lex (.l, .ll) or yacc (.y, .yy)
-    # input file.
+    # A Generic builder class whose name and operation is defined at
+    # instantiation.
     class SimpleBuilder < Builder
       # The name of this builder when registered in an environment
       attr_reader :name
 
       # Create a new builder with the given name and action.
       #
-      # @param name  [String] The name of the builder when registered.
+      # @param name  [String,Symbol] The name of the builder when registered.
       # @param block [Block]
       #     The action to perform when the builder is processed. The provided
       #     block must return the target file on success or false on failure.

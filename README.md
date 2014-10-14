@@ -159,16 +159,21 @@ end
 The `add_builder` method of the `Rscons::Environment` class optionally allows
 you to define and register a builder by providing a name and action block. This
 can be useful if the builder you are trying to define is easily expressed as a
-short ruby procedure. When add_builder is called in this manner a new builder
+short ruby procedure. When `add_builder` is called in this manner a new builder
 will be registered with the environment with the given name. When this builder
 is used it will call the provided block in order to build the target.
 
 ```ruby
 Rscons::Environment.new do |end|
-  env.add_builder :JsonToYaml do |target, sources, cache, env, vars|
-    File.open(target, 'w') do |f|
-      f.write(YAML.dump(JSON.load(IO.read(sources.first))))
+  env.add_builder(:JsonToYaml) do |target, sources, cache, env, vars|
+    unless cache.up_to_date?(target, :JsonToYaml, sources, env)
+      cache.mkdir_p(File.dirname(target))
+      File.open(target, 'w') do |f|
+        f.write(YAML.dump(JSON.load(IO.read(sources.first))))
+      end
+      cache.register_build(target, cmd, sources, env)
     end
+    target
   end
   env.JsonToYaml('foo.yml','foo.json')
 end
