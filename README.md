@@ -171,7 +171,7 @@ Rscons::Environment.new do |env|
       File.open(target, 'w') do |f|
         f.write(YAML.dump(JSON.load(IO.read(sources.first))))
       end
-      cache.register_build(target, cmd, sources, env)
+      cache.register_build(target, :JsonToYaml, sources, env)
     end
     target
   end
