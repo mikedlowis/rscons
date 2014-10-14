@@ -128,7 +128,7 @@ module Rscons
     #   Register a new {Builders::SimpleBuilder} with the environment.
     #
     #   @param builder [String,Symbol]
-    #     The {Builder} object to add or the name of the builder to add.
+    #     The name of the builder to add.
     #
     #   @param action [Block]
     #     A block that will be called when the builder is executed to generate

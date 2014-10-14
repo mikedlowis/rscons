@@ -10,8 +10,9 @@ module Rscons
       #
       # @param name  [String,Symbol] The name of the builder when registered.
       # @param block [Block]
-      #     The action to perform when the builder is processed. The provided
-      #     block must return the target file on success or false on failure.
+      #   The action to perform when the builder is processed. The provided
+      #   block must return the target file on success or false on failure.
+      #   The provided block should have the same signature as {Builder#run}.
       def initialize(name, &block)
         @name  = name.to_s
         @block = block
